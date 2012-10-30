@@ -1,8 +1,11 @@
 from math import pi as PI, fabs, degrees, sqrt
 from Geometry import Vector, sign
 
-SHELL_VELOCITY = 13.5
+SHELL_VELOCITY = 14
 BACKWARDS_THRESHOLD = 3 * PI / 5
+
+TIME_ESTIMATION_ANGLE_PENALTY = 5
+TIME_ESTIMATION_VELOCITY_FACTOR = 30
 
 def distance(c1, c2):
     return sqrt((c1[0] - c2[0])**2 + (c1[1] - c2[1])**2)
@@ -11,7 +14,9 @@ def estimate_time_to_position(x, y, tank):
     angle = fabs(tank.get_angle_to(x, y))
     if angle > 3 * PI / 5:
         angle = PI - angle
-    return tank.get_distance_to(x, y) + degrees(angle) * 7
+
+    next_pt = (tank.x + tank.speedX * TIME_ESTIMATION_VELOCITY_FACTOR, tank.y + tank.speedY * TIME_ESTIMATION_VELOCITY_FACTOR)
+    return distance(next_pt, (x, y)) + degrees(angle) * TIME_ESTIMATION_ANGLE_PENALTY
 
 def estimate_target_position(target, tank):
     t = tank.get_distance_to_unit(target) / SHELL_VELOCITY
@@ -24,9 +29,9 @@ def move_to_position(x, y, tank, move):
     angle = tank.get_angle_to(x, y)
 
     def get_values(angle, multiplier=1):
-        if angle < PI/3 and tank.get_distance_to(x, y) > 500:
+        if angle < PI/6 and tank.get_distance_to(x, y) > 100:
             # Long-run distance
-            left, right = 1, 1 - 1.75 * angle / PI
+            left, right = 1, 1 - 2.5 * angle / PI
         elif tank.get_distance_to(x, y) < 50:
             # Dirty fix for picking up close bonuses
             left, right = 1, 1 - 2 * angle / PI

@@ -55,6 +55,9 @@ class MyStrategy:
 
             def estimate_position_F(x, y):
                 est_time = estimate_time_to_position(x, y, tank)
+                enemies = list(filter(ALIVE_ENEMY_TANK, world.tanks))
+                health_fraction = tank.crew_health / tank.crew_max_health
+                hull_fraction = tank.hull_durability / tank.hull_max_durability
 
                 # Bonus priority:
                 # + Need this bonus
@@ -70,16 +73,22 @@ class MyStrategy:
                     closest_bonus = unit_closest_to(x, y)(world.bonuses)
 
                     if closest_bonus.type == BonusType.MEDIKIT:
-                        health_fraction = tank.crew_health / tank.crew_max_health
                         bonus_profit = 200 + (1 - health_fraction) * 1300
                     elif closest_bonus.type == BonusType.REPAIR_KIT:
-                        hull_fraction = tank.hull_durability / tank.hull_max_durability
                         bonus_profit = 100 + (1 - hull_fraction) * 900
                     elif closest_bonus.type == BonusType.AMMO_CRATE:
                         bonus_profit = 400
                     else:
                         bonus_profit = 0
 
+                    try:
+                        enemy_closest_to_bonus = min(enemies, key=lambda t: estimate_time_to_position(x, y, t))
+                        bonus_enemy = max(0, (est_time - estimate_time_to_position(x, y, enemy_closest_to_bonus)) * 0.7)
+                    except Exception as e:
+                        self.debug("$$$ This is highly unexpected %s" % e)
+
+                        bonus_enemy = 0
+                    # TODO: fix and then return back
                     bonus_enemy = 0
 
                     bonus_summand = max(0, bonus_profit - bonus_enemy)
@@ -91,12 +100,20 @@ class MyStrategy:
 
                 # How dangerous position is
                 try:
-                    enemies = list(filter(ALIVE_ENEMY_TANK, world.tanks))
                     enemies_count = len(enemies)
                     danger_penalty = -sum(map(lambda enemy: enemy.get_distance_to(x, y), enemies)) / (enemies_count)
                 except:
                     danger_penalty = 0
                 danger_penalty += 1200
+
+                if len(enemies) > 3 or health_fraction < 0.7 or hull_fraction < 0.6:
+                    danger_penalty_factor = 1.2
+                elif len(enemies) == 1 and health_fraction > 0.7 and hull_fraction > 0.5:
+                    danger_penalty_factor = 0.2
+                else:
+                    danger_penalty_factor = 1
+
+                danger_penalty *= danger_penalty_factor
                 # Position priority:
                 # + Bonus priority
                 # - Dangerous position
@@ -109,6 +126,7 @@ class MyStrategy:
                     stopping_penalty = max(0, 400 - tank.get_distance_to(x, y))
                 stopping_penalty *= 0
 
+                est_time *= 0.3
                 result = 2000 + bonus_summand - est_time - stopping_penalty - danger_penalty
                 self.debug('Position: x=%8.2f, y=%8.2f, bonus_summand=%8.2f, est_time=%8.2f, stopping_penalty=%8.2f, danger_penalty=%8.2f, result=%8.2f' %
                            (x, y, bonus_summand, est_time, stopping_penalty, danger_penalty, result))
