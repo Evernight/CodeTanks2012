@@ -1,11 +1,20 @@
 from model.FireType import FireType
 from model.TankType import TankType
 from model.BonusType import BonusType
-from GameGeometry import *
-from math import pi as PI, copysign, sqrt
+from GamePhysics import *
+from Geometry import sign
+from math import pi as PI, sqrt
 
-def sign(x):
-    return copysign(1, x)
+# TODO:
+#  * realistic obstacle hitting
+#  * get rid of shaky behaviour
+from model.Unit import Unit
+
+DEBUG_MODE = True
+
+# ================ CONSTANTS
+TARGETING_FACTOR = 0.6
+BONUS_FACTOR = 1.25
 
 ALIVE_ENEMY_TANK = lambda t: not t.teammate and t.crew_health > 0 and t.hull_durability > 0
 
@@ -21,7 +30,8 @@ class MyStrategy:
 
     def debug(self, message, ticks_period=20):
         if self.world.tick % ticks_period == 0:
-            print(message)
+            if DEBUG_MODE:
+                print(message)
 
     def move(self, tank, world, move):
         self.world = world
@@ -97,9 +107,9 @@ class MyStrategy:
                 stopping_penalty = 0
                 if bonus_summand == 0:
                     stopping_penalty = max(0, 400 - tank.get_distance_to(x, y))
-                stopping_penalty *= 2
+                stopping_penalty *= 0
 
-                result = bonus_summand - est_time - stopping_penalty - danger_penalty
+                result = 2000 + bonus_summand - est_time - stopping_penalty - danger_penalty
                 self.debug('Position: x=%8.2f, y=%8.2f, bonus_summand=%8.2f, est_time=%8.2f, stopping_penalty=%8.2f, danger_penalty=%8.2f, result=%8.2f' %
                            (x, y, bonus_summand, est_time, stopping_penalty, danger_penalty, result))
                 return result
@@ -120,9 +130,11 @@ class MyStrategy:
                 return
 
             def get_target_priority(tank, target):
-                result = -tank.get_distance_to_unit(target) / 40 - tank.get_turret_angle_to_unit(target)
-                if target.crew_health < 20 or target.hull_durability < 20:
-                    result += 10
+                result = -tank.get_distance_to_unit(target) / 60 - tank.get_turret_angle_to_unit(target)
+                # Headshot ^_^
+                if ((target.crew_health <= 20 or target.hull_durability <= 20) or
+                    (tank.premium_shell_count > 0 and (target.crew_health < 35 or target.hull_durability <= 35))):
+                    result += 15
                 return result
 
             cur_target = max(targets, key=lambda t: get_target_priority(tank, t))
@@ -130,22 +142,24 @@ class MyStrategy:
 
             def bonus_attacked():
                 for bonus in world.bonuses:
-                    if (fabs(tank.get_turret_angle_to_unit(bonus)) < PI/180 * 2 and
-                        tank.get_distance_to_unit(bonus) < tank.get_distance_to(*est_pos)):
-                        return True
+                    if (will_hit(tank, bonus, BONUS_FACTOR) and \
+                       tank.get_distance_to_unit(bonus) < tank.get_distance_to(*est_pos)):
+                        return bonus
                 return False
 
             cur_angle = tank.get_turret_angle_to(*est_pos)
-            if fabs(cur_angle) < PI/180 * 5 and tank.get_distance_to(*est_pos) < 200:
-                move.fire_type = FireType.PREMIUM_PREFERRED
-            elif fabs(cur_angle) < PI/180 * 20 and tank.get_distance_to(*est_pos) < 120:
-                move.fire_type = FireType.PREMIUM_PREFERRED
-            elif fabs(cur_angle) < PI/180 * 1:
+            if will_hit(
+                tank,
+                Unit(0, cur_target.width, cur_target.height, est_pos[0], est_pos[1], 0, 0, cur_target.angle, 0),
+                TARGETING_FACTOR
+            ):
                 move.fire_type = FireType.PREMIUM_PREFERRED
             else:
                 move.fire_type = FireType.NONE
+
             if bonus_attacked():
-                self.debug('!!! Bonus is attacked')
+                q = bonus_attacked()
+                self.debug('!!! Bonus is attacked (%8.2f, %8.2f)' % (q.x, q.y), 1)
                 move.fire_type = FireType.NONE
 
             if fabs(cur_angle) > PI/180 * 0.5:

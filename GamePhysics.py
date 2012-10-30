@@ -1,6 +1,7 @@
 from math import pi as PI, fabs, degrees, sqrt
+from Geometry import Vector, sign
 
-SHELL_VELOCITY = 15
+SHELL_VELOCITY = 13.5
 BACKWARDS_THRESHOLD = 3 * PI / 5
 
 def distance(c1, c2):
@@ -49,3 +50,29 @@ def move_to_position(x, y, tank, move):
             move.left_track_power, move.right_track_power = get_values(PI - fabs(angle), -1)
         else:
             move.right_track_power, move.left_track_power = get_values(PI - fabs(angle), -1)
+
+def will_hit(tank, target, factor=1):
+    """
+    Returns True if tank will hit rectangular object
+    """
+    b = tank.angle + tank.turret_relative_angle
+    e = Vector(1, 0)
+    q = e.rotate(b)
+
+    center = Vector(target.x - tank.x, target.y - tank.y)
+    if center.scalar_product(q) < 0:
+        return False
+
+    a = target.angle
+
+    c1 = center + Vector(target.width/2 * factor, target.height/2 * factor).rotate(a)
+    c2 = center + Vector(- target.width/2 * factor, target.height/2 * factor).rotate(a)
+    c3 = center + Vector(- target.width/2 * factor, - target.height/2 * factor).rotate(a)
+    c4 = center + Vector(target.width/2 * factor, - target.height/2 * factor).rotate(a)
+    if sign(c1.cross_product(q)) == sign(q.cross_product(c3)):
+        #print("TEST", c1, c2, c3, c4, q)
+        return True
+    if sign(c2.cross_product(q)) == sign(q.cross_product(c4)):
+        #print("TEST", c1, c2, c3, c4, q)
+        return True
+    return False
