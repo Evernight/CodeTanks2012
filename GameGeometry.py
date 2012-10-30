@@ -29,9 +29,11 @@ def move_to_position(x, y, tank, move):
         elif tank.get_distance_to(x, y) < 50:
             # Dirty fix for picking up close bonuses
             left, right = 1, 1 - 2 * angle / PI
-        elif angle > PI/6:
-            # Big angle
+        elif angle > PI/6 and tank.get_distance_to(x, y) < 100:
+            # Big angle, short distance
             left, right = 0.75, -1
+        elif angle > PI/6:
+            left, right = 1, -1
         else:
             left, right = 1, 1
 
