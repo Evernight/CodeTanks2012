@@ -24,7 +24,7 @@ from MyUtils import *
 #  * standing death?
 #  * pick very close bonuses, don't go straightforward to better ones
 
-DEBUG_MODE = True
+DEBUG_MODE = False
 
 # ================ CONSTANTS
 # Targeting
@@ -65,8 +65,8 @@ class MyStrategy:
                     positions.append((world.width * (1 + 2*i) / 6, world.height * (1 + 2*j) / 6))
 
             # Grid
-            GRID_HOR_COUNT = 15
-            GRID_VERT_COUNT = 10
+            GRID_HOR_COUNT = 12
+            GRID_VERT_COUNT = 8
             for i in range(GRID_HOR_COUNT):
                 for j in range(GRID_VERT_COUNT):
                     positions.append((world.width * (1 + i) / (GRID_HOR_COUNT + 1),
@@ -94,7 +94,7 @@ class MyStrategy:
                     closest_bonus = unit_closest_to(x, y)(world.bonuses)
 
                     if closest_bonus.type == BonusType.MEDIKIT:
-                        bonus_profit = 300 + (1 - health_fraction) * 900
+                        bonus_profit = 250 + (1 - health_fraction) * 1250
                     elif closest_bonus.type == BonusType.REPAIR_KIT:
                         bonus_profit = 100 + (1 - hull_fraction) * 500
                     elif closest_bonus.type == BonusType.AMMO_CRATE:
@@ -172,8 +172,9 @@ class MyStrategy:
                 return result
 
             pos_f = list(map(lambda x_y: (x_y[0], x_y[1], estimate_position_F(x_y[0], x_y[1])), positions))
-            for pos in sorted(pos_f, key=operator.itemgetter(2))[-6:]:
-                estimate_position_F(pos[0], pos[1], show_debug=True)
+            if DEBUG_MODE:
+                for pos in sorted(pos_f, key=operator.itemgetter(2))[-6:]:
+                    estimate_position_F(pos[0], pos[1], show_debug=True)
             next_position = max(pos_f, key=operator.itemgetter(2))[:2]
             self.memory.last_target_position = next_position
             move_to_position(next_position[0], next_position[1], tank, move)
