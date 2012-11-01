@@ -12,8 +12,8 @@ def distance(c1, c2):
 
 def estimate_time_to_position(x, y, tank):
     r = min(tank.width, tank.height)/2
-    if tank.get_distance_to(x, y) < r:
-        return 0
+    #if tank.get_distance_to(x, y) < r:
+    #    return 0
 
     angle = fabs(tank.get_angle_to(x, y))
     if angle > 3 * PI / 5:

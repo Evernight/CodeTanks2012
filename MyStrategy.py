@@ -1,3 +1,4 @@
+import operator
 from model.FireType import FireType
 from model.TankType import TankType
 from model.BonusType import BonusType
@@ -23,7 +24,7 @@ from MyUtils import *
 #  * standing death?
 #  * pick very close bonuses, don't go straightforward to better ones
 
-DEBUG_MODE = False
+DEBUG_MODE = True
 
 # ================ CONSTANTS
 # Targeting
@@ -42,6 +43,7 @@ class MyStrategy:
     class Memory:
         def __init__(self):
             self.velocity_history = defaultdict(deque)
+            self.last_target_position = None
 
     def __init__(self):
         self.memory = MyStrategy.Memory()
@@ -78,7 +80,7 @@ class MyStrategy:
             if not positions:
                 return
 
-            def estimate_position_F(x, y):
+            def estimate_position_F(x, y, show_debug=False):
                 est_time = estimate_time_to_position(x, y, tank)
                 enemies = list(filter(ALIVE_ENEMY_TANK, world.tanks))
                 health_fraction = tank.crew_health / tank.crew_max_health
@@ -92,11 +94,11 @@ class MyStrategy:
                     closest_bonus = unit_closest_to(x, y)(world.bonuses)
 
                     if closest_bonus.type == BonusType.MEDIKIT:
-                        bonus_profit = 200 + (1 - health_fraction) * 1300
+                        bonus_profit = 300 + (1 - health_fraction) * 900
                     elif closest_bonus.type == BonusType.REPAIR_KIT:
-                        bonus_profit = 100 + (1 - hull_fraction) * 900
+                        bonus_profit = 100 + (1 - hull_fraction) * 500
                     elif closest_bonus.type == BonusType.AMMO_CRATE:
-                        bonus_profit = 550
+                        bonus_profit = 500
                     else:
                         bonus_profit = 0
 
@@ -118,7 +120,7 @@ class MyStrategy:
                     if closest_bonus.get_distance_to(x, y) > 10:
                         bonus_summand = 0
                 except:
-                    self.debug("!!! No bonuses on field")
+                    #self.debug("!!! No bonuses on field")
                     bonus_summand = 0
 
                 # How dangerous position is
@@ -127,13 +129,15 @@ class MyStrategy:
                 # + Turrets directed
                 try:
                     enemies_count = len(enemies)
-                    danger_penalty = -sum(map(lambda enemy: enemy.get_distance_to(x, y), enemies)) / (enemies_count)
+                    danger_penalty = - sum(map(lambda enemy: enemy.get_distance_to(x, y), enemies))/enemies_count * 2
                 except:
                     self.debug("!!! All enemies were destroyed")
                     danger_penalty = 0
                 danger_penalty += 1200
 
                 if len(enemies) > 3 or health_fraction < 0.7 or hull_fraction < 0.6:
+                    danger_penalty_factor = 1.4
+                elif len(enemies) > 2 or health_fraction < 0.7 or hull_fraction < 0.6:
                     danger_penalty_factor = 1
                 elif len(enemies) == 1 and health_fraction > 0.7 and hull_fraction > 0.5:
                     danger_penalty_factor = 0.2
@@ -147,21 +151,31 @@ class MyStrategy:
                 #        observed_by_enemy += 1
                 stopping_penalty = 0
                 if bonus_summand == 0:
-                    stopping_penalty = 2 * max(0, 700 - tank.get_distance_to(x, y))
+                    stopping_penalty = (1 + max(0, 300 - tank.get_distance_to(x, y)))**1.2
 
+                # If we're going somewhere then let it be
+                if self.memory.last_target_position and distance(self.memory.last_target_position, (x, y)) < 30:
+                    prev_target_bonus = 200
+                else:
+                    prev_target_bonus = 0
                 # Position priority:
                 # + Bonus priority
                 # - Dangerous position
                 # - Close to screen edges (*)
                 # - Don't stay at one place (*)
-                est_time *= 0.5
-                result = 2000 + bonus_summand - est_time - stopping_penalty - danger_penalty
-                self.debug(('Position: x=%8.2f, y=%8.2f, bonus_summand=%8.2f, est_time=%8.2f, ' +
-                            'stopping_penalty=%8.2f, danger_penalty=%8.2f, result=%8.2f') %
-                            (x, y, bonus_summand, est_time, stopping_penalty, danger_penalty, result))
+                est_time *= 0.6
+                result = 2000 + bonus_summand - est_time - stopping_penalty - danger_penalty + prev_target_bonus
+                if show_debug:
+                    self.debug(('Position: x=%8.2f, y=%8.2f, bonus_summand=%8.2f, est_time=%8.2f, ' +
+                                'stopping_penalty=%8.2f, danger_penalty=%8.2f, result=%8.2f') %
+                                (x, y, bonus_summand, est_time, stopping_penalty, danger_penalty, result))
                 return result
 
-            next_position = max(positions, key=lambda x_y: estimate_position_F(x_y[0], x_y[1]))
+            pos_f = list(map(lambda x_y: (x_y[0], x_y[1], estimate_position_F(x_y[0], x_y[1])), positions))
+            for pos in sorted(pos_f, key=operator.itemgetter(2))[-6:]:
+                estimate_position_F(pos[0], pos[1], show_debug=True)
+            next_position = max(pos_f, key=operator.itemgetter(2))[:2]
+            self.memory.last_target_position = next_position
             move_to_position(next_position[0], next_position[1], tank, move)
 
         def process_shooting():
