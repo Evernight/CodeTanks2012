@@ -19,6 +19,9 @@ from MyUtils import *
 #  * Additional tactical positions
 #  * take target orientation into account when shooting
 #  * possible to change targets but shoot anyway
+#  * when targeting take current moving destination into account (or the opposite)
+#  * standing death?
+#  * pick very close bonuses, don't go straightforward to better ones
 
 DEBUG_MODE = False
 
@@ -60,12 +63,12 @@ class MyStrategy:
                     positions.append((world.width * (1 + 2*i) / 6, world.height * (1 + 2*j) / 6))
 
             # Grid
-#            GRID_HOR_COUNT = 15
-#            GRID_VERT_COUNT = 10
-#            for i in range(GRID_HOR_COUNT):
-#                for j in range(GRID_VERT_COUNT):
-#                    positions.append((world.width * (1 + i) / (GRID_HOR_COUNT + 1),
-#                                      world.height * (1 + j) / (GRID_VERT_COUNT + 1)))
+            GRID_HOR_COUNT = 15
+            GRID_VERT_COUNT = 10
+            for i in range(GRID_HOR_COUNT):
+                for j in range(GRID_VERT_COUNT):
+                    positions.append((world.width * (1 + i) / (GRID_HOR_COUNT + 1),
+                                      world.height * (1 + j) / (GRID_VERT_COUNT + 1)))
 
             # Forward and backward direction
 
@@ -144,7 +147,7 @@ class MyStrategy:
                 #        observed_by_enemy += 1
                 stopping_penalty = 0
                 if bonus_summand == 0:
-                    stopping_penalty = 2 * max(0, 400 - tank.get_distance_to(x, y))
+                    stopping_penalty = 2 * max(0, 700 - tank.get_distance_to(x, y))
 
                 # Position priority:
                 # + Bonus priority
