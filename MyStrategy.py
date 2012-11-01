@@ -3,44 +3,46 @@ from model.TankType import TankType
 from model.BonusType import BonusType
 from GamePhysics import *
 from Geometry import sign
-from math import pi as PI, sqrt
-from model.Unit import Unit
+from math import pi as PI
+from collections import deque, defaultdict
+from MyUtils import *
 
 # TODO:
+#  * don't push enemies to bonuses
 #  * get rid of shaky behaviour (add previous target label?)
-#  * ninja mode
+#  * ninja mode (take into account flying shells and directed turrets)
 #  * realistic moving and time estimation (we can do realistic estimation by ML)
 #  * replace linear functions with desired
 #  * position estimation by ML methods
 #  * enemy distance estimation to bonus we're heading to
-#  * take target orientation into account when shooting
+#  * estimate ability to predict target position
 #  * Additional tactical positions
+#  * take target orientation into account when shooting
+#  * possible to change targets but shoot anyway
 
-DEBUG_MODE = True
+DEBUG_MODE = False
 
 # ================ CONSTANTS
+# Targeting
 TARGETING_FACTOR = 0.6
 ENEMY_TARGETING_FACTOR = 0.8
 BONUS_FACTOR = 1.25
+DEAD_TANK_OBSTACLE_FACTOR = 1.05
 
-ALIVE_ENEMY_TANK = lambda t: not t.teammate and t.crew_health > 0 and t.hull_durability > 0
-DEAD_TANK = lambda t: t.crew_health == 0 or t.hull_durability == 0
+# Memorizing stuff
+VELOCITY_ESTIMATION_PERIOD = 3
+VELOCITY_ESTIMATION_COUNT = 10
 
-UNIT_TO_POINT = lambda unit: (unit.x, unit.y)
-
-def fictive_unit(prototype, x, y):
-    return Unit(0, prototype.width, prototype.height, x, y, 0, 0, prototype.angle, 0)
-
-def closest_to(coord):
-    return lambda arg: min(arg, key=lambda item: distance(item, coord))
-
-def unit_closest_to(x, y):
-    return lambda arg: min(arg, key=lambda item: item.get_distance_to(x, y))
-
+# Utils
 class MyStrategy:
 
     class Memory:
-        pass
+        def __init__(self):
+            self.velocity_history = defaultdict(deque)
+
+    def __init__(self):
+        self.memory = MyStrategy.Memory()
+
 
     def debug(self, message, ticks_period=20):
         if self.world.tick % ticks_period == 0:
@@ -91,17 +93,20 @@ class MyStrategy:
                     elif closest_bonus.type == BonusType.REPAIR_KIT:
                         bonus_profit = 100 + (1 - hull_fraction) * 900
                     elif closest_bonus.type == BonusType.AMMO_CRATE:
-                        bonus_profit = 400
+                        bonus_profit = 550
                     else:
                         bonus_profit = 0
 
-                    try:
-                        enemy_closest_to_bonus = min(enemies, key=lambda t: estimate_time_to_position(x, y, t))
-                        bonus_enemy = max(0, (est_time - estimate_time_to_position(x, y, enemy_closest_to_bonus)) * 0.7)
-                    except Exception as e:
-                        self.debug("$$$ This is highly unexpected %s" % e)
+#                    try:
+#                        enemy_closest_to_bonus = min(enemies, key=lambda t: estimate_time_to_position(x, y, t))
+#                        bonus_enemy = max(0, (est_time - estimate_time_to_position(x, y, enemy_closest_to_bonus)) * 0.7)
+#                    except Exception as e:
+#                        self.debug('!!! No enemies on field')
+#                        bonus_enemy = 0
+                    #def enemy_is_blocking():
+                    #    for enemy in filter(ENEMY_TANK, enemies):
+                    #        if
 
-                        bonus_enemy = 0
                     # TODO: fix and then return back
                     bonus_enemy = 0
 
@@ -110,6 +115,7 @@ class MyStrategy:
                     if closest_bonus.get_distance_to(x, y) > 10:
                         bonus_summand = 0
                 except:
+                    self.debug("!!! No bonuses on field")
                     bonus_summand = 0
 
                 # How dangerous position is
@@ -120,6 +126,7 @@ class MyStrategy:
                     enemies_count = len(enemies)
                     danger_penalty = -sum(map(lambda enemy: enemy.get_distance_to(x, y), enemies)) / (enemies_count)
                 except:
+                    self.debug("!!! All enemies were destroyed")
                     danger_penalty = 0
                 danger_penalty += 1200
 
@@ -144,7 +151,7 @@ class MyStrategy:
                 # - Dangerous position
                 # - Close to screen edges (*)
                 # - Don't stay at one place (*)
-                est_time *= 0.6
+                est_time *= 0.5
                 result = 2000 + bonus_summand - est_time - stopping_penalty - danger_penalty
                 self.debug(('Position: x=%8.2f, y=%8.2f, bonus_summand=%8.2f, est_time=%8.2f, ' +
                             'stopping_penalty=%8.2f, danger_penalty=%8.2f, result=%8.2f') %
@@ -161,11 +168,19 @@ class MyStrategy:
                 return
 
             def get_target_priority(tank, target):
-                result = -tank.get_distance_to_unit(target) / 50 - tank.get_turret_angle_to_unit(target)
+                health_fraction = tank.crew_health / tank.crew_max_health
+                angle_penalty_factor = 1 + (1 - health_fraction) * 2
+
+                angle_degrees = fabs(tank.get_turret_angle_to_unit(target)) / PI * 180
+                result = - tank.get_distance_to_unit(target) / 60 - angle_penalty_factor * (angle_degrees**1.3)/2
                 # Headshot ^_^
                 if ((target.crew_health <= 20 or target.hull_durability <= 20) or
                     (tank.premium_shell_count > 0 and (target.crew_health < 35 or target.hull_durability <= 35))):
                     result += 15
+                # Attack in response
+                if will_hit(target, tank, ENEMY_TARGETING_FACTOR):
+                    result += 10
+
                 return result
 
             cur_target = max(targets, key=lambda t: get_target_priority(tank, t))
@@ -180,7 +195,9 @@ class MyStrategy:
 
             def dead_tank_attacked():
                 for obstacle in filter(DEAD_TANK, world.tanks):
-                    if (will_hit(tank, obstacle, BONUS_FACTOR) and
+                    next_position = estimate_target_position(obstacle, tank)
+                    next_unit = fictive_unit(obstacle, next_position[0], next_position[1])
+                    if (will_hit(tank, next_unit, DEAD_TANK_OBSTACLE_FACTOR) and
                         tank.get_distance_to_unit(obstacle) < tank.get_distance_to(*est_pos)):
                         return obstacle
                 return False
@@ -210,6 +227,14 @@ class MyStrategy:
         process_shooting()
 
         self.debug('Output: left: %5.2f, right: %5.2f' % (move.left_track_power, move.right_track_power))
+
+        # processing velocity history
+        if world.tick % VELOCITY_ESTIMATION_PERIOD == 0:
+            for object in world.tanks:
+                slot = self.memory.velocity_history[object.id]
+                slot.extend((object.speedX, object.speedY))
+                if len(slot) > VELOCITY_ESTIMATION_COUNT:
+                    slot.popleft()
 
     def select_tank(self, tank_index, team_size):
         return TankType.MEDIUM

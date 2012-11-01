@@ -13,20 +13,24 @@ def distance(c1, c2):
 def estimate_time_to_position(x, y, tank):
     r = min(tank.width, tank.height)/2
 
+    if tank.get_distance_to(x, y) < r:
+        return 0
     angle = fabs(tank.get_angle_to(x, y))
     if angle > 3 * PI / 5:
         angle = PI - angle
 
     next_pt = (tank.x + tank.speedX * TIME_ESTIMATION_VELOCITY_FACTOR,
                tank.y + tank.speedY * TIME_ESTIMATION_VELOCITY_FACTOR)
-    if tank.get_distance_to(next_pt[0], next_pt[1]) < r:
-        return 0
 
     return distance(next_pt, (x, y)) + degrees(angle) * TIME_ESTIMATION_ANGLE_PENALTY
 
 def estimate_target_position(target, tank):
-    t = tank.get_distance_to_unit(target) / SHELL_VELOCITY
-    return (target.x + target.speedX * t, target.y + target.speedY * t)
+    coord = (target.x, target.y)
+    for i in range(4):
+        t = tank.get_distance_to(coord[0], coord[1]) / SHELL_VELOCITY
+        coord = (target.x + target.speedX * t, target.y + target.speedY * t)
+        #t = tank.get_distance_to_unit(target) / SHELL_VELOCITY
+    return coord
 
 def move_to_position(x, y, tank, move):
     # TODO:
@@ -35,19 +39,20 @@ def move_to_position(x, y, tank, move):
     angle = tank.get_angle_to(x, y)
 
     def get_values(angle, multiplier=1):
-        if angle < PI/6 and tank.get_distance_to(x, y) > 100:
-            # Long-run distance
-            left, right = 1, 1 - 2.5 * angle / PI
-        elif tank.get_distance_to(x, y) < 50:
-            # Dirty fix for picking up close bonuses
-            left, right = 1, 1 - 2 * angle / PI
-        elif angle > PI/6 and tank.get_distance_to(x, y) < 100:
-            # Big angle, short distance
-            left, right = 0.75, -1
-        elif angle > PI/6:
-            left, right = 1, -1
+        #ACCELERATION_REDUCTION_DISTANCE = 300
+        #angle *= min(1, (ACCELERATION_REDUCTION_DISTANCE - tank.get_distance_to(x, y))/ACCELERATION_REDUCTION_DISTANCE)
+        if tank.get_distance_to(x, y) < 300:
+            left, right = 1, 1 - 6 * angle / PI
+        elif tank.get_distance_to(x, y) < 700:
+            # Dirty fix for now (long distance)
+            left, right = 1, 1 - 4.5 * angle / PI
+            if fabs(tank.angular_speed) > 0.025:
+                left, right = 1, 1 - 2 * angle / PI
         else:
-            left, right = 1, 1
+            # Dirty fix for now (long distance)
+            left, right = 1, 1 - 3 * angle / PI
+            if fabs(tank.angular_speed) > 0.02:
+                left, right = 1, 1 - 2 * angle / PI
 
         return left * multiplier, right * multiplier
 
