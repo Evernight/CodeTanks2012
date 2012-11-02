@@ -10,6 +10,10 @@ TIME_ESTIMATION_VELOCITY_FACTOR = 20
 def distance(c1, c2):
     return sqrt((c1[0] - c2[0])**2 + (c1[1] - c2[1])**2)
 
+def distance_to_edge(x, y, world):
+    return min(x, world.width - x, y, world.height - y)
+
+
 def estimate_time_to_position(x, y, tank):
     r = min(tank.width, tank.height)/2
     #if tank.get_distance_to(x, y) < r:

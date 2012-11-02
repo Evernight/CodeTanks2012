@@ -7,6 +7,7 @@ from Geometry import sign
 from math import pi as PI
 from collections import deque, defaultdict
 from MyUtils import *
+import pickle
 
 # TODO:
 #  * don't push enemies to bonuses
@@ -24,7 +25,8 @@ from MyUtils import *
 #  * standing death?
 #  * pick very close bonuses, don't go straightforward to better ones
 
-DEBUG_MODE = False
+DEBUG_MODE = True
+PHYSICS_RESEARCH_MODE = False
 
 # ================ CONSTANTS
 # Targeting
@@ -46,9 +48,13 @@ class MyStrategy:
             self.last_target_position = None
             self.last_turret_target_id = None
 
+    class PhysicsAnalyser:
+        def __init__(self):
+            self.shell_velocity = defaultdict(list)
+
     def __init__(self):
         self.memory = MyStrategy.Memory()
-
+        self.analysis = MyStrategy.PhysicsAnalyser()
 
     def debug(self, message, ticks_period=20):
         if self.world.tick % ticks_period == 0:
@@ -95,7 +101,7 @@ class MyStrategy:
                     closest_bonus = unit_closest_to(x, y)(world.bonuses)
 
                     if closest_bonus.type == BonusType.MEDIKIT:
-                        bonus_profit = 250 + (1 - health_fraction) * 1250
+                        bonus_profit = 250 + sqrt(1 - health_fraction) * 1250
                     elif closest_bonus.type == BonusType.REPAIR_KIT:
                         bonus_profit = 100 + (1 - hull_fraction) * 500
                     elif closest_bonus.type == BonusType.AMMO_CRATE:
@@ -154,18 +160,23 @@ class MyStrategy:
                 if bonus_summand == 0:
                     stopping_penalty = (1 + max(0, 300 - tank.get_distance_to(x, y)))**1.2
 
-                # If we're going somewhere then let it be
+                # If we're going somewhere, increase priority for this place
                 if self.memory.last_target_position and distance(self.memory.last_target_position, (x, y)) < 30:
                     prev_target_bonus = 200
                 else:
                     prev_target_bonus = 0
+
+                # Don't stick to fucking edges
+                edges_penalty = 2 * min(0, 60 - distance_to_edge(x, y, world))
+
                 # Position priority:
                 # + Bonus priority
                 # - Dangerous position
                 # - Close to screen edges (*)
                 # - Don't stay at one place (*)
                 est_time *= 0.6
-                result = 2000 + bonus_summand - est_time - stopping_penalty - danger_penalty + prev_target_bonus
+                result = (2000 + bonus_summand + prev_target_bonus
+                          - est_time - stopping_penalty - danger_penalty - edges_penalty)
                 if show_debug:
                     self.debug(('Position: x=%8.2f, y=%8.2f, bonus_summand=%8.2f, est_time=%8.2f, ' +
                                 'stopping_penalty=%8.2f, danger_penalty=%8.2f, result=%8.2f') %
@@ -188,7 +199,8 @@ class MyStrategy:
 
             def get_target_priority(tank, target):
                 health_fraction = tank.crew_health / tank.crew_max_health
-                angle_penalty_factor = 1 + (1 - health_fraction) * 1.5
+                angle_penalty_factor = (1 + (1 - health_fraction) * 1.5 -
+                                        (1 - max(0, 150 - tank.remaining_reloading_time)/150) * 1)
 
                 angle_degrees = fabs(tank.get_turret_angle_to_unit(target)) / PI * 180
                 result = - tank.get_distance_to_unit(target) / 30 - angle_penalty_factor * (angle_degrees**1.3)/2
@@ -260,6 +272,12 @@ class MyStrategy:
                 slot.extend((object.speedX, object.speedY))
                 if len(slot) > VELOCITY_ESTIMATION_COUNT:
                     slot.popleft()
+        if PHYSICS_RESEARCH_MODE:
+            for shell in world.shells:
+                self.analysis.shell_velocity[shell.id].append(Vector(shell.speedX, shell.speedY).length())
+            if world.tick % 100 == 0:
+                pickle.dump(self.analysis.shell_velocity, open('shells.dump', 'wb'))
+
 
     def select_tank(self, tank_index, team_size):
         return TankType.MEDIUM
