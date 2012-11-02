@@ -44,6 +44,7 @@ class MyStrategy:
         def __init__(self):
             self.velocity_history = defaultdict(deque)
             self.last_target_position = None
+            self.last_turret_target_id = None
 
     def __init__(self):
         self.memory = MyStrategy.Memory()
@@ -187,21 +188,27 @@ class MyStrategy:
 
             def get_target_priority(tank, target):
                 health_fraction = tank.crew_health / tank.crew_max_health
-                angle_penalty_factor = 1 + (1 - health_fraction) * 2
+                angle_penalty_factor = 1 + (1 - health_fraction) * 1.5
 
                 angle_degrees = fabs(tank.get_turret_angle_to_unit(target)) / PI * 180
-                result = - tank.get_distance_to_unit(target) / 60 - angle_penalty_factor * (angle_degrees**1.3)/2
+                result = - tank.get_distance_to_unit(target) / 30 - angle_penalty_factor * (angle_degrees**1.3)/2
                 # Headshot ^_^
                 if ((target.crew_health <= 20 or target.hull_durability <= 20) or
                     (tank.premium_shell_count > 0 and (target.crew_health < 35 or target.hull_durability <= 35))):
-                    result += 15
+                    result += 25
                 # Attack in response
                 if will_hit(target, tank, ENEMY_TARGETING_FACTOR):
-                    result += 10
+                    result += 15
+                # Last target priority
+                if self.memory.last_turret_target_id:
+                    if self.memory.last_turret_target_id == target.id:
+                        result += 5
 
                 return result
 
             cur_target = max(targets, key=lambda t: get_target_priority(tank, t))
+            self.memory.last_turret_target_id = cur_target.id
+
             est_pos = estimate_target_position(cur_target, tank)
 
             def bonus_attacked():

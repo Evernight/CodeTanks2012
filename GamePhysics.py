@@ -14,15 +14,17 @@ def estimate_time_to_position(x, y, tank):
     r = min(tank.width, tank.height)/2
     #if tank.get_distance_to(x, y) < r:
     #    return 0
+    distance_multiplier = 1
 
     angle = fabs(tank.get_angle_to(x, y))
     if angle > 3 * PI / 5:
         angle = PI - angle
+        distance_multiplier = 1/0.75
 
     next_pt = (tank.x + tank.speedX * TIME_ESTIMATION_VELOCITY_FACTOR,
                tank.y + tank.speedY * TIME_ESTIMATION_VELOCITY_FACTOR)
 
-    return distance(next_pt, (x, y)) + degrees(angle) * TIME_ESTIMATION_ANGLE_PENALTY
+    return distance_multiplier * distance(next_pt, (x, y)) + degrees(angle) * TIME_ESTIMATION_ANGLE_PENALTY
 
 def estimate_target_position(target, tank):
     coord = (target.x, target.y)
