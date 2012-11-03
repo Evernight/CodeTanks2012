@@ -3,6 +3,7 @@ from Geometry import Vector, sign, numerically_zero
 
 SHELL_VELOCITY = 14
 SHELL_ACCELERATION = -0.08
+INITIAL_SHELL_VELOCITY = 16.58333316713906
 
 BACKWARDS_THRESHOLD = 3 * PI / 5
 
@@ -33,9 +34,15 @@ def estimate_time_to_position(x, y, tank):
     return distance_multiplier * distance(next_pt, (x, y)) + degrees(angle) * TIME_ESTIMATION_ANGLE_PENALTY
 
 def estimate_target_position(target, tank):
+    """
+    For shooting
+    """
+    v0 = INITIAL_SHELL_VELOCITY
+    a = SHELL_ACCELERATION
     coord = (target.x, target.y)
     for i in range(4):
-        t = tank.get_distance_to(coord[0], coord[1]) / SHELL_VELOCITY
+        d = tank.get_distance_to(coord[0], coord[1])
+        t = (sqrt(v0**2 + 2*a*d) - v0)/a
         coord = (target.x + target.speedX * t, target.y + target.speedY * t)
         #t = tank.get_distance_to_unit(target) / SHELL_VELOCITY
     return coord

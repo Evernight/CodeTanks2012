@@ -267,6 +267,9 @@ class MyStrategy:
                 self.debug('!!! Obstacle is attacked, don\'t shoot')
                 move.fire_type = FireType.NONE
 
+            if world.tick < 10:
+                move.fire_type = FireType.NONE
+
             if fabs(cur_angle) > PI/180 * 0.5:
                 move.turret_turn = sign(cur_angle)
 
