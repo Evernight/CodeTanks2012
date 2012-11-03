@@ -166,8 +166,8 @@ class MyStrategy:
                         flying_shell_penalty = 1000
 
                 stopping_penalty = 0
-                #if bonus_summand == 0:
-                #    stopping_penalty = (1 + max(0, 300 - tank.get_distance_to(x, y)))**1.2
+                if bonus_summand == 0:
+                    stopping_penalty = (1 + max(0, 300 - tank.get_distance_to(x, y)))**1.2
 
                 # If we're going somewhere, increase priority for this place
                 if self.memory.last_target_position and distance(self.memory.last_target_position, (x, y)) < 30:
