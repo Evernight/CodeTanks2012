@@ -160,10 +160,10 @@ class MyStrategy:
                 turrets_danger_penalty *= 250
 
                 # Flying shells
-                flying_shell_penalty = 0
-                for shell in world.shells:
-                    if shell_will_hit_tank_going_to(shell, tank, x, y):
-                        flying_shell_penalty = 1000
+                #flying_shell_penalty = 0
+                #for shell in world.shells:
+                #    if shell_will_hit_tank_going_to(shell, tank, x, y):
+                #        flying_shell_penalty = 1000
 
                 stopping_penalty = 0
                 if bonus_summand == 0:
