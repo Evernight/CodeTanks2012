@@ -25,7 +25,7 @@ import pickle
 #  * standing death?
 #  * pick very close bonuses, don't go straightforward to better ones
 
-DEBUG_MODE = True
+DEBUG_MODE = False
 PHYSICS_RESEARCH_MODE = False
 
 # ================ CONSTANTS
@@ -67,13 +67,13 @@ class MyStrategy:
         def process_moving():
             positions = []
             # Screen corners
-            for i in range(3):
-                for j in range(3):
-                    positions.append((world.width * (1 + 2*i) / 6, world.height * (1 + 2*j) / 6))
+            #for i in range(3):
+            #    for j in range(3):
+            #        positions.append((world.width * (1 + 2*i) / 6, world.height * (1 + 2*j) / 6))
 
             # Grid
-            GRID_HOR_COUNT = 12
-            GRID_VERT_COUNT = 8
+            GRID_HOR_COUNT = 10
+            GRID_VERT_COUNT = 7
             for i in range(GRID_HOR_COUNT):
                 for j in range(GRID_VERT_COUNT):
                     positions.append((world.width * (1 + i) / (GRID_HOR_COUNT + 1),
@@ -87,11 +87,14 @@ class MyStrategy:
             if not positions:
                 return
 
+            # Precalc for estimation
+            enemies = list(filter(ALIVE_ENEMY_TANK, world.tanks))
+            health_fraction = tank.crew_health / tank.crew_max_health
+            hull_fraction = tank.hull_durability / tank.hull_max_durability
+            enemies_count = len(enemies)
+
             def estimate_position_F(x, y, show_debug=False):
                 est_time = estimate_time_to_position(x, y, tank)
-                enemies = list(filter(ALIVE_ENEMY_TANK, world.tanks))
-                health_fraction = tank.crew_health / tank.crew_max_health
-                hull_fraction = tank.hull_durability / tank.hull_max_durability
 
                 # Bonus priority:
                 # + Need this bonus
@@ -135,7 +138,6 @@ class MyStrategy:
                 # + Flying shells
                 # + Turrets directed
                 try:
-                    enemies_count = len(enemies)
                     positional_danger_penalty = - sum(map(lambda enemy: enemy.get_distance_to(x, y), enemies))/enemies_count * 2
                 except:
                     self.debug("!!! All enemies were destroyed")
@@ -214,15 +216,13 @@ class MyStrategy:
                                         (1 - max(0, 150 - tank.remaining_reloading_time)/150) * 1)
 
                 angle_degrees = fabs(tank.get_turret_angle_to_unit(target)) / PI * 180
-                result = - tank.get_distance_to_unit(target) / 30 - angle_penalty_factor * (angle_degrees**1.3)/2
+                result = - tank.get_distance_to_unit(target) / 10 - angle_penalty_factor * (angle_degrees**1.3)/2
                 # Headshot ^_^
                 if ((target.crew_health <= 20 or target.hull_durability <= 20) or
                     (tank.premium_shell_count > 0 and (target.crew_health < 35 or target.hull_durability <= 35))):
                     result += 25
-                # Attack in response
-                #if will_hit(target, tank, ENEMY_TARGETING_FACTOR):
-                #    result += 15
-                if attacked_area(tank.x, tank.y, target):
+
+                if attacked_area(tank.x, tank.y, target) > 0:
                     result += 15
 
                 # Last target priority

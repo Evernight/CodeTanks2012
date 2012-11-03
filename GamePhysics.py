@@ -117,7 +117,7 @@ def attacked_area(x, y, enemy):
     if (pt_v - enemy_v).scalar_product(turret_v) <= 0:
         return 0
 
-    td = turret_v.rotate(PI/2).normalize() * DANGEROUS_WIDTH
+    td = turret_v.rotate(PI/2) * DANGEROUS_WIDTH
     p1 = enemy_v + td
     p2 = enemy_v - td
     if sign(turret_v.cross_product(pt_v - p1)) == sign(turret_v.cross_product(pt_v - p2)):
@@ -147,6 +147,6 @@ def shell_will_hit_tank_going_to(shell, tank, x, y):
         return False
 
     meeting = tank_v + vt * t
-    if t < 50:
+    if t < 70:
         return True
     return False
