@@ -29,6 +29,7 @@ class Vector:
     def __mul__(self, other):
         if issubclass(type(other), numbers.Number):
             return Vector(self.x * other, self.y * other)
+        raise("WTF man?")
 
     def __str__(self):
         return 'Vector(%.2f, %.2f)' % (self.x, self.y)
@@ -38,9 +39,10 @@ class Vector:
 
     __rmul__ = __mul__
 
-    def __div__(self, other):
+    def __truediv__(self, other):
         if issubclass(type(other), numbers.Number):
-            return self.__mul__(self, 1/other)
+            return self.__mul__(1/other)
+        raise("WTF man?")
 
     def length(self):
         return sqrt(self.x**2 + self.y**2)
@@ -57,3 +59,4 @@ class Vector:
 if __name__ == "__main__":
     print('Test')
     print(Vector(1, 0).rotate(7*PI/4) == Vector(sqrt(2)/2, -sqrt(2)/2))
+    print(Vector(2, 0).normalize())

@@ -1,7 +1,9 @@
 from math import pi as PI, fabs, degrees, sqrt
-from Geometry import Vector, sign
+from Geometry import Vector, sign, numerically_zero
 
 SHELL_VELOCITY = 14
+SHELL_ACCELERATION = -0.08
+
 BACKWARDS_THRESHOLD = 3 * PI / 5
 
 TIME_ESTIMATION_ANGLE_PENALTY = 5
@@ -100,5 +102,51 @@ def will_hit(tank, target, factor=1):
         return True
     if sign(c2.cross_product(q)) == sign(q.cross_product(c4)):
         #print("TEST", c1, c2, c3, c4, q)
+        return True
+    return False
+
+def attacked_area(x, y, enemy):
+    """
+    Rectangle shape
+    """
+    DANGEROUS_WIDTH = 80
+
+    pt_v = Vector(x, y)
+    enemy_v = Vector(enemy.x, enemy.y)
+    turret_v = Vector(1, 0).rotate(enemy.angle + enemy.turret_relative_angle)
+    if (pt_v - enemy_v).scalar_product(turret_v) <= 0:
+        return 0
+
+    td = turret_v.rotate(PI/2).normalize() * DANGEROUS_WIDTH
+    p1 = enemy_v + td
+    p2 = enemy_v - td
+    if sign(turret_v.cross_product(pt_v - p1)) == sign(turret_v.cross_product(pt_v - p2)):
+        return 0
+    else:
+        return 1
+
+def shell_will_hit_tank_going_to(shell, tank, x, y):
+    """
+    WTF is written here???
+    """
+    tank_v = Vector(tank.x, tank.y)
+    shell_v = Vector(shell.x, shell.y)
+    pt_v = Vector(x, y)
+    vt = pt_v - tank_v
+    vs = Vector(shell.speedX, shell.speedY)
+    if vs == vt:
+        return False
+
+    r = tank_v - shell_v
+    w = vs - vt
+    if not numerically_zero(w.x):
+        t = r.x/w.x
+    else:
+        t = r.y/w.y
+    if t < 0:
+        return False
+
+    meeting = tank_v + vt * t
+    if t < 50:
         return True
     return False
