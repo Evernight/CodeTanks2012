@@ -60,7 +60,13 @@ class Vector:
         return self.scalar_product(other)/other.length()
 
     def angle(self, other):
-        return acos(self.normalize().scalar_product(other.normalize()))
+        c = self.normalize().scalar_product(other.normalize())
+        c = max(-1, min(c, 1))
+        return acos(c)
+
+    def is_zero(self):
+        return self == ZERO_VECTOR
+ZERO_VECTOR = Vector(0, 0)
 
 if __name__ == "__main__":
     print('Test')

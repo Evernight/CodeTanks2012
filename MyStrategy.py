@@ -26,7 +26,7 @@ import pickle
 #  * pick very close bonuses, don't go straightforward to better ones
 
 DEBUG_MODE = True
-PHYSICS_RESEARCH_MODE = False
+PHYSICS_RESEARCH_MODE = True
 
 # ================ CONSTANTS
 # Targeting
@@ -39,6 +39,9 @@ DEAD_TANK_OBSTACLE_FACTOR = 1.05
 VELOCITY_ESTIMATION_PERIOD = 3
 VELOCITY_ESTIMATION_COUNT = 10
 
+# Phys analysis
+ANALYSIS_TARGET_SAVE_DISTANCE = 80
+
 # Utils
 class MyStrategy:
 
@@ -46,17 +49,71 @@ class MyStrategy:
         def __init__(self):
             self.velocity_history = defaultdict(deque)
             self.last_target_position = None
+            self.last_target_time = 0
             self.last_turret_target_id = None
 
     class PhysicsAnalyser:
         def __init__(self):
             self.shell_velocity = defaultdict(list)
+            self.last_target_time_init_values = None
+            self.targets = []
+
+        def store_shell_velocity(self, world):
+            if not PHYSICS_RESEARCH_MODE:
+                return
+            for shell in world.shells:
+                self.shell_velocity[shell.id].append(Vector(shell.speedX, shell.speedY).length())
+            if world.tick % 100 == 0:
+                pickle.dump(self.shell_velocity, open('shells.dump', 'wb'))
+
+        def save_target_init_values(self, tank, x, y):
+            if not PHYSICS_RESEARCH_MODE:
+                return
+
+            dist = tank.get_distance_to(x, y)
+            vt = Vector(tank.speedX, tank.speedY)
+
+            tank_v = Vector(tank.x, tank.y)
+            pt_v = Vector(x, y)
+            d = pt_v - tank_v
+
+            tank_d_v = Vector(1, 0).rotate(tank.angle)
+
+            if vt.is_zero():
+                vd_angle = 0
+            else:
+                vd_angle = vt.angle(d)
+
+            if d.is_zero():
+                self.last_target_time_init_values = (0, 0, 0, 0, 0)
+
+            self.last_target_time_init_values = (
+                tank_d_v.angle(d),
+                dist,
+                vd_angle,
+                vt.length(),
+                tank.angular_speed
+            )
+
+        def store_target_reached(self, world, time):
+            if not PHYSICS_RESEARCH_MODE:
+                return
+            self.targets.append(self.last_target_time_init_values + (time, ))
+
+            try:
+                with open('targets.dump', 'rb') as f:
+                    tmp = pickle.load(f)
+            except:
+                tmp = []
+            with open('targets.dump', 'wb') as f:
+                pickle.dump(tmp + self.targets, f)
+
 
     def __init__(self):
         self.memory = MyStrategy.Memory()
         self.analysis = MyStrategy.PhysicsAnalyser()
 
-    def debug(self, message, ticks_period=20):
+    def debug(self, message, ticks_period=5):
         if self.world.tick % ticks_period == 0:
             if DEBUG_MODE:
                 print(message)
@@ -78,13 +135,13 @@ class MyStrategy:
             # Forward and back direction
             tank_v = Vector(tank.x, tank.y)
             tank_d_v = Vector(1, 0).rotate(tank.angle)
-            forw = tank_v + tank_d_v * 100
-            back = tank_v - tank_d_v * 100
+            forw = tank_v + tank_d_v * 80
+            back = tank_v - tank_d_v * 80
             positions.append((forw.x, forw.y, "FORWARD"))
             positions.append((back.x, back.y, "BACKWARD"))
 
             # Bonuses positions
-            positions += [(b.x, b.y, "BONUS %s", bonus_name_by_type(b.type)) for b in world.bonuses]
+            positions += [(b.x, b.y, "BONUS %s" % bonus_name_by_type(b.type)) for b in world.bonuses]
 
             if not positions:
                 return
@@ -155,12 +212,12 @@ class MyStrategy:
                         flying_shell_penalty = 1000
 
                 stopping_penalty = 0
-                #if bonus_summand == 0:
-                #    stopping_penalty = (1 + max(0, 300 - tank.get_distance_to(x, y)))**1.2
+                if bonus_summand == 0:
+                    stopping_penalty = (1 + max(0, 300 - tank.get_distance_to(x, y)))**1.2
 
                 # If we're going somewhere, increase priority for this place
                 if self.memory.last_target_position and distance(self.memory.last_target_position, (x, y)) < 30:
-                    prev_target_bonus = 200
+                    prev_target_bonus = 600
                 else:
                     prev_target_bonus = 0
 
@@ -175,11 +232,13 @@ class MyStrategy:
                 # - Close to screen edges
                 # - Don't stay at the same place (*)
                 est_time *= 1
+                bonus_summand *= 1
+                flying_shell_penalty *= 0
                 result = (2000 + bonus_summand + prev_target_bonus
                           - est_time - stopping_penalty - positional_danger_penalty - turrets_danger_penalty
                           - flying_shell_penalty - edges_penalty)
                 if show_debug:
-                    self.debug(('POS [%10s]: x=%8.2f, y=%8.2f, bonus_summand=%8.2f, est_time=%8.2f, ' +
+                    self.debug(('POS [%18s]: x=%8.2f, y=%8.2f, bonus_summand=%8.2f, est_time=%8.2f, ' +
                                 'stopping_penalty=%8.2f, PDP=%8.2f, TDP=%8.2f, FSP=%8.2f, result=%8.2f') %
                                 (name, x, y, bonus_summand, est_time, stopping_penalty,
                                  positional_danger_penalty, turrets_danger_penalty, flying_shell_penalty, result))
@@ -188,11 +247,32 @@ class MyStrategy:
             pos_f = list(map(lambda pos: (pos[0], pos[1], pos[2], estimate_position_F(pos[0], pos[1])), positions))
             if DEBUG_MODE:
                 estimate_position_F(tank.x, tank.y, show_debug=True)
-                for pos in sorted(pos_f, key=operator.itemgetter(2))[-6:]:
+                for pos in list(reversed(sorted(pos_f, key=operator.itemgetter(2))))[:6]:
                     estimate_position_F(pos[0], pos[1], name=pos[2], show_debug=True)
+                for pos in pos_f:
+                    if pos[2][:5] == "BONUS":
+                        estimate_position_F(pos[0], pos[1], name=pos[2], show_debug=True)
 
-            next_position = max(pos_f, key=operator.itemgetter(2))[:2]
-            self.memory.last_target_position = next_position
+            next_position = max(pos_f, key=operator.itemgetter(3))
+
+            if self.memory.last_target_position:
+                if distance((tank.x, tank.y), self.memory.last_target_position) < ANALYSIS_TARGET_SAVE_DISTANCE:
+                    # We reached target
+                    rtime = world.tick - self.memory.last_target_time
+                    if rtime > 10:
+                        self.analysis.store_target_reached(world, rtime)
+                        self.debug("TARGET REACHED in %s" % rtime)
+                    self.memory.last_target_time = world.tick
+
+            if not self.memory.last_target_position or distance(self.memory.last_target_position, next_position) > DISTANCE_EPSILON:
+                # We changed target
+                self.memory.last_target_position = next_position[:2]
+                self.memory.last_target_time = world.tick
+
+                self.analysis.save_target_init_values(tank, next_position[0], next_position[1])
+
+            self.debug("TGT (%8.2f, %8.2f) [%18s]; distance=%8.2f, ETA=%8.2f" %
+                       (next_position[:3] + (tank.get_distance_to(*next_position[:2]), estimate_time_to_position(next_position[0], next_position[1], tank)) ))
             move_to_position(next_position[0], next_position[1], tank, move)
 
         def process_shooting():
@@ -280,14 +360,9 @@ class MyStrategy:
         #        slot.extend((object.speedX, object.speedY))
         #        if len(slot) > VELOCITY_ESTIMATION_COUNT:
         #            slot.popleft()
-        if PHYSICS_RESEARCH_MODE:
-            for shell in world.shells:
-                self.analysis.shell_velocity[shell.id].append(Vector(shell.speedX, shell.speedY).length())
-            if world.tick % 100 == 0:
-                pickle.dump(self.analysis.shell_velocity, open('shells.dump', 'wb'))
 
-        #print(tank.angular_speed/PI * 180)
 
+        #self.analysis.store_shell_velocity(world)
 
     def select_tank(self, tank_index, team_size):
         return TankType.MEDIUM
