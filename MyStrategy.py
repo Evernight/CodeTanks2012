@@ -25,7 +25,7 @@ import pickle
 #  * standing death?
 #  * pick very close bonuses, don't go straightforward to better ones
 
-DEBUG_MODE = False
+DEBUG_MODE = True
 PHYSICS_RESEARCH_MODE = False
 
 # ================ CONSTANTS
@@ -66,10 +66,6 @@ class MyStrategy:
 
         def process_moving():
             positions = []
-            # Screen corners
-            #for i in range(3):
-            #    for j in range(3):
-            #        positions.append((world.width * (1 + 2*i) / 6, world.height * (1 + 2*j) / 6))
 
             # Grid
             GRID_HOR_COUNT = 10
@@ -77,12 +73,18 @@ class MyStrategy:
             for i in range(GRID_HOR_COUNT):
                 for j in range(GRID_VERT_COUNT):
                     positions.append((world.width * (1 + i) / (GRID_HOR_COUNT + 1),
-                                      world.height * (1 + j) / (GRID_VERT_COUNT + 1)))
+                                      world.height * (1 + j) / (GRID_VERT_COUNT + 1), "GRID %s, %s" % (i, j)))
 
-            # Forward and backward direction
+            # Forward and back direction
+            tank_v = Vector(tank.x, tank.y)
+            tank_d_v = Vector(1, 0).rotate(tank.angle)
+            forw = tank_v + tank_d_v * 100
+            back = tank_v - tank_d_v * 100
+            positions.append((forw.x, forw.y, "FORWARD"))
+            positions.append((back.x, back.y, "BACKWARD"))
 
             # Bonuses positions
-            positions += [(b.x, b.y) for b in world.bonuses]
+            positions += [(b.x, b.y, "BONUS %s", bonus_name_by_type(b.type)) for b in world.bonuses]
 
             if not positions:
                 return
@@ -93,7 +95,7 @@ class MyStrategy:
             hull_fraction = tank.hull_durability / tank.hull_max_durability
             enemies_count = len(enemies)
 
-            def estimate_position_F(x, y, show_debug=False):
+            def estimate_position_F(x, y, name="?", show_debug=False):
                 est_time = estimate_time_to_position(x, y, tank)
 
                 # Bonus priority:
@@ -112,20 +114,7 @@ class MyStrategy:
                     else:
                         bonus_profit = 0
 
-#                    try:
-#                        enemy_closest_to_bonus = min(enemies, key=lambda t: estimate_time_to_position(x, y, t))
-#                        bonus_enemy = max(0, (est_time - estimate_time_to_position(x, y, enemy_closest_to_bonus)) * 0.7)
-#                    except Exception as e:
-#                        self.debug('!!! No enemies on field')
-#                        bonus_enemy = 0
-                    #def enemy_is_blocking():
-                    #    for enemy in filter(ENEMY_TANK, enemies):
-                    #        if
-
-                    # TODO: fix and then return back
-                    bonus_enemy = 0
-
-                    bonus_summand = max(0, bonus_profit - bonus_enemy)
+                    bonus_summand = max(0, bonus_profit)
 
                     if closest_bonus.get_distance_to(x, y) > 10:
                         bonus_summand = 0
@@ -160,14 +149,14 @@ class MyStrategy:
                 turrets_danger_penalty *= 250
 
                 # Flying shells
-                #flying_shell_penalty = 0
-                #for shell in world.shells:
-                #    if shell_will_hit_tank_going_to(shell, tank, x, y):
-                #        flying_shell_penalty = 1000
+                flying_shell_penalty = 0
+                for shell in world.shells:
+                    if shell_will_hit_tank_going_to(shell, tank, x, y):
+                        flying_shell_penalty = 1000
 
                 stopping_penalty = 0
-                if bonus_summand == 0:
-                    stopping_penalty = (1 + max(0, 300 - tank.get_distance_to(x, y)))**1.2
+                #if bonus_summand == 0:
+                #    stopping_penalty = (1 + max(0, 300 - tank.get_distance_to(x, y)))**1.2
 
                 # If we're going somewhere, increase priority for this place
                 if self.memory.last_target_position and distance(self.memory.last_target_position, (x, y)) < 30:
@@ -176,29 +165,31 @@ class MyStrategy:
                     prev_target_bonus = 0
 
                 # Don't stick to fucking edges
-                edges_penalty = 2 * min(0, 60 - distance_to_edge(x, y, world))
+                edges_penalty = 3 * min(0, 60 - distance_to_edge(x, y, world))
+                if x < 0 or y < 0 or x > world.width or y > world.height:
+                    edges_penalty = 2000
 
                 # Position priority:
                 # + Bonus priority
                 # - Dangerous position
                 # - Close to screen edges
                 # - Don't stay at the same place (*)
-                est_time *= 0.6
+                est_time *= 1
                 result = (2000 + bonus_summand + prev_target_bonus
                           - est_time - stopping_penalty - positional_danger_penalty - turrets_danger_penalty
                           - flying_shell_penalty - edges_penalty)
                 if show_debug:
-                    self.debug(('POS: x=%8.2f, y=%8.2f, bonus_summand=%8.2f, est_time=%8.2f, ' +
+                    self.debug(('POS [%10s]: x=%8.2f, y=%8.2f, bonus_summand=%8.2f, est_time=%8.2f, ' +
                                 'stopping_penalty=%8.2f, PDP=%8.2f, TDP=%8.2f, FSP=%8.2f, result=%8.2f') %
-                                (x, y, bonus_summand, est_time, stopping_penalty,
+                                (name, x, y, bonus_summand, est_time, stopping_penalty,
                                  positional_danger_penalty, turrets_danger_penalty, flying_shell_penalty, result))
                 return result
 
-            pos_f = list(map(lambda x_y: (x_y[0], x_y[1], estimate_position_F(x_y[0], x_y[1])), positions))
+            pos_f = list(map(lambda pos: (pos[0], pos[1], pos[2], estimate_position_F(pos[0], pos[1])), positions))
             if DEBUG_MODE:
                 estimate_position_F(tank.x, tank.y, show_debug=True)
                 for pos in sorted(pos_f, key=operator.itemgetter(2))[-6:]:
-                    estimate_position_F(pos[0], pos[1], show_debug=True)
+                    estimate_position_F(pos[0], pos[1], name=pos[2], show_debug=True)
 
             next_position = max(pos_f, key=operator.itemgetter(2))[:2]
             self.memory.last_target_position = next_position
@@ -283,17 +274,19 @@ class MyStrategy:
         self.debug('Output: left: %5.2f, right: %5.2f' % (move.left_track_power, move.right_track_power))
 
         # processing velocity history
-        if world.tick % VELOCITY_ESTIMATION_PERIOD == 0:
-            for object in world.tanks:
-                slot = self.memory.velocity_history[object.id]
-                slot.extend((object.speedX, object.speedY))
-                if len(slot) > VELOCITY_ESTIMATION_COUNT:
-                    slot.popleft()
+        #if world.tick % VELOCITY_ESTIMATION_PERIOD == 0:
+        #    for object in world.tanks:
+        #        slot = self.memory.velocity_history[object.id]
+        #        slot.extend((object.speedX, object.speedY))
+        #        if len(slot) > VELOCITY_ESTIMATION_COUNT:
+        #            slot.popleft()
         if PHYSICS_RESEARCH_MODE:
             for shell in world.shells:
                 self.analysis.shell_velocity[shell.id].append(Vector(shell.speedX, shell.speedY).length())
             if world.tick % 100 == 0:
                 pickle.dump(self.analysis.shell_velocity, open('shells.dump', 'wb'))
+
+        #print(tank.angular_speed/PI * 180)
 
 
     def select_tank(self, tank_index, team_size):

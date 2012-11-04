@@ -5,10 +5,7 @@ SHELL_VELOCITY = 14
 SHELL_ACCELERATION = -0.08
 INITIAL_SHELL_VELOCITY = 16.58333316713906
 
-BACKWARDS_THRESHOLD = 3 * PI / 5
-
-TIME_ESTIMATION_ANGLE_PENALTY = 5
-TIME_ESTIMATION_VELOCITY_FACTOR = 20
+BACKWARDS_THRESHOLD = 2 * PI / 3
 
 def distance(c1, c2):
     return sqrt((c1[0] - c2[0])**2 + (c1[1] - c2[1])**2)
@@ -16,22 +13,52 @@ def distance(c1, c2):
 def distance_to_edge(x, y, world):
     return min(x, world.width - x, y, world.height - y)
 
-
+TIME_ESTIMATION_ANGLE_PENALTY = 30
+TIME_ESTIMATION_VELOCITY_FACTOR = 20
 def estimate_time_to_position(x, y, tank):
+    dist = tank.get_distance_to(x, y)
+
     r = min(tank.width, tank.height)/2
-    #if tank.get_distance_to(x, y) < r:
-    #    return 0
-    distance_multiplier = 1
+    if dist < r:
+        return 0
+    vt = Vector(tank.speedX, tank.speedY)
+
+    tank_v = Vector(tank.x, tank.y)
+    pt_v = Vector(x, y)
+    d = pt_v - tank_v
+
+    tank_d_v = Vector(1, 0).rotate(tank.angle)
+
+    vt_proj = vt.projection(d)
+    td_proj = tank_d_v.projection(d)
 
     angle = fabs(tank.get_angle_to(x, y))
-    if angle > 3 * PI / 5:
+
+    accel_multiplier = 1
+    if angle > BACKWARDS_THRESHOLD:
         angle = PI - angle
-        distance_multiplier = 1/0.75
+        accel_multiplier = 0.75
 
-    next_pt = (tank.x + tank.speedX * TIME_ESTIMATION_VELOCITY_FACTOR,
-               tank.y + tank.speedY * TIME_ESTIMATION_VELOCITY_FACTOR)
+    vd_angle = fabs(vt.angle(tank_d_v))
 
-    return distance_multiplier * distance(next_pt, (x, y)) + degrees(angle) * TIME_ESTIMATION_ANGLE_PENALTY
+    #if td_proj > 0:
+    #    accel_multiplier = 1
+    #else:
+    #    accel_multiplier = 0.75
+
+    #try:
+    #    t = solve_quadratic(td_proj * accel_multiplier / 2, vt_proj, -dist)
+    #except:
+    #    t = 2000
+    t = 0
+    if vd_angle < PI/8:
+
+
+    return degrees(angle) * 10 + dist
+
+    #result = 0
+    #result += degrees(angle) * TIME_ESTIMATION_ANGLE_PENALTY
+    #return result
 
 def estimate_target_position(target, tank):
     """
@@ -48,9 +75,6 @@ def estimate_target_position(target, tank):
     return coord
 
 def move_to_position(x, y, tank, move):
-    # TODO:
-    # * pick bonuses with rectangle, not only with center
-    # * smoother moves
     r = min(tank.width, tank.height)/2
     if tank.get_distance_to(x, y) < r:
         return 0, 0
@@ -58,20 +82,10 @@ def move_to_position(x, y, tank, move):
     angle = tank.get_angle_to(x, y)
 
     def get_values(angle, multiplier=1):
-        #ACCELERATION_REDUCTION_DISTANCE = 300
-        #angle *= min(1, (ACCELERATION_REDUCTION_DISTANCE - tank.get_distance_to(x, y))/ACCELERATION_REDUCTION_DISTANCE)
-        if tank.get_distance_to(x, y) < 300:
-            left, right = 1, 1 - 6 * angle / PI
-        elif tank.get_distance_to(x, y) < 700:
-            # Dirty fix for now (long distance)
-            left, right = 1, 1 - 4.5 * angle / PI
-            if fabs(tank.angular_speed) > 0.025:
-                left, right = 1, 1 - 2 * angle / PI
+        if angle < PI/8:
+            left, right = 1, 1
         else:
-            # Dirty fix for now (long distance)
-            left, right = 1, 1 - 3 * angle / PI
-            if fabs(tank.angular_speed) > 0.02:
-                left, right = 1, 1 - 2 * angle / PI
+            left, right = 1, -1
 
         return left * multiplier, right * multiplier
 
@@ -157,3 +171,11 @@ def shell_will_hit_tank_going_to(shell, tank, x, y):
     if t < 70:
         return True
     return False
+
+def solve_quadratic(a, b, c):
+    D = b*b - 4 * a * c
+    r1, r2 = (-b + sqrt(D))/(2 * a), (-b - sqrt(D))/(2 * a)
+    if r1 > 0:
+        return r1
+    else:
+        return r2

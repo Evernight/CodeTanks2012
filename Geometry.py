@@ -1,5 +1,5 @@
 import numbers
-from math import fabs, sqrt, pi as PI, sin, cos, copysign
+from math import fabs, sqrt, pi as PI, sin, cos, copysign, acos
 
 EPSILON_ERROR = 1e-9
 
@@ -55,6 +55,12 @@ class Vector:
 
     def cross_product(self, other):
         return self.x * other.y - self.y * other.x
+
+    def projection(self, other):
+        return self.scalar_product(other)/other.length()
+
+    def angle(self, other):
+        return acos(self.normalize().scalar_product(other.normalize()))
 
 if __name__ == "__main__":
     print('Test')

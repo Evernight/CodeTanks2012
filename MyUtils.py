@@ -1,3 +1,4 @@
+from model.BonusType import BonusType
 from model.Unit import Unit
 from GamePhysics import *
 
@@ -14,3 +15,10 @@ def closest_to(coord):
 
 def unit_closest_to(x, y):
     return lambda arg: min(arg, key=lambda item: item.get_distance_to(x, y))
+
+def bonus_name_by_type(type):
+    return {
+        BonusType.MEDIKIT    : "MEDIKIT",
+        BonusType.REPAIR_KIT : "REPAIR_KIT",
+        BonusType.AMMO_CRATE : "AMMO_CRATE"
+    }[type]
