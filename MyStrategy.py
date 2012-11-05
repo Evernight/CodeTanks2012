@@ -25,7 +25,7 @@ import pickle
 #  * standing death?
 #  * pick very close bonuses, don't go straightforward to better ones
 
-DEBUG_MODE = True
+DEBUG_MODE = False
 PHYSICS_RESEARCH_MODE = True
 
 # ================ CONSTANTS
@@ -85,14 +85,15 @@ class MyStrategy:
                 vd_angle = vt.angle(d)
 
             if d.is_zero():
-                self.last_target_time_init_values = (0, 0, 0, 0, 0)
+                self.last_target_time_init_values = (0, 0, 0, 0, 0, 0)
 
             self.last_target_time_init_values = (
                 tank_d_v.angle(d),
                 dist,
                 vd_angle,
                 vt.length(),
-                tank.angular_speed
+                tank.angular_speed,
+                tank.crew_health/tank.crew_max_health
             )
 
         def store_target_reached(self, world, time):
@@ -106,7 +107,8 @@ class MyStrategy:
             except:
                 tmp = []
             with open('targets.dump', 'wb') as f:
-                pickle.dump(tmp + self.targets, f)
+                #pickle.dump(tmp + self.targets, f)
+                pickle.dump(tmp + [self.last_target_time_init_values + (time, )], f)
 
 
     def __init__(self):
