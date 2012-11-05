@@ -25,12 +25,12 @@ import pickle
 #  * standing death?
 #  * pick very close bonuses, don't go straightforward to better ones
 
-DEBUG_MODE = False
+DEBUG_MODE = True
 PHYSICS_RESEARCH_MODE = False
 
 # ================ CONSTANTS
 # Targeting
-TARGETING_FACTOR = 0.6
+TARGETING_FACTOR = 0.3
 ENEMY_TARGETING_FACTOR = 0.8
 BONUS_FACTOR = 1.25
 DEAD_TANK_OBSTACLE_FACTOR = 1.05
@@ -202,6 +202,9 @@ class MyStrategy:
                     2 : 1,
                     1 : 0.3
                 }[len(enemies)]
+                if len(enemies) == 1 and health_fraction >= 0.7 and hull_fraction >= 0.5:
+                    danger_penalty_factor = -0.3
+
                 positional_danger_penalty *= danger_penalty_factor
 
                 turrets_danger_penalty = 0
@@ -217,7 +220,7 @@ class MyStrategy:
 
                 stopping_penalty = 0
                 if bonus_summand == 0:
-                    stopping_penalty = (1 + max(0, 200 - tank.get_distance_to(x, y)))**1.2
+                    stopping_penalty = (1 + 2 * max(0, 100 - tank.get_distance_to(x, y)))**1.2
 
                 # If we're going somewhere, increase priority for this place
                 if self.memory.last_target_position and distance(self.memory.last_target_position, (x, y)) < 30:
