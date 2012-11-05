@@ -4,7 +4,7 @@ from model.TankType import TankType
 from model.BonusType import BonusType
 from GamePhysics import *
 from Geometry import sign
-from math import pi as PI
+from math import pi as PI, hypot
 from collections import deque, defaultdict
 from MyUtils import *
 import pickle
@@ -252,8 +252,9 @@ class MyStrategy:
                 estimate_position_F(tank.x, tank.y, show_debug=True)
                 for pos in list(reversed(sorted(pos_f, key=operator.itemgetter(3))))[:6]:
                     estimate_position_F(pos[0], pos[1], name=pos[2], show_debug=True)
+                self.debug('=' * 16)
                 for pos in pos_f:
-                    if pos[2][:5] == "BONUS":
+                    if pos[2][:5] == "BONUS" or pos[2] == "FORWARD" or pos[2] == "BACKWARD":
                         estimate_position_F(pos[0], pos[1], name=pos[2], show_debug=True)
 
             next_position = max(pos_f, key=operator.itemgetter(3))
@@ -364,6 +365,7 @@ class MyStrategy:
         #        if len(slot) > VELOCITY_ESTIMATION_COUNT:
         #            slot.popleft()
 
+        #print(hypot(tank.speedX, tank.speedY))
 
         #self.analysis.store_shell_velocity(world)
 

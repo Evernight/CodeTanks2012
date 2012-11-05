@@ -22,13 +22,14 @@ TIME_ESTIMATION_ANGLE_PENALTY = 30
 TIME_ESTIMATION_VELOCITY_FACTOR = 20
 def estimate_time_to_position(x, y, tank):
     dist = tank.get_distance_to(x, y)
-    #if dist < TARGET_REACHED_DISTANCE:
-    #    return 0
     vt = Vector(tank.speedX, tank.speedY)
 
     tank_v = Vector(tank.x, tank.y)
     pt_v = Vector(x, y)
     d = pt_v - tank_v
+
+    if d.is_zero():
+        return 0
 
     tank_d_v = Vector(1, 0).rotate(tank.angle)
 
@@ -41,6 +42,17 @@ def estimate_time_to_position(x, y, tank):
         d_angle = 0
     else:
         d_angle = tank_d_v.angle(d)
+
+    # Short distances fix
+    if dist < 100:
+        LOW_ANGLE = PI/16
+        if fabs(d_angle) < LOW_ANGLE:
+            v0 = vt.projection(d)
+            return dist/6
+        elif PI - fabs(d_angle) < LOW_ANGLE:
+            v0 = vt.projection(d)
+            return dist/6 /0.75
+
 
     if d.is_zero():
         values = (0, 0, 0, 0, 0, 0, 0, 1)
