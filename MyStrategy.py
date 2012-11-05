@@ -210,7 +210,7 @@ class MyStrategy:
                 # Flying shells
                 flying_shell_penalty = 0
                 for shell in world.shells:
-                    if shell_will_hit_tank_going_to(shell, tank, x, y):
+                    if shell_will_hit_tank_going_to(shell, tank, x, y, et=est_time):
                         flying_shell_penalty = 1000
 
                 stopping_penalty = 0
