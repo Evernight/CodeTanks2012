@@ -127,8 +127,8 @@ class MyStrategy:
             positions = []
 
             # Grid
-            GRID_HOR_COUNT = 10
-            GRID_VERT_COUNT = 7
+            GRID_HOR_COUNT = 9
+            GRID_VERT_COUNT = 6
             for i in range(GRID_HOR_COUNT):
                 for j in range(GRID_VERT_COUNT):
                     positions.append((world.width * (1 + i) / (GRID_HOR_COUNT + 1),
@@ -186,20 +186,20 @@ class MyStrategy:
                 # + Flying shells
                 # + Turrets directed
                 try:
-                    positional_danger_penalty = - sum(map(lambda enemy: enemy.get_distance_to(x, y), enemies))/enemies_count * 1.8
+                    #positional_danger_penalty = - sum(map(lambda enemy: enemy.get_distance_to(x, y), enemies))/enemies_count * 2
+                    positional_danger_penalty = - sqrt(sum(map(lambda enemy: enemy.get_distance_to(x, y)**2, enemies))/enemies_count)
                 except:
                     self.debug("!!! All enemies were destroyed")
                     positional_danger_penalty = 0
-                positional_danger_penalty += 1400
+                positional_danger_penalty += 700
 
-                if len(enemies) > 3 or health_fraction < 0.7 or hull_fraction < 0.6:
-                    danger_penalty_factor = 1.4
-                elif len(enemies) > 2 or health_fraction < 0.7 or hull_fraction < 0.6:
-                    danger_penalty_factor = 1
-                elif len(enemies) == 1 and health_fraction > 0.7 and hull_fraction > 0.5:
-                    danger_penalty_factor = 0.2
-                else:
-                    danger_penalty_factor = 0.8
+                danger_penalty_factor = {
+                    5 : 5,
+                    4 : 4,
+                    3 : 3,
+                    2 : 1,
+                    1 : 0.3
+                }[len(enemies)]
                 positional_danger_penalty *= danger_penalty_factor
 
                 turrets_danger_penalty = 0
