@@ -1,5 +1,6 @@
-from math import pi as PI, fabs, degrees, sqrt
+from math import pi as PI, fabs, degrees, sqrt, hypot
 from Geometry import Vector, sign, numerically_zero
+from MyUtils import fictive_unit
 
 SHELL_VELOCITY = 14
 SHELL_ACCELERATION = -0.08
@@ -8,6 +9,8 @@ INITIAL_SHELL_VELOCITY = 16.58333316713906
 BACKWARDS_THRESHOLD = 2 * PI / 3
 TARGET_REACHED_DISTANCE = 30
 DISTANCE_EPSILON = 1
+
+TIME_ESTIMATION_COEF = (93.118, 0.441, 11.347, -4.311, -45.925, -93.353, -22.895, 22.271 + 20)
 
 def distance(c1, c2):
     return sqrt((c1[0] - c2[0])**2 + (c1[1] - c2[1])**2)
@@ -18,7 +21,43 @@ def distance_to_edge(x, y, world):
 TIME_ESTIMATION_ANGLE_PENALTY = 30
 TIME_ESTIMATION_VELOCITY_FACTOR = 20
 def estimate_time_to_position(x, y, tank):
-    return 0
+    dist = tank.get_distance_to(x, y)
+    #if dist < TARGET_REACHED_DISTANCE:
+    #    return 0
+    vt = Vector(tank.speedX, tank.speedY)
+
+    tank_v = Vector(tank.x, tank.y)
+    pt_v = Vector(x, y)
+    d = pt_v - tank_v
+
+    tank_d_v = Vector(1, 0).rotate(tank.angle)
+
+    if vt.is_zero() or d.is_zero():
+        vd_angle = 0
+    else:
+        vd_angle = vt.angle(d)
+
+    if tank_d_v.is_zero() or d.is_zero():
+        d_angle = 0
+    else:
+        d_angle = tank_d_v.angle(d)
+
+    if d.is_zero():
+        values = (0, 0, 0, 0, 0, 0, 0, 1)
+    else:
+
+        values = (
+            d_angle,
+            dist,
+            vd_angle,
+            vt.length(),
+            tank.angular_speed,
+            tank.crew_health/tank.crew_max_health,
+            d_angle ** 2,
+            1
+        )
+
+    return sum([x * y for (x, y) in zip(values, TIME_ESTIMATION_COEF)])
 
 def estimate_target_position(target, tank):
     """
@@ -99,6 +138,33 @@ def will_hit(tank, target, factor=1):
         return True
     return False
 
+def shell_will_hit(shell, target, factor=1):
+    """
+    Returns True if shell will hit rectangular object
+    """
+    b = shell.angle
+    e = Vector(1, 0)
+    q = e.rotate(b)
+
+    center = Vector(target.x - shell.x, target.y - shell.y)
+    if center.scalar_product(q) < 0:
+        return False
+
+    a = target.angle
+
+    c1 = center + Vector(target.width/2 * factor, target.height/2 * factor).rotate(a)
+    c2 = center + Vector(- target.width/2 * factor, target.height/2 * factor).rotate(a)
+    c3 = center + Vector(- target.width/2 * factor, - target.height/2 * factor).rotate(a)
+    c4 = center + Vector(target.width/2 * factor, - target.height/2 * factor).rotate(a)
+    if sign(c1.cross_product(q)) == sign(q.cross_product(c3)):
+        #print("TEST", c1, c2, c3, c4, q)
+        return True
+    if sign(c2.cross_product(q)) == sign(q.cross_product(c4)):
+        #print("TEST", c1, c2, c3, c4, q)
+        return True
+    return False
+
+
 def attacked_area(x, y, enemy):
     """
     Rectangle shape
@@ -119,36 +185,58 @@ def attacked_area(x, y, enemy):
     else:
         return 1
 
-def shell_will_hit_tank_going_to(shell, tank, x, y):
+def shell_will_hit_tank_going_to(shell, tank, x, y, et=None):
     """
     WTF is written here???
     """
+    if et is None:
+        et = estimate_time_to_position(x, y, tank)
+
     tank_v = Vector(tank.x, tank.y)
     shell_v = Vector(shell.x, shell.y)
     pt_v = Vector(x, y)
     vt = pt_v - tank_v
     vs = Vector(shell.speedX, shell.speedY)
-    if vs == vt:
-        return False
 
-    r = tank_v - shell_v
-    w = vs - vt
-    if not numerically_zero(w.x):
-        t = r.x/w.x
-    else:
-        t = r.y/w.y
-    if t < 0:
-        return False
+#    if vs == vt:
+#        return False
+#
+#    r = tank_v - shell_v
+#    w = vs - vt
+#    if not numerically_zero(w.x):
+#        t = r.x/w.x
+#    else:
+#        t = r.y/w.y
+#    if t < 0:
+#        return False
 
-    meeting = tank_v + vt * t
-    if t < 70:
+    v0 = hypot(shell.speedX, shell.speedY)
+    a = SHELL_ACCELERATION
+    d = tank.get_distance_to_unit(shell)
+    t = solve_quadratic(a/2, v0, -d)
+    #t = (sqrt(v0**2 + 2*a*d) - v0)/a
+
+    if shell_will_hit(shell, tank) and et > t:
         return True
-    return False
+
+    return shell_will_hit(shell, fictive_unit(tank, x, y))
+    #return True
+    #return False
 
 def solve_quadratic(a, b, c):
+    """
+    Returns 0 if unsolvable or there are only negative roots
+    """
     D = b*b - 4 * a * c
+    if D < 0:
+        return 0
+    if numerically_zero(D):
+        return -b/a
     r1, r2 = (-b + sqrt(D))/(2 * a), (-b - sqrt(D))/(2 * a)
     if r1 > 0:
         return r1
     else:
-        return r2
+        if r2 > 0:
+            return r2
+        else:
+            return 0

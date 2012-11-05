@@ -26,7 +26,7 @@ import pickle
 #  * pick very close bonuses, don't go straightforward to better ones
 
 DEBUG_MODE = False
-PHYSICS_RESEARCH_MODE = True
+PHYSICS_RESEARCH_MODE = False
 
 # ================ CONSTANTS
 # Targeting
@@ -186,11 +186,11 @@ class MyStrategy:
                 # + Flying shells
                 # + Turrets directed
                 try:
-                    positional_danger_penalty = - sum(map(lambda enemy: enemy.get_distance_to(x, y), enemies))/enemies_count * 2
+                    positional_danger_penalty = - sum(map(lambda enemy: enemy.get_distance_to(x, y), enemies))/enemies_count * 1.8
                 except:
                     self.debug("!!! All enemies were destroyed")
                     positional_danger_penalty = 0
-                positional_danger_penalty += 1200
+                positional_danger_penalty += 1400
 
                 if len(enemies) > 3 or health_fraction < 0.7 or hull_fraction < 0.6:
                     danger_penalty_factor = 1.4
@@ -205,7 +205,7 @@ class MyStrategy:
                 turrets_danger_penalty = 0
                 for enemy in enemies:
                     turrets_danger_penalty += attacked_area(x, y, enemy)
-                turrets_danger_penalty *= 250
+                turrets_danger_penalty *= 300
 
                 # Flying shells
                 flying_shell_penalty = 0
@@ -215,16 +215,16 @@ class MyStrategy:
 
                 stopping_penalty = 0
                 if bonus_summand == 0:
-                    stopping_penalty = (1 + max(0, 300 - tank.get_distance_to(x, y)))**1.2
+                    stopping_penalty = (1 + max(0, 200 - tank.get_distance_to(x, y)))**1.2
 
                 # If we're going somewhere, increase priority for this place
                 if self.memory.last_target_position and distance(self.memory.last_target_position, (x, y)) < 30:
-                    prev_target_bonus = 600
+                    prev_target_bonus = 200
                 else:
                     prev_target_bonus = 0
 
                 # Don't stick to fucking edges
-                edges_penalty = 3 * min(0, 60 - distance_to_edge(x, y, world))
+                edges_penalty = 2 * max(0, 150 - distance_to_edge(x, y, world))
                 if x < 0 or y < 0 or x > world.width or y > world.height:
                     edges_penalty = 2000
 
@@ -233,23 +233,24 @@ class MyStrategy:
                 # - Dangerous position
                 # - Close to screen edges
                 # - Don't stay at the same place (*)
-                est_time *= 1
-                bonus_summand *= 1
-                flying_shell_penalty *= 0
+                est_time *= 2
+                bonus_summand *= 1.5
+                flying_shell_penalty *= 1
+                stopping_penalty *= 1
                 result = (2000 + bonus_summand + prev_target_bonus
                           - est_time - stopping_penalty - positional_danger_penalty - turrets_danger_penalty
                           - flying_shell_penalty - edges_penalty)
                 if show_debug:
-                    self.debug(('POS [%18s]: x=%8.2f, y=%8.2f, bonus_summand=%8.2f, est_time=%8.2f, ' +
-                                'stopping_penalty=%8.2f, PDP=%8.2f, TDP=%8.2f, FSP=%8.2f, result=%8.2f') %
-                                (name, x, y, bonus_summand, est_time, stopping_penalty,
-                                 positional_danger_penalty, turrets_danger_penalty, flying_shell_penalty, result))
+                    self.debug(('POS [%18s]: x=%8.2f, y=%8.2f, PT=%8.2f, bonus=%8.2f, est_time=%8.2f, ' +
+                                'stoppingP=%8.2f, positional_P=%8.2f, TDP=%8.2f, FSP=%8.2f, edges=%8.2f, result=%8.2f') %
+                                (name, x, y, prev_target_bonus, bonus_summand, est_time, stopping_penalty,
+                                 positional_danger_penalty, turrets_danger_penalty, flying_shell_penalty, edges_penalty, result))
                 return result
 
             pos_f = list(map(lambda pos: (pos[0], pos[1], pos[2], estimate_position_F(pos[0], pos[1])), positions))
             if DEBUG_MODE:
                 estimate_position_F(tank.x, tank.y, show_debug=True)
-                for pos in list(reversed(sorted(pos_f, key=operator.itemgetter(2))))[:6]:
+                for pos in list(reversed(sorted(pos_f, key=operator.itemgetter(3))))[:6]:
                     estimate_position_F(pos[0], pos[1], name=pos[2], show_debug=True)
                 for pos in pos_f:
                     if pos[2][:5] == "BONUS":
