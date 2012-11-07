@@ -20,8 +20,12 @@ import pickle
 #  * remove bonuses I'll fail to get because of exist time from targets
 #  * even more precise short distance estimation?
 #  * profiling again?
+#  * fix "stucked" position
 
-DEBUG_MODE = True
+if __debug__:
+    DEBUG_MODE = True
+else:
+    DEBUG_MODE = False
 PHYSICS_RESEARCH_MODE = False
 
 # ================ CONSTANTS
@@ -136,6 +140,9 @@ class MyStrategy:
                     positions.append((world.width * (1 + i) / (GRID_HOR_COUNT + 1),
                                       world.height * (1 + j) / (GRID_VERT_COUNT + 1), "GRID %s, %s" % (i, j)))
 
+            # Current position
+            positions.append((tank.x, tank.y, "CURRENT"))
+
             # Forward and back direction
             tank_v = Vector(tank.x, tank.y)
             tank_d_v = Vector(1, 0).rotate(tank.angle)
@@ -221,7 +228,7 @@ class MyStrategy:
                 turrets_danger_penalty = 0
                 for enemy in enemies:
                     turrets_danger_penalty += attacked_area(x, y, enemy, cache=EA_cache)
-                turrets_danger_penalty *= 450
+                turrets_danger_penalty *= 500
 
                 # Flying shells
                 flying_shell_penalty = 0
@@ -235,7 +242,7 @@ class MyStrategy:
 
                 # If we're going somewhere, increase priority for this place
                 if self.memory.last_target_position and distance(self.memory.last_target_position, (x, y)) < 30:
-                    prev_target_bonus = 200
+                    prev_target_bonus = 400
                 else:
                     prev_target_bonus = 0
 
@@ -319,7 +326,7 @@ class MyStrategy:
                 else:
                     finish_bonus = 0
 
-                if attacked_area(tank.x, tank.y, target, cache=EA_cache) > 0:
+                if attacked_area(tank.x, tank.y, target, cache=EA_cache) > 0.5:
                     attacking_me_bonus = 20
                 else:
                     attacking_me_bonus = 0

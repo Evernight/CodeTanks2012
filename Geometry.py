@@ -66,6 +66,10 @@ class Vector:
     def is_zero(self):
         return numerically_zero(self.x) and numerically_zero(self.y)
 
+    def distance(self, x, d):
+        a = (self - x).scalar_product(d)/d.scalar_product(d)
+        return ((x - self) + a * d).length()
+
 if __name__ == "__main__":
     print('Test')
     print(Vector(1, 0).rotate(7*PI/4) == Vector(sqrt(2)/2, -sqrt(2)/2))

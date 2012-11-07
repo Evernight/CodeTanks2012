@@ -201,12 +201,24 @@ class EnemyAttackedChecker:
         else:
             return 1
 
+class ContinuousEnemyAttackedChecker:
+    def __init__(self, enemy):
+        self.enemy_v = Vector(enemy.x, enemy.y)
+        self.turret_v = Vector(1, 0).rotate(enemy.angle + enemy.turret_relative_angle)
+
+    def attacked_area(self, x, y):
+        pt_v = Vector(x, y)
+        if (pt_v - self.enemy_v).scalar_product(self.turret_v) <= 0:
+            return 0
+        dist = pt_v.distance(self.enemy_v, self.turret_v)
+        return max(0, (DANGEROUS_WIDTH - dist)/DANGEROUS_WIDTH)
+
 def attacked_area(x, y, enemy, cache=None):
     """
     Rectangle shape
     """
     if cache is None or not enemy.id in cache:
-        cache[enemy.id] = EnemyAttackedChecker(enemy)
+        cache[enemy.id] = ContinuousEnemyAttackedChecker(enemy)
     return cache[enemy.id].attacked_area(x, y)
 
 def shell_will_hit_tank_going_to(shell, tank, x, y, et=None):
