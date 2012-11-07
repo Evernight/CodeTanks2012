@@ -209,7 +209,7 @@ class MyStrategy:
                     1 : 0.3
                 }[len(enemies)]
                 if len(enemies) == 1 and health_fraction >= 0.7 and hull_fraction >= 0.5:
-                    enemy_tank = enemies[len(enemies)]
+                    enemy_tank = enemies[0]
                     if enemy_tank.crew_health < 40 or enemy_tank.hull_durability < 20:
                         # BLOODLUST
                         danger_penalty_factor = -3
@@ -240,7 +240,7 @@ class MyStrategy:
                     prev_target_bonus = 0
 
                 # Don't stick to fucking edges
-                edges_penalty = 2 * max(0, 150 - distance_to_edge(x, y, world))
+                edges_penalty = (1 + max(0, 150 - distance_to_edge(x, y, world))) ** 1.5
                 if x < 0 or y < 0 or x > world.width or y > world.height:
                     edges_penalty = 2000
 
