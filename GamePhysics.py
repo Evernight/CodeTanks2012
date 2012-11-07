@@ -183,7 +183,7 @@ def shell_will_hit(shell, target, factor=1):
 
 
 # Check if area is attacked by some motherfucker
-DANGEROUS_WIDTH = 80
+DANGEROUS_WIDTH = 110
 class EnemyAttackedChecker:
     def __init__(self, enemy):
         self.enemy_v = Vector(enemy.x, enemy.y)

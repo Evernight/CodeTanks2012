@@ -9,8 +9,6 @@ from collections import deque, defaultdict
 from MyUtils import *
 import pickle
 
-import cProfile
-
 # TODO:
 #  * alternate unreachable targets
 #  * velocity extrapolating + estimate ability to predict target position
@@ -23,7 +21,7 @@ import cProfile
 #  * even more precise short distance estimation?
 #  * profiling again?
 
-DEBUG_MODE = False
+DEBUG_MODE = True
 PHYSICS_RESEARCH_MODE = False
 
 # ================ CONSTANTS
@@ -223,7 +221,7 @@ class MyStrategy:
                 turrets_danger_penalty = 0
                 for enemy in enemies:
                     turrets_danger_penalty += attacked_area(x, y, enemy, cache=EA_cache)
-                turrets_danger_penalty *= 300
+                turrets_danger_penalty *= 450
 
                 # Flying shells
                 flying_shell_penalty = 0
