@@ -27,9 +27,7 @@ class Vector:
         return self + other * (-1)
 
     def __mul__(self, other):
-        if issubclass(type(other), numbers.Number):
-            return Vector(self.x * other, self.y * other)
-        raise("WTF man?")
+        return Vector(self.x * other, self.y * other)
 
     def __str__(self):
         return 'Vector(%.2f, %.2f)' % (self.x, self.y)
@@ -40,9 +38,10 @@ class Vector:
     __rmul__ = __mul__
 
     def __truediv__(self, other):
-        if issubclass(type(other), numbers.Number):
-            return self.__mul__(1/other)
-        raise("WTF man?")
+        #if issubclass(type(other), numbers.Number):
+        #    return self.__mul__(1/other)
+        return self.__mul__(1/other)
+        #raise("WTF man?")
 
     def length(self):
         return sqrt(self.x**2 + self.y**2)
@@ -65,8 +64,7 @@ class Vector:
         return acos(c)
 
     def is_zero(self):
-        return self == ZERO_VECTOR
-ZERO_VECTOR = Vector(0, 0)
+        return numerically_zero(self.x) and numerically_zero(self.y)
 
 if __name__ == "__main__":
     print('Test')

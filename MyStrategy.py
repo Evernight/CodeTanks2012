@@ -9,21 +9,19 @@ from collections import deque, defaultdict
 from MyUtils import *
 import pickle
 
+import cProfile
+
 # TODO:
-#  * don't push enemies to bonuses
-#  * get rid of shaky behaviour (add previous target label?)
-#  * ninja mode (take into account flying shells and directed turrets)
-#  * realistic moving and time estimation (we can do realistic estimation by ML)
-#  * replace linear functions with desired
-#  * position estimation by ML methods
-#  * enemy distance estimation to bonus we're heading to
-#  * estimate ability to predict target position
-#  * Additional tactical positions
-#  * take target orientation into account when shooting
-#  * possible to change targets but shoot anyway
+#  * alternate unreachable targets
+#  * velocity extrapolating + estimate ability to predict target position
+
+#  * realistic moving and time estimation (mechanics)
+#  * take target orientation into account when shooting / orientation of the tank
 #  * when targeting take current moving destination into account (or the opposite)
-#  * standing death?
-#  * pick very close bonuses, don't go straightforward to better ones
+#  * different modes of behaviour
+#  * remove bonuses I'll fail to get because of exist time from targets
+#  * even more precise short distance estimation?
+#  * profiling again?
 
 DEBUG_MODE = False
 PHYSICS_RESEARCH_MODE = False
@@ -115,6 +113,8 @@ class MyStrategy:
         self.memory = MyStrategy.Memory()
         self.analysis = MyStrategy.PhysicsAnalyser()
 
+        self.prev_vel = 0
+
     def debug(self, message, ticks_period=5):
         if self.world.tick % ticks_period == 0:
             if DEBUG_MODE:
@@ -122,8 +122,10 @@ class MyStrategy:
 
     def move(self, tank, world, move):
         self.world = world
+        EA_cache = {}
 
         def process_moving():
+
             positions = []
 
             # Grid
@@ -131,8 +133,8 @@ class MyStrategy:
             GRID_VERT_COUNT = 5
             for i in range(GRID_HOR_COUNT):
                 for j in range(GRID_VERT_COUNT):
-                    if (i > 1 and i < 5) and (j == 2):
-                        continue
+                    #if (i > 1 and i < 5) and (j == 2):
+                    #    continue
                     positions.append((world.width * (1 + i) / (GRID_HOR_COUNT + 1),
                                       world.height * (1 + j) / (GRID_VERT_COUNT + 1), "GRID %s, %s" % (i, j)))
 
@@ -220,7 +222,7 @@ class MyStrategy:
 
                 turrets_danger_penalty = 0
                 for enemy in enemies:
-                    turrets_danger_penalty += attacked_area(x, y, enemy)
+                    turrets_danger_penalty += attacked_area(x, y, enemy, cache=EA_cache)
                 turrets_danger_penalty *= 300
 
                 # Flying shells
@@ -242,7 +244,7 @@ class MyStrategy:
                 # Don't stick to fucking edges
                 edges_penalty = (1 + max(0, 150 - distance_to_edge(x, y, world))) ** 2 / 50
                 if x < 0 or y < 0 or x > world.width or y > world.height:
-                    edges_penalty = 2000
+                    edges_penalty = 5000
                 if bonus_summand != 0:
                     edges_penalty = 0
 
@@ -254,7 +256,7 @@ class MyStrategy:
                 est_time *= 2
                 bonus_summand *= 1.2
                 flying_shell_penalty *= 1
-                stopping_penalty *= 1
+                stopping_penalty *= 0
                 result = (2000 + bonus_summand + prev_target_bonus
                           - est_time - stopping_penalty - positional_danger_penalty - turrets_danger_penalty
                           - flying_shell_penalty - edges_penalty)
@@ -319,7 +321,7 @@ class MyStrategy:
                 else:
                     finish_bonus = 0
 
-                if attacked_area(tank.x, tank.y, target) > 0:
+                if attacked_area(tank.x, tank.y, target, cache=EA_cache) > 0:
                     attacking_me_bonus = 20
                 else:
                     attacking_me_bonus = 0
@@ -405,6 +407,8 @@ class MyStrategy:
         #print(hypot(tank.speedX, tank.speedY))
 
         #self.analysis.store_shell_velocity(world)
+        #print(hypot(tank.speedX, tank.speedY) - self.prev_vel)
+        #self.prev_vel = hypot(tank.speedX, tank.speedY)
 
     def select_tank(self, tank_index, team_size):
         return TankType.MEDIUM

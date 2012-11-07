@@ -13,13 +13,16 @@ DISTANCE_EPSILON = 1
 TIME_ESTIMATION_COEF = (93.118, 0.441, 11.347, -4.311, -45.925, -93.353, -22.895, 22.271 + 20)
 
 def distance(c1, c2):
-    return sqrt((c1[0] - c2[0])**2 + (c1[1] - c2[1])**2)
+    return hypot(c1[0] - c2[0], c1[1] - c2[1])
 
 def distance_to_edge(x, y, world):
     return min(x, world.width - x, y, world.height - y)
 
 TIME_ESTIMATION_ANGLE_PENALTY = 30
 TIME_ESTIMATION_VELOCITY_FACTOR = 20
+
+LOW_ANGLE = PI/16
+FICTIVE_ACCELERATION = 0.3
 def estimate_time_to_position(x, y, tank):
     dist = tank.get_distance_to(x, y)
     vt = Vector(tank.speedX, tank.speedY)
@@ -45,13 +48,14 @@ def estimate_time_to_position(x, y, tank):
 
     # Short distances fix
     if dist < 100:
-        LOW_ANGLE = PI/16
         if fabs(d_angle) < LOW_ANGLE:
             v0 = vt.projection(d)
-            return dist/6
+            return solve_quadratic(FICTIVE_ACCELERATION/2, v0, -dist)
+            #return dist/6
         elif PI - fabs(d_angle) < LOW_ANGLE:
             v0 = vt.projection(d)
-            return dist/6 /0.75
+            return solve_quadratic(FICTIVE_ACCELERATION/2 * 0.75, v0, -dist)
+            #return dist/6 /0.75
 
 
     if d.is_zero():
@@ -92,15 +96,16 @@ def move_to_position(x, y, tank, move):
         return 0, 0
 
     angle = tank.get_angle_to(x, y)
+    dist = tank.get_distance_to(x, y)
 
     def get_values(angle, multiplier=1):
         #if fabs(angle) < PI/6 and fabs(tank.angular_speed) < 0.02:
         #    left, right = 1, 1
         #else:
         #    left, right = 1, -1
-        if tank.get_distance_to(x, y) < 300:
+        if dist < 300:
             left, right = 1, 1 - 6 * angle / PI
-        elif tank.get_distance_to(x, y) < 700:
+        elif dist < 700:
             # Dirty fix for now (long distance)
             left, right = 1, 1 - 4.5 * angle / PI
             if fabs(tank.angular_speed) > 0.025:
@@ -113,16 +118,16 @@ def move_to_position(x, y, tank, move):
 
         return left * multiplier, right * multiplier
 
-    if fabs(angle) < BACKWARDS_THRESHOLD or tank.get_distance_to(x, y) > 500:
-        if angle > 0:
-            move.left_track_power, move.right_track_power = get_values(fabs(angle))
-        else:
-            move.right_track_power, move.left_track_power = get_values(fabs(angle))
-    else:
+    if (fabs(angle) > 5*PI/6 and dist < 800) or (fabs(angle) > BACKWARDS_THRESHOLD and dist < 500) or (fabs(angle) > PI/2 and dist < 200):
         if angle > 0:
             move.left_track_power, move.right_track_power = get_values(PI - fabs(angle), -1)
         else:
             move.right_track_power, move.left_track_power = get_values(PI - fabs(angle), -1)
+    else:
+        if angle > 0:
+            move.left_track_power, move.right_track_power = get_values(fabs(angle))
+        else:
+            move.right_track_power, move.left_track_power = get_values(fabs(angle))
 
 def will_hit(tank, target, factor=1):
     """
@@ -177,25 +182,32 @@ def shell_will_hit(shell, target, factor=1):
     return False
 
 
-def attacked_area(x, y, enemy):
+# Check if area is attacked by some motherfucker
+DANGEROUS_WIDTH = 80
+class EnemyAttackedChecker:
+    def __init__(self, enemy):
+        self.enemy_v = Vector(enemy.x, enemy.y)
+        self.turret_v = Vector(1, 0).rotate(enemy.angle + enemy.turret_relative_angle)
+        td = self.turret_v.rotate(PI/2) * DANGEROUS_WIDTH / 2
+        self.p1 = self.enemy_v + td
+        self.p2 = self.enemy_v - td
+
+    def attacked_area(self, x, y):
+        pt_v = Vector(x, y)
+        if (pt_v - self.enemy_v).scalar_product(self.turret_v) <= 0:
+            return 0
+        if sign(self.turret_v.cross_product(pt_v - self.p1)) == sign(self.turret_v.cross_product(pt_v - self.p2)):
+            return 0
+        else:
+            return 1
+
+def attacked_area(x, y, enemy, cache=None):
     """
     Rectangle shape
     """
-    DANGEROUS_WIDTH = 80
-
-    pt_v = Vector(x, y)
-    enemy_v = Vector(enemy.x, enemy.y)
-    turret_v = Vector(1, 0).rotate(enemy.angle + enemy.turret_relative_angle)
-    if (pt_v - enemy_v).scalar_product(turret_v) <= 0:
-        return 0
-
-    td = turret_v.rotate(PI/2) * DANGEROUS_WIDTH / 2
-    p1 = enemy_v + td
-    p2 = enemy_v - td
-    if sign(turret_v.cross_product(pt_v - p1)) == sign(turret_v.cross_product(pt_v - p2)):
-        return 0
-    else:
-        return 1
+    if cache is None or not enemy.id in cache:
+        cache[enemy.id] = EnemyAttackedChecker(enemy)
+    return cache[enemy.id].attacked_area(x, y)
 
 def shell_will_hit_tank_going_to(shell, tank, x, y, et=None):
     """
