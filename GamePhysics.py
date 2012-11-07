@@ -204,9 +204,9 @@ def shell_will_hit_tank_going_to(shell, tank, x, y, et=None):
     if et is None:
         et = estimate_time_to_position(x, y, tank)
 
-    tank_v = Vector(tank.x, tank.y)
+    #tank_v = Vector(tank.x, tank.y)
     #shell_v = Vector(shell.x, shell.y)
-    pt_v = Vector(x, y)
+    #pt_v = Vector(x, y)
     #vt = pt_v - tank_v
     #vs = Vector(shell.speedX, shell.speedY)
 

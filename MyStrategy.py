@@ -25,7 +25,7 @@ import pickle
 #  * standing death?
 #  * pick very close bonuses, don't go straightforward to better ones
 
-DEBUG_MODE = True
+DEBUG_MODE = False
 PHYSICS_RESEARCH_MODE = False
 
 # ================ CONSTANTS
@@ -127,11 +127,11 @@ class MyStrategy:
             positions = []
 
             # Grid
-            GRID_HOR_COUNT = 9
-            GRID_VERT_COUNT = 6
+            GRID_HOR_COUNT = 7
+            GRID_VERT_COUNT = 5
             for i in range(GRID_HOR_COUNT):
                 for j in range(GRID_VERT_COUNT):
-                    if (i > 2 and i < 6) and (j > 1 and j < 4):
+                    if (i > 1 and i < 5) and (j == 2):
                         continue
                     positions.append((world.width * (1 + i) / (GRID_HOR_COUNT + 1),
                                       world.height * (1 + j) / (GRID_VERT_COUNT + 1), "GRID %s, %s" % (i, j)))
@@ -229,9 +229,9 @@ class MyStrategy:
                     if shell_will_hit_tank_going_to(shell, tank, x, y, et=est_time):
                         flying_shell_penalty = 2000
 
-                stopping_penalty = 0
-                if bonus_summand == 0:
-                    stopping_penalty = (1 + 2 * max(0, 100 - tank.get_distance_to(x, y)))**1.2
+                stopping_penalty = (1 + 2 * max(0, 100 - tank.get_distance_to(x, y)))**1.2
+                if bonus_summand != 0:
+                    stopping_penalty = 0
 
                 # If we're going somewhere, increase priority for this place
                 if self.memory.last_target_position and distance(self.memory.last_target_position, (x, y)) < 30:
@@ -240,9 +240,11 @@ class MyStrategy:
                     prev_target_bonus = 0
 
                 # Don't stick to fucking edges
-                edges_penalty = (1 + max(0, 150 - distance_to_edge(x, y, world))) ** 1.5
+                edges_penalty = (1 + max(0, 150 - distance_to_edge(x, y, world))) ** 2 / 50
                 if x < 0 or y < 0 or x > world.width or y > world.height:
                     edges_penalty = 2000
+                if bonus_summand != 0:
+                    edges_penalty = 0
 
                 # Position priority:
                 # + Bonus priority
@@ -291,7 +293,7 @@ class MyStrategy:
 
                 self.analysis.save_target_init_values(tank, next_position[0], next_position[1])
 
-            self.debug("TGT (%8.2f, %8.2f) [%18s]; distance=%8.2f, ETA=%8.2f" %
+            self.debug("GOING TO (%8.2f, %8.2f) [%18s]; distance=%8.2f, ETA=%8.2f" %
                        (next_position[:3] + (tank.get_distance_to(*next_position[:2]), estimate_time_to_position(next_position[0], next_position[1], tank)) ))
             move_to_position(next_position[0], next_position[1], tank, move)
 
