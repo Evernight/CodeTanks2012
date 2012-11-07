@@ -189,7 +189,7 @@ def attacked_area(x, y, enemy):
     if (pt_v - enemy_v).scalar_product(turret_v) <= 0:
         return 0
 
-    td = turret_v.rotate(PI/2) * DANGEROUS_WIDTH
+    td = turret_v.rotate(PI/2) * DANGEROUS_WIDTH / 2
     p1 = enemy_v + td
     p2 = enemy_v - td
     if sign(turret_v.cross_product(pt_v - p1)) == sign(turret_v.cross_product(pt_v - p2)):

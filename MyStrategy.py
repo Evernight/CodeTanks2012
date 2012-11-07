@@ -144,6 +144,12 @@ class MyStrategy:
             positions.append((forw.x, forw.y, "FORWARD"))
             positions.append((back.x, back.y, "BACKWARD"))
 
+            # Low diagonal move
+            DIAGONAL_ANGLE = PI/6
+            for a in [DIAGONAL_ANGLE, - DIAGONAL_ANGLE, PI - DIAGONAL_ANGLE, DIAGONAL_ANGLE - PI]:
+                pt = tank_v + tank_d_v.rotate(a) * 100
+                positions.append((pt.x, pt.y, "CLOSE %.0f" % degrees(a)))
+
             # Bonuses positions
             positions += [(b.x, b.y, "BONUS %s" % bonus_name_by_type(b.type)) for b in world.bonuses]
 
@@ -203,7 +209,12 @@ class MyStrategy:
                     1 : 0.3
                 }[len(enemies)]
                 if len(enemies) == 1 and health_fraction >= 0.7 and hull_fraction >= 0.5:
-                    danger_penalty_factor = -0.3
+                    enemy_tank = enemies[len(enemies)]
+                    if enemy_tank.crew_health < 40 or enemy_tank.hull_durability < 20:
+                        # BLOODLUST
+                        danger_penalty_factor = -3
+                    else:
+                        danger_penalty_factor = 0
 
                 positional_danger_penalty *= danger_penalty_factor
 
@@ -216,7 +227,7 @@ class MyStrategy:
                 flying_shell_penalty = 0
                 for shell in world.shells:
                     if shell_will_hit_tank_going_to(shell, tank, x, y, et=est_time):
-                        flying_shell_penalty = 1000
+                        flying_shell_penalty = 2000
 
                 stopping_penalty = 0
                 if bonus_summand == 0:
@@ -239,7 +250,7 @@ class MyStrategy:
                 # - Close to screen edges
                 # - Don't stay at the same place (*)
                 est_time *= 2
-                bonus_summand *= 1.5
+                bonus_summand *= 1.2
                 flying_shell_penalty *= 1
                 stopping_penalty *= 1
                 result = (2000 + bonus_summand + prev_target_bonus
@@ -247,14 +258,14 @@ class MyStrategy:
                           - flying_shell_penalty - edges_penalty)
                 if show_debug:
                     self.debug(('POS [%18s]: x=%8.2f, y=%8.2f, PT=%8.2f, bonus=%8.2f, est_time=%8.2f, ' +
-                                'stoppingP=%8.2f, positional_P=%8.2f, TDP=%8.2f, FSP=%8.2f, edges=%8.2f, result=%8.2f') %
+                                'stopping_P=%8.2f, positional_P=%8.2f, TDP=%8.2f, FSP=%8.2f, edges=%8.2f, result=%8.2f') %
                                 (name, x, y, prev_target_bonus, bonus_summand, est_time, stopping_penalty,
                                  positional_danger_penalty, turrets_danger_penalty, flying_shell_penalty, edges_penalty, result))
                 return result
 
             pos_f = list(map(lambda pos: (pos[0], pos[1], pos[2], estimate_position_F(pos[0], pos[1])), positions))
             if DEBUG_MODE:
-                estimate_position_F(tank.x, tank.y, show_debug=True)
+                estimate_position_F(tank.x, tank.y, name="CURRENT", show_debug=True)
                 for pos in list(reversed(sorted(pos_f, key=operator.itemgetter(3))))[:6]:
                     estimate_position_F(pos[0], pos[1], name=pos[2], show_debug=True)
                 self.debug('=' * 16)
@@ -296,23 +307,38 @@ class MyStrategy:
                                         (1 - max(0, 150 - tank.remaining_reloading_time)/150) * 1)
 
                 angle_degrees = fabs(tank.get_turret_angle_to_unit(target)) / PI * 180
-                result = - tank.get_distance_to_unit(target) / 10 - angle_penalty_factor * (angle_degrees**1.3)/2
+
+                distance_penalty = tank.get_distance_to_unit(target) / 10
+                angle_penalty = angle_penalty_factor * (angle_degrees**1.2)/2
                 # Headshot ^_^
                 if ((target.crew_health <= 20 or target.hull_durability <= 20) or
                     (tank.premium_shell_count > 0 and (target.crew_health < 35 or target.hull_durability <= 35))):
-                    result += 25
+                    finish_bonus = 30
+                else:
+                    finish_bonus = 0
 
                 if attacked_area(tank.x, tank.y, target) > 0:
-                    result += 15
+                    attacking_me_bonus = 20
+                else:
+                    attacking_me_bonus = 0
 
                 # Last target priority
+                last_target_bonus = 0
                 if self.memory.last_turret_target_id:
                     if self.memory.last_turret_target_id == target.id:
-                        result += 5
+                        last_target_bonus = 5
 
+                result = 180 + finish_bonus + attacking_me_bonus + last_target_bonus - distance_penalty - angle_penalty
+                self.debug('TARGET [%20s] (x=%8.2f, y=%8.2f) finish_B=%8.2f, AM_B=%8.2f, LT_B=%8.2f, D_P=%8.2f, A_P=%8.2f, APF=%8.2f, result=%8.2f' %
+                           (target.player_name, target.x, target.y, finish_bonus, attacking_me_bonus, last_target_bonus,
+                            distance_penalty, angle_penalty, angle_penalty_factor, result))
                 return result
 
-            cur_target = max(targets, key=lambda t: get_target_priority(tank, t))
+            if DEBUG_MODE:
+                targets = sorted(targets, key=lambda t : t.player_name)
+            targets_f = [(t, get_target_priority(tank, t)) for t in targets]
+
+            cur_target = max(targets_f, key=operator.itemgetter(1))[0]
             self.memory.last_turret_target_id = cur_target.id
 
             est_pos = estimate_target_position(cur_target, tank)
@@ -353,11 +379,15 @@ class MyStrategy:
             if fabs(cur_angle) > PI/180 * 0.5:
                 move.turret_turn = sign(cur_angle)
 
-        self.debug('========================= (Tick) #%s =====================' % world.tick)
+        self.debug('')
+        self.debug('#' * 64)
+        self.debug('========================= (Tick) %5s =========================' % ('#%d' % world.tick))
         self.debug('Tank (x=%s, y=%s, health=%4s/%4s, super_shells=%2s)' %
                    (tank.x, tank.y, tank.crew_health, tank.crew_max_health, tank.premium_shell_count))
+        self.debug('#' * 64)
 
         process_moving()
+        self.debug('=' * 16)
         process_shooting()
 
         self.debug('Output: left: %5.2f, right: %5.2f' % (move.left_track_power, move.right_track_power))
