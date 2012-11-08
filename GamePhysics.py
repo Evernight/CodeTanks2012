@@ -1,13 +1,13 @@
 from math import pi as PI, fabs, degrees, sqrt, hypot
 from Geometry import Vector, sign, numerically_zero
-from MyUtils import fictive_unit
+from MyUtils import fictive_unit, is_going_to_move, NOT_TANK
 
 SHELL_VELOCITY = 14
 SHELL_ACCELERATION = -0.08
 INITIAL_SHELL_VELOCITY = 16.58333316713906
 
 BACKWARDS_THRESHOLD = 2 * PI / 3
-TARGET_REACHED_DISTANCE = 30
+TARGET_REACHED_DISTANCE = 5
 DISTANCE_EPSILON = 1
 
 TIME_ESTIMATION_COEF = (93.118, 0.441, 11.347, -4.311, -45.925, -93.353, -22.895, 22.271 + 20)
@@ -22,7 +22,7 @@ TIME_ESTIMATION_ANGLE_PENALTY = 30
 TIME_ESTIMATION_VELOCITY_FACTOR = 20
 
 LOW_ANGLE = PI/16
-FICTIVE_ACCELERATION = 0.3
+FICTIVE_ACCELERATION = 0.7
 def estimate_time_to_position(x, y, tank):
     dist = tank.get_distance_to(x, y)
     vt = Vector(tank.speedX, tank.speedY)
@@ -155,6 +155,24 @@ def will_hit(tank, target, factor=1):
         return True
     return False
 
+def vector_is_intersecting_object(p, d, target, factor=1):
+    center = Vector(target.x - p.x, target.y - p.y)
+    if center.scalar_product(d) < 0:
+        return False
+
+    a = target.angle
+
+    c1 = center + Vector(target.width/2 * factor, target.height/2 * factor).rotate(a)
+    c2 = center + Vector(- target.width/2 * factor, target.height/2 * factor).rotate(a)
+    c3 = center + Vector(- target.width/2 * factor, - target.height/2 * factor).rotate(a)
+    c4 = center + Vector(target.width/2 * factor, - target.height/2 * factor).rotate(a)
+    if sign(c1.cross_product(d)) == sign(d.cross_product(c3)):
+        return True
+    if sign(c2.cross_product(d)) == sign(d.cross_product(c4)):
+        return True
+    return False
+
+
 def shell_will_hit(shell, target, factor=1):
     """
     Returns True if shell will hit rectangular object
@@ -221,43 +239,75 @@ def attacked_area(x, y, enemy, cache=None):
         cache[enemy.id] = ContinuousEnemyAttackedChecker(enemy)
     return cache[enemy.id].attacked_area(x, y)
 
-def shell_will_hit_tank_going_to(shell, tank, x, y, et=None):
+def shell_will_hit_tank_going_to(shell, tank, x, y, et=None, name='?'):
     """
     WTF is written here???
     """
     if et is None:
         et = estimate_time_to_position(x, y, tank)
 
-    #tank_v = Vector(tank.x, tank.y)
-    #shell_v = Vector(shell.x, shell.y)
-    #pt_v = Vector(x, y)
-    #vt = pt_v - tank_v
-    #vs = Vector(shell.speedX, shell.speedY)
-
-#    if vs == vt:
-#        return False
-#
-#    r = tank_v - shell_v
-#    w = vs - vt
-#    if not numerically_zero(w.x):
-#        t = r.x/w.x
-#    else:
-#        t = r.y/w.y
-#    if t < 0:
-#        return False
+    dist = tank.get_distance_to(x, y)
 
     v0 = hypot(shell.speedX, shell.speedY)
     a = SHELL_ACCELERATION
     d = tank.get_distance_to_unit(shell)
+    #d = shell.get_distance_to(x, y)
     t = solve_quadratic(a/2, v0, -d)
-    #t = (sqrt(v0**2 + 2*a*d) - v0)/a
+
 
     if shell_will_hit(shell, tank) and et > t:
+        #if tank.get_distance_to(x, y) < 81:
+        #    print('HIT [%s] x=%s, y=%s, et=%s, t=%s, d_shell=%s, v0=%s, d_pos=%s' % (name, x, y, et, t, d, v0, tank.get_distance_to(x, y)))
         return True
+    #if shell_will_hit(shell, fictive_unit(tank, next_pos.x, next_pos.y)):
+    #    if tank.get_distance_to(x, y) < 81:
+    #        print('HIT [%s] x=%s, y=%s, et=%s, t=%s, d_shell=%s, v0=%s, d_pos=%s' % (name, x, y, et, t, d, v0, tank.get_distance_to(x, y)))
+    #    return True
+    if dist < 150:
+        # short distance
+        return shell_will_hit(shell, fictive_unit(tank, x, y))
+    else:
+        # long distance, check if our direction is intersecting segment
+        pt_v = Vector(x, y)
+        tank_v = Vector(tank.x, tank.y)
+        dir = tank_v - pt_v
+        shell_v = Vector(shell.x, shell.y)
+        shell_speed = Vector(shell.speedX, shell.speedY)
+        next_shell = shell_v + shell_speed * t
+        if sign((shell_v - tank_v).cross_product(dir)) == sign(dir.cross_product(next_shell - tank_v)):
+            return True
+        else:
+            return False
 
-    return shell_will_hit(shell, fictive_unit(tank, x, y))
-    #return True
-    #return False
+def position_is_blocked(x, y, tank, world):
+    #if tank.get_distance_to(x, y) > 400:
+    #    return False
+    tank_v = Vector(tank.x, tank.y)
+    p = Vector(x, y)
+    dist = tank.get_distance_to(x, y)
+    if (p - tank_v).is_zero():
+        return False
+    for obj in filter(NOT_TANK(tank.id), world.tanks):
+        obj_dist = tank.get_distance_to_unit(obj)
+        if vector_is_intersecting_object(tank_v, p - tank_v, obj, factor=1.2) and obj_dist < dist:
+            if not is_going_to_move(obj):
+                return True
+            if obj_dist < 100:
+                return True
+    return False
+
+SHIFT_DISTANCE = 100
+def get_new_positions(pos, tank):
+    x, y = pos[:2]
+    tank_v = Vector(tank.x, tank.y)
+    p = Vector(x, y)
+    d = p - tank_v
+
+    p1 = tank_v + d/2 + d.normalize().rotate(PI/2) * SHIFT_DISTANCE
+    p2 = tank_v + d/2 - d.normalize().rotate(PI/2) * SHIFT_DISTANCE
+    return [(p1.x, p1.y, pos[2] + " $L"),
+            (p2.x, p2.y, pos[2] + " $R")]
+
 
 def solve_quadratic(a, b, c):
     """

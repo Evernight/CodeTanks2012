@@ -1,4 +1,5 @@
 import operator
+from queue import PriorityQueue
 from model.FireType import FireType
 from model.TankType import TankType
 from model.BonusType import BonusType
@@ -11,6 +12,7 @@ import pickle
 
 # TODO:
 #  * alternate unreachable targets
+#  * new safety function
 #  * velocity extrapolating + estimate ability to predict target position
 
 #  * realistic moving and time estimation (mechanics)
@@ -21,6 +23,7 @@ import pickle
 #  * even more precise short distance estimation?
 #  * profiling again?
 #  * fix "stucked" position
+#  * defensive mode?
 
 if __debug__:
     DEBUG_MODE = True
@@ -29,6 +32,9 @@ else:
 PHYSICS_RESEARCH_MODE = False
 
 # ================ CONSTANTS
+# Moving
+MAX_POSITION_ITERATIONS = 3
+
 # Targeting
 TARGETING_FACTOR = 0.3
 ENEMY_TARGETING_FACTOR = 0.8
@@ -146,10 +152,15 @@ class MyStrategy:
             # Forward and back direction
             tank_v = Vector(tank.x, tank.y)
             tank_d_v = Vector(1, 0).rotate(tank.angle)
-            forw = tank_v + tank_d_v * 80
-            back = tank_v - tank_d_v * 80
+            forw = tank_v + tank_d_v * 40
+            back = tank_v - tank_d_v * 40
             positions.append((forw.x, forw.y, "FORWARD"))
             positions.append((back.x, back.y, "BACKWARD"))
+
+            fforw = tank_v + tank_d_v * 80
+            fback = tank_v - tank_d_v * 80
+            positions.append((fforw.x, fforw.y, "FAR FORWARD"))
+            positions.append((fback.x, fback.y, "FAR BACKWARD"))
 
             # Low diagonal move
             DIAGONAL_ANGLE = PI/6
@@ -233,7 +244,7 @@ class MyStrategy:
                 # Flying shells
                 flying_shell_penalty = 0
                 for shell in world.shells:
-                    if shell_will_hit_tank_going_to(shell, tank, x, y, et=est_time):
+                    if shell_will_hit_tank_going_to(shell, tank, x, y, et=est_time, name=name):
                         flying_shell_penalty = 2000
 
                 stopping_penalty = (1 + 2 * max(0, 100 - tank.get_distance_to(x, y)))**1.2
@@ -241,7 +252,8 @@ class MyStrategy:
                     stopping_penalty = 0
 
                 # If we're going somewhere, increase priority for this place
-                if self.memory.last_target_position and distance(self.memory.last_target_position, (x, y)) < 30:
+                if self.memory.last_target_position and distance(self.memory.last_target_position, (x, y)) < 5 \
+                    and distance(self.memory.last_target_position, (tank.x, tank.y)) > 5:
                     prev_target_bonus = 400
                 else:
                     prev_target_bonus = 0
@@ -270,9 +282,11 @@ class MyStrategy:
                                 'stopping_P=%8.2f, positional_P=%8.2f, TDP=%8.2f, FSP=%8.2f, edges=%8.2f, result=%8.2f') %
                                 (name, x, y, prev_target_bonus, bonus_summand, est_time, stopping_penalty,
                                  positional_danger_penalty, turrets_danger_penalty, flying_shell_penalty, edges_penalty, result))
+                    #if position_is_blocked(x, y, tank, world):
+                    #    self.debug('blocked')
                 return result
 
-            pos_f = list(map(lambda pos: (pos[0], pos[1], pos[2], estimate_position_F(pos[0], pos[1])), positions))
+            pos_f = list(map(lambda pos: (pos[0], pos[1], pos[2], estimate_position_F(pos[0], pos[1], name=pos[2]) ), positions))
             if DEBUG_MODE:
                 estimate_position_F(tank.x, tank.y, name="CURRENT", show_debug=True)
                 for pos in list(reversed(sorted(pos_f, key=operator.itemgetter(3))))[:6]:
@@ -282,7 +296,27 @@ class MyStrategy:
                     if pos[2][:5] == "BONUS" or pos[2] == "FORWARD" or pos[2] == "BACKWARD":
                         estimate_position_F(pos[0], pos[1], name=pos[2], show_debug=True)
 
-            next_position = max(pos_f, key=operator.itemgetter(3))
+            # Moving around magic
+            next_position = None
+            position_iteration = 0
+            average_F = sum([pos[3] for pos in pos_f])/len(positions)
+
+            pos_queue = PriorityQueue()
+            for pos in pos_f:
+                pos_queue.put((-pos[3], pos))
+
+            while True:
+                cur = pos_queue.get()[1]
+                if not position_is_blocked(cur[0], cur[1], tank, world) or position_iteration >= MAX_POSITION_ITERATIONS:
+                    next_position = cur
+                    break
+                position_iteration += 1
+                self.debug('!!! Skipping the best position, iteration %d' % position_iteration)
+                for new_pos in map(
+                    lambda pos: (pos[0], pos[1], pos[2], estimate_position_F(pos[0], pos[1], pos[2], show_debug=DEBUG_MODE) + (cur[3] - average_F) ),
+                    get_new_positions(cur, tank)
+                ):
+                    pos_queue.put((-new_pos[3], new_pos))
 
             if self.memory.last_target_position:
                 if distance((tank.x, tank.y), self.memory.last_target_position) < ANALYSIS_TARGET_SAVE_DISTANCE:

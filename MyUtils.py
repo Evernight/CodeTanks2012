@@ -1,3 +1,4 @@
+from model import Tank
 from model.BonusType import BonusType
 from model.Unit import Unit
 from GamePhysics import *
@@ -5,6 +6,8 @@ from GamePhysics import *
 ALIVE_ENEMY_TANK = lambda t: not t.teammate and t.crew_health > 0 and t.hull_durability > 0
 ENEMY_TANK = lambda t: not t.teammate
 DEAD_TANK = lambda t: t.crew_health == 0 or t.hull_durability == 0
+def NOT_TANK(id):
+    return lambda t: t.id != id
 UNIT_TO_POINT = lambda unit: (unit.x, unit.y)
 
 def fictive_unit(prototype, x, y):
@@ -22,3 +25,11 @@ def bonus_name_by_type(type):
         BonusType.REPAIR_KIT : "REPAIR_KIT",
         BonusType.AMMO_CRATE : "AMMO_CRATE"
     }[type]
+
+def is_going_to_move(object):
+    if type(object) == Tank:
+        if object.crew_health > 0 and object.hull_durability > 0:
+            return True
+        else:
+            return False
+    return False
