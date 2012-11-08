@@ -213,19 +213,27 @@ class MyStrategy:
                 # + Turrets directed
                 try:
                     #positional_danger_penalty = - sum(map(lambda enemy: enemy.get_distance_to(x, y), enemies))/enemies_count * 2
-                    positional_danger_penalty = - sqrt(sum(map(lambda enemy: enemy.get_distance_to(x, y)**2, enemies))/enemies_count)
+                    #positional_danger_penalty = - sqrt(sum(map(lambda enemy: enemy.get_distance_to(x, y)**2, enemies))/enemies_count)
+                    positional_danger_penalty = 7000
+                    for i, e1 in enumerate(enemies):
+                        for e2 in enemies[i:]:
+                            positional_danger_penalty -= e1.get_distance_to(x, y) + e2.get_distance_to(x, y)
+                    if len(enemies) == 0:
+                        enemy_tank = enemies[0]
+                        positional_danger_penalty = enemy_tank.get_distance_to(x, y)
                 except:
                     self.debug("!!! All enemies were destroyed")
                     positional_danger_penalty = 0
-                positional_danger_penalty += 700
+                #positional_danger_penalty /= 5
 
                 danger_penalty_factor = {
-                    5 : 5,
-                    4 : 4,
-                    3 : 3,
-                    2 : 1,
-                    1 : 0.3
+                    5 : 2,
+                    4 : 1.5,
+                    3 : 1,
+                    2 : 0.25,
+                    1 : 0.5
                 }[len(enemies)]
+
                 if len(enemies) == 1 and health_fraction >= 0.7 and hull_fraction >= 0.5:
                     enemy_tank = enemies[0]
                     if enemy_tank.crew_health < 40 or enemy_tank.hull_durability < 20:
