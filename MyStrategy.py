@@ -214,7 +214,7 @@ class MyStrategy:
                 try:
                     #positional_danger_penalty = - sum(map(lambda enemy: enemy.get_distance_to(x, y), enemies))/enemies_count * 2
                     #positional_danger_penalty = - sqrt(sum(map(lambda enemy: enemy.get_distance_to(x, y)**2, enemies))/enemies_count)
-                    positional_danger_penalty = 7000
+                    positional_danger_penalty = 1000 * enemies_count * (enemies_count - 1)
                     for i, e1 in enumerate(enemies):
                         for e2 in enemies[i:]:
                             positional_danger_penalty -= e1.get_distance_to(x, y) + e2.get_distance_to(x, y)
@@ -227,12 +227,14 @@ class MyStrategy:
                 #positional_danger_penalty /= 5
 
                 danger_penalty_factor = {
-                    5 : 2,
-                    4 : 1.5,
-                    3 : 1,
-                    2 : 0.25,
-                    1 : 0.5
+                    5 : 8/20,
+                    4 : 6/12,
+                    3 : 4/6,
+                    2 : 2/2,
+                    1 : 1
                 }[len(enemies)]
+                if len(enemies) >= 3 and est_time > 500:
+                    return -5000
 
                 if len(enemies) == 1 and health_fraction >= 0.7 and hull_fraction >= 0.5:
                     enemy_tank = enemies[0]
