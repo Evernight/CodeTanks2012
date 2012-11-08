@@ -141,8 +141,8 @@ class MyStrategy:
             GRID_VERT_COUNT = 5
             for i in range(GRID_HOR_COUNT):
                 for j in range(GRID_VERT_COUNT):
-                    #if (i > 1 and i < 5) and (j == 2):
-                    #    continue
+                    if (i > 1 and i < 5) and (j == 2):
+                        continue
                     positions.append((world.width * (1 + i) / (GRID_HOR_COUNT + 1),
                                       world.height * (1 + j) / (GRID_VERT_COUNT + 1), "GRID %s, %s" % (i, j)))
 
