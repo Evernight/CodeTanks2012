@@ -259,7 +259,8 @@ class MyStrategy:
                     prev_target_bonus = 0
 
                 # Don't stick to fucking edges
-                edges_penalty = (1 + max(0, 150 - distance_to_edge(x, y, world))) ** 2 / 50
+                #edges_penalty = (1 + max(0, 150 - distance_to_edge(x, y, world))) ** 2 / 50
+                edges_penalty = max(0, -distance_to_edge(x, y, world)**2/50 + 1000)
                 if x < 0 or y < 0 or x > world.width or y > world.height:
                     edges_penalty = 5000
                 if bonus_summand != 0:
