@@ -6,8 +6,8 @@ SHELL_VELOCITY = 14
 SHELL_ACCELERATION = -0.08
 INITIAL_SHELL_VELOCITY = 16.58333316713906
 
-BACKWARDS_THRESHOLD = 2 * PI / 3
-TARGET_REACHED_DISTANCE = 5
+BACKWARDS_THRESHOLD = 3 * PI / 5
+TARGET_REACHED_DISTANCE = 20
 DISTANCE_EPSILON = 1
 
 TIME_ESTIMATION_COEF = (93.118, 0.441, 11.347, -4.311, -45.925, -93.353, -22.895, 22.271 + 20)
@@ -118,6 +118,7 @@ def move_to_position(x, y, tank, move):
 
         return left * multiplier, right * multiplier
 
+    #print('angle=%s, dist=%s' % (angle, dist))
     if (fabs(angle) > 5*PI/6 and dist < 800) or (fabs(angle) > BACKWARDS_THRESHOLD and dist < 500) or (fabs(angle) > PI/2 and dist < 200):
         if angle > 0:
             move.left_track_power, move.right_track_power = get_values(PI - fabs(angle), -1)
