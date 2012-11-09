@@ -239,7 +239,7 @@ class MyStrategy:
                 turrets_danger_penalty = 0
                 for enemy in enemies:
                     turrets_danger_penalty += attacked_area(x, y, enemy, cache=EA_cache)
-                turrets_danger_penalty *= 500
+                turrets_danger_penalty *= 100
 
                 # Flying shells
                 flying_shell_penalty = 0
