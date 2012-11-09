@@ -239,7 +239,15 @@ class MyStrategy:
                 turrets_danger_penalty = 0
                 for enemy in enemies:
                     turrets_danger_penalty += attacked_area(x, y, enemy, cache=EA_cache)
-                turrets_danger_penalty *= 100
+
+                turrets_danger_penalty_factor = {
+                    5 : 70,
+                    4 : 100,
+                    3 : 200,
+                    2 : 300,
+                    1 : 350
+                }[len(enemies)]
+                turrets_danger_penalty *= turrets_danger_penalty_factor
 
                 # Flying shells
                 flying_shell_penalty = 0
@@ -274,7 +282,7 @@ class MyStrategy:
                 est_time *= 2
                 bonus_summand *= 1.2
                 flying_shell_penalty *= 1
-                stopping_penalty *= 0
+                stopping_penalty *= 1
                 result = (2000 + bonus_summand + prev_target_bonus
                           - est_time - stopping_penalty - positional_danger_penalty - turrets_danger_penalty
                           - flying_shell_penalty - edges_penalty)
