@@ -241,7 +241,7 @@ class MyStrategy:
                     turrets_danger_penalty += attacked_area(x, y, enemy, cache=EA_cache)
 
                 turrets_danger_penalty_factor = {
-                    5 : 70,
+                    5 : 100,
                     4 : 100,
                     3 : 200,
                     2 : 300,
@@ -260,7 +260,7 @@ class MyStrategy:
                     stopping_penalty = 0
 
                 # If we're going somewhere, increase priority for this place
-                if self.memory.last_target_position and distance(self.memory.last_target_position, (x, y)) < 5 \
+                if self.memory.last_target_position and distance(self.memory.last_target_position, (x, y)) < 10 \
                     and distance(self.memory.last_target_position, (tank.x, tank.y)) > 5:
                     prev_target_bonus = 400
                 else:
@@ -268,7 +268,7 @@ class MyStrategy:
 
                 # Don't stick to fucking edges
                 #edges_penalty = (1 + max(0, 150 - distance_to_edge(x, y, world))) ** 2 / 50
-                edges_penalty = max(0, -distance_to_edge(x, y, world)**2/20 + 1000)
+                edges_penalty = max(0, -distance_to_edge(x, y, world)**2/10 + 1000)
                 if x < 0 or y < 0 or x > world.width or y > world.height:
                     edges_penalty = 5000
                 if bonus_summand != 0:
@@ -403,7 +403,7 @@ class MyStrategy:
                 return False
 
             def dead_tank_attacked():
-                for obstacle in filter(DEAD_TANK, world.tanks):
+                for obstacle in filter(filter_or(DEAD_TANK, ALLY_TANK(tank.id)), world.tanks):
                     next_position = estimate_target_position(obstacle, tank)
                     next_unit = fictive_unit(obstacle, next_position[0], next_position[1])
                     if (will_hit(tank, next_unit, DEAD_TANK_OBSTACLE_FACTOR) and
