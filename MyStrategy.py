@@ -43,6 +43,9 @@ class MyStrategy:
         self.memory = MyStrategy.Memory()
         self.analysis = PhysicsAnalyser(PHYSICS_RESEARCH_MODE)
 
+        self.str1 = None
+        self.str2 = None
+
     def debug(self, message, ticks_period=5):
         if self.world.tick % ticks_period == 0:
             if DEBUG_MODE:
@@ -55,17 +58,22 @@ class MyStrategy:
         self.debug('#' * 64)
         self.debug('========================= (Tick) %-5s =========================' % world.tick)
         self.debug('Tank %s (x=%s, y=%s, health=%4s/%4s, super_shells=%2s)' %
-                   (tank.id, tank.x, tank.y, tank.crew_health, tank.crew_max_health, tank.premium_shell_count))
+                   (tank.teammate_index, tank.x, tank.y, tank.crew_health, tank.crew_max_health, tank.premium_shell_count))
         self.debug('#' * 64)
-
 
         tanks = world.tanks
 
         allies = list(filter(ALLY_TANK(tank.id), tanks))
         if len(allies) == 1:
-            StrategySecondRound(tank, world, self.memory, DEBUG_MODE).make_turn(move)
+            if self.str2 is None:
+                self.str2 = StrategySecondRound(tank, world, self.memory, DEBUG_MODE)
+            self.str2.change_state(tank, world)
+            self.str2.make_turn(move)
         else:
-            StrategyFirstRound(tank, world, self.memory, DEBUG_MODE).make_turn(move)
+            if self.str1 is None:
+                self.str1 = StrategyFirstRound(tank, world, self.memory, DEBUG_MODE)
+            self.str1.change_state(tank, world)
+            self.str1.make_turn(move)
 
         self.debug('_' * 64)
         self.debug('Output: left: %5.2f, right: %5.2f' % (move.left_track_power, move.right_track_power))

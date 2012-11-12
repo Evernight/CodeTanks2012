@@ -38,6 +38,10 @@ class StrategyScalarField:
             if self.debug_mode:
                 print(message,end=end)
 
+    def change_state(self, tank, world):
+        self.tank = tank
+        self.world = world
+
     def make_turn(self, move):
         return self._make_turn(self.tank, self.world, move)
 

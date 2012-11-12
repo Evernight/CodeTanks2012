@@ -13,17 +13,20 @@ class StrategySecondRound:
             BasicPositionGetter(),
             [
                 BonusPosistionEstimator(1.2),
-                LastTargetEstimator(),
+                LastTargetEstimator(400),
                 TimeToPositionEstimator(2),
                 PositionalDangerEstimator(),
                 TurretsDangerEstimator(),
-                FlyingShellEstimator(),
+                FlyingShellEstimator(2000),
                 EdgePenaltyEstimator(),
                 Distance2PEstimator(500, 120, 300)
             ],
             memory,
             debug_on
         )
+
+    def change_state(self, *args, **kwargs):
+        return self.strategy.change_state(*args, **kwargs)
 
     def make_turn(self, move):
         return self.strategy.make_turn(move)
