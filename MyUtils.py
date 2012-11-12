@@ -20,6 +20,9 @@ def filter_or(*filter_functions):
 def fictive_unit(prototype, x, y):
     return Unit(0, prototype.width, prototype.height, x, y, 0, 0, prototype.angle, 0)
 
+def distance(c1, c2):
+    return hypot(c1[0] - c2[0], c1[1] - c2[1])
+
 def closest_to(coord):
     return lambda arg: min(arg, key=lambda item: distance(item, coord))
 
@@ -40,3 +43,23 @@ def is_going_to_move(object):
         else:
             return False
     return False
+
+# ================================================================
+
+def solve_quadratic(a, b, c):
+    """
+    Returns 0 if unsolvable or there are only negative roots
+    """
+    D = b*b - 4 * a * c
+    if D < 0:
+        return 0
+    if numerically_zero(D):
+        return -b/a
+    r1, r2 = (-b + sqrt(D))/(2 * a), (-b - sqrt(D))/(2 * a)
+    if r1 > 0:
+        return r1
+    else:
+        if r2 > 0:
+            return r2
+        else:
+            return 0
