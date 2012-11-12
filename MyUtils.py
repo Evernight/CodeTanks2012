@@ -1,7 +1,8 @@
+from math import hypot, sqrt
+from Geometry import numerically_zero
 from model import Tank
 from model.BonusType import BonusType
 from model.Unit import Unit
-from GamePhysics import *
 
 ALIVE_ENEMY_TANK = lambda t: not t.teammate and t.crew_health > 0 and t.hull_durability > 0
 ENEMY_TANK = lambda t: not t.teammate

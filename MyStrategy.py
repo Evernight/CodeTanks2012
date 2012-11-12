@@ -1,4 +1,6 @@
+from MyUtils import ALLY_TANK
 from StrategyFirstRound import StrategyFirstRound
+from StrategySecondRound import StrategySecondRound
 from WorldAnalysis import PhysicsAnalyser
 from model.TankType import TankType
 from collections import deque, defaultdict
@@ -52,11 +54,18 @@ class MyStrategy:
         self.debug('')
         self.debug('#' * 64)
         self.debug('========================= (Tick) %-5s =========================' % world.tick)
-        self.debug('Tank (x=%s, y=%s, health=%4s/%4s, super_shells=%2s)' %
-                   (tank.x, tank.y, tank.crew_health, tank.crew_max_health, tank.premium_shell_count))
+        self.debug('Tank %s (x=%s, y=%s, health=%4s/%4s, super_shells=%2s)' %
+                   (tank.id, tank.x, tank.y, tank.crew_health, tank.crew_max_health, tank.premium_shell_count))
         self.debug('#' * 64)
 
-        StrategyFirstRound(tank, world, self.memory, DEBUG_MODE).make_turn(move)
+
+        tanks = world.tanks
+
+        allies = list(filter(ALLY_TANK(tank.id), tanks))
+        if len(allies) == 1:
+            StrategySecondRound(tank, world, self.memory, DEBUG_MODE).make_turn(move)
+        else:
+            StrategyFirstRound(tank, world, self.memory, DEBUG_MODE).make_turn(move)
 
         self.debug('_' * 64)
         self.debug('Output: left: %5.2f, right: %5.2f' % (move.left_track_power, move.right_track_power))
