@@ -1,6 +1,6 @@
 from MyUtils import ALLY_TANK, DEAD_TANK, ALIVE_ENEMY_TANK
 from StrategyFirstRound import StrategyOnePlayer5Enemies, StrategyOnePlayer2Enemies, StrategyOnePlayerDuel
-from StrategySecondRound import StrategySecondRound
+from StrategySecondRound import StrategySecondRound4Enemies, StrategySecondRound2Enemies
 from WorldAnalysis import PhysicsAnalyser
 from model.TankType import TankType
 from collections import deque, defaultdict
@@ -76,7 +76,12 @@ class MyStrategy:
         allies = list(filter(ALLY_TANK(tank.id), tanks))
         enemies = list(filter(ALIVE_ENEMY_TANK, tanks))
         if len(allies) == 1 and not DEAD_TANK(allies[0]):
-            StrategySecondRound(tank, world, self.memory, DEBUG_MODE).make_turn(move)
+            if len(enemies) > 2:
+                StrategySecondRound4Enemies(tank, world, self.memory, DEBUG_MODE).make_turn(move)
+            elif len(enemies) > 1:
+                StrategySecondRound2Enemies(tank, world, self.memory, DEBUG_MODE).make_turn(move)
+            else:
+                StrategyOnePlayerDuel(tank, world, self.memory, DEBUG_MODE).make_turn(move)
         else:
             if len(enemies) > 3:
                 StrategyOnePlayer5Enemies(tank, world, self.memory, DEBUG_MODE).make_turn(move)
