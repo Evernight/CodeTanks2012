@@ -120,7 +120,7 @@ class StrategyScalarField:
                        (next_position.name, next_position.x, next_position.y,
                         self.tank.get_distance_to(next_position.x, next_position.y), self.physics.estimate_time_to_position(next_position.x, next_position.y, tank))
             )
-            self.memory.last_target_position = next_position
+            self.memory.last_target_position[tank.id] = next_position
             self.physics.move_to_position(next_position.x, next_position.y, tank, move)
 
         def process_shooting():
@@ -204,7 +204,7 @@ class StrategyScalarField:
                 self.debug('!!! Obstacle is attacked, don\'t shoot')
                 move.fire_type = FireType.NONE
 
-            if world.tick < 10 + tank.teammate_index * 5:
+            if world.tick < 10 + tank.teammate_index * 10:
                 move.fire_type = FireType.NONE
 
             if fabs(cur_angle) > PI/180 * 0.5:

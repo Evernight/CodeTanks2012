@@ -78,9 +78,9 @@ class LastTargetEstimator(PositionEstimator):
         self.max_value = max_value
 
     def value(self, pos):
-        if (self.context.memory.last_target_position and
-            self.context.memory.last_target_position.distance(pos.x, pos.y) < 10
-            and self.context.memory.last_target_position.distance(self.context.tank.x, self.context.tank.y) > 30):
+        last_target = self.context.memory.last_target_position.get(self.context.tank.id)
+        if (last_target and last_target.distance(pos.x, pos.y) < 10
+            and last_target.distance(self.context.tank.x, self.context.tank.y) > 30):
             prev_target_bonus = self.max_value
         else:
             prev_target_bonus = 0

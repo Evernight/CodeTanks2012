@@ -6,11 +6,12 @@ from model.TankType import TankType
 from collections import deque, defaultdict
 
 # TODO:
-# * shell will hit fix
-# * aggression bonus
 # * new safety function in 2p game
 # * 2p targets smart choice
-#  * velocity extrapolating + estimate ability to predict target position
+# * fix last target bug
+
+# * velocity extrapolating + estimate ability to predict target position
+# * synchronize moving and shooting
 
 #  * alternate unreachable targets
 
@@ -40,15 +41,12 @@ class MyStrategy:
     class Memory:
         def __init__(self):
             self.velocity_history = defaultdict(deque)
-            self.last_target_position = None
+            self.last_target_position = {}
             self.last_turret_target_id = None
 
     def __init__(self):
         self.memory = MyStrategy.Memory()
         self.analysis = PhysicsAnalyser(PHYSICS_RESEARCH_MODE)
-
-        self.str1 = None
-        self.str2 = None
 
     def debug(self, message, ticks_period=5):
         if self.world.tick % ticks_period == 0:
