@@ -2,7 +2,7 @@ from StrategyScalarField import StrategyScalarField
 from SimplePositionEstimators import *
 from PostitionGetters import TrivialPositionGetter, BasicPositionGetter, LightBasicPositionGetter
 from StrategicPositionEstimators import *
-from StrategicPositionEstimators2P import Distance2PEstimator
+from StrategicPositionEstimators2P import Distance2PEstimator, FarDistancePenalty2P
 
 class StrategySecondRound:
 
@@ -20,7 +20,8 @@ class StrategySecondRound:
                 FlyingShellEstimator(2000),
                 EdgePenaltyEstimator(),
                 Distance2PEstimator(300, 120, 300),
-                AddConstantEstimator(3000)
+                FarDistancePenalty2P(600, 1000),
+                AddConstantEstimator(3000),
             ],
             memory,
             debug_on

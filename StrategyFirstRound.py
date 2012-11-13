@@ -9,7 +9,7 @@ class StrategyOnePlayer5Enemies:
         self.strategy = StrategyScalarField(
             tank,
             world,
-            [BasicPositionGetter()],
+            [LightBasicPositionGetter()],
             [
                 BonusPositionEstimator(factor=1.2),
                 LastTargetEstimator(400),
@@ -29,6 +29,7 @@ class StrategyOnePlayer5Enemies:
 
     def make_turn(self, move):
         return self.strategy.make_turn(move)
+
 
 class StrategyOnePlayer2Enemies:
 

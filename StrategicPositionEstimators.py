@@ -88,3 +88,35 @@ class PositionalPairDangerEstimator(PositionEstimator):
         except:
             positional_bonus = 0
         return positional_bonus
+
+class PositionalPairDangerEstimatorWODist(PositionEstimator):
+    NAME = 'PairPos'
+
+    def __init__(self, max_value):
+        self.max_value = max_value
+
+    def _get_danger(self, pos, tank1, tank2):
+        tank1_v = Vector(tank1.x, tank1.y)
+        tank2_v = Vector(tank2.x, tank2.y)
+        tank_v = Vector(pos.x, pos.y)
+
+        d1 = (tank1_v - tank_v).normalize()
+        d2 = (tank2_v - tank_v).normalize()
+        # the more 'danger' is, the more dangerous position is. Values: [0..1]
+        danger = fabs(1 - d1.scalar_product(d2))/2
+
+        return sqrt(danger)
+
+    def value(self, pos):
+        positional_danger = 0
+        try:
+            enemies = self.context.enemies
+            if len(enemies) < 2:
+                return 0
+            for i, e1 in enumerate(enemies):
+                for e2 in enemies[(i + 1):]:
+                    positional_danger += self._get_danger(pos, e1, e2)
+            positional_bonus = (1 - positional_danger) * self.max_value
+        except:
+            positional_bonus = 0
+        return positional_bonus
