@@ -12,13 +12,12 @@ class StrategyOnePlayer5Enemies:
             [BasicPositionGetter(), BorderPositionGetter(7, 5, 120), GridPositionGetter(2, 2)],
             [
                 BonusPositionEstimator(factor=1.2),
-                LastTargetEstimator(400),
+                LastTargetEstimator(150),
                 TimeToPositionEstimator(2),
                 PositionalPowerDangerEstimator(0.35, 9000),
                 TurretsDangerEstimator(),
                 FlyingShellEstimator(2000),
                 EdgePenaltyEstimator(),
-                AddConstantEstimator(3000)
             ],
             memory,
             debug_on
