@@ -6,8 +6,10 @@ from model.TankType import TankType
 from collections import deque, defaultdict
 
 # TODO:
+# * new safety function
+# * 2p targets smart choice
+
 #  * alternate unreachable targets
-#  * new safety function
 #  * velocity extrapolating + estimate ability to predict target position
 
 #  * realistic moving and time estimation (mechanics)

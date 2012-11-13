@@ -17,7 +17,8 @@ class StrategyFirstRound:
                 PositionalDangerEstimator(),
                 TurretsDangerEstimator(),
                 FlyingShellEstimator(2000),
-                EdgePenaltyEstimator()
+                EdgePenaltyEstimator(),
+                AddConstantEstimator(3000)
             ],
             memory,
             debug_on

@@ -239,13 +239,13 @@ class WorldPhysics:
         #d = shell.get_distance_to(x, y)
         t = solve_quadratic(a/2, v0, -d)
 
-        if self.shell_will_hit(shell, tank) and et > t:
+        if self.shell_will_hit(shell, tank, factor=1.05) and et > t:
             return True
         if dist < 150:
             # short distance
-            return self.shell_will_hit(shell, fictive_unit(tank, x, y))
+            return self.shell_will_hit(shell, fictive_unit(tank, x, y), factor=1.05)
         else:
-            # long distance, check if our direction is intersecting segment
+            # long distance, check if our direction is intersecting segment between shell and shell + v_shell*t
             pt_v = Vector(x, y)
             tank_v = Vector(tank.x, tank.y)
             dir = tank_v - pt_v

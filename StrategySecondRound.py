@@ -19,7 +19,8 @@ class StrategySecondRound:
                 TurretsDangerEstimator(),
                 FlyingShellEstimator(2000),
                 EdgePenaltyEstimator(),
-                Distance2PEstimator(300, 120, 300)
+                Distance2PEstimator(300, 120, 300),
+                AddConstantEstimator(3000)
             ],
             memory,
             debug_on
