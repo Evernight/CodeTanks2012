@@ -23,11 +23,11 @@ DEAD_TANK_OBSTACLE_FACTOR = 1.05
 VELOCITY_ESTIMATION_PERIOD = 3
 VELOCITY_ESTIMATION_COUNT = 10
 class StrategyScalarField:
-    def __init__(self, tank, world, position_getter, position_estimators, memory, debug_on=False):
+    def __init__(self, tank, world, position_getters, position_estimators, memory, debug_on=False):
         self.tank = tank
         self.world = world
         self.debug_mode = debug_on
-        self.position_getter = position_getter
+        self.position_getters = position_getters
         self.position_estimators = position_estimators
         self.memory = memory
 
@@ -57,7 +57,9 @@ class StrategyScalarField:
         self.est_time_cache = {}
 
         def process_moving():
-            positions = self.position_getter.positions(tank, world)
+            positions = []
+            for pg in self.position_getters:
+                positions += pg.positions(tank, world)
             self.debug('Got %d positions' % len(positions))
             if not positions:
                 return

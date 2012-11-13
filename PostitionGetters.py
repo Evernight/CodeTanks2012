@@ -90,3 +90,46 @@ class TrivialPositionGetter:
         positions += [Position(b.x, b.y, "BONUS %s" % bonus_name_by_type(b.type)) for b in world.bonuses]
 
         return positions
+
+
+
+
+class MainDirectionsGetter:
+    def positions(self, tank, world):
+        positions = []
+
+        # Forward and back direction
+        tank_v = Vector(tank.x, tank.y)
+        tank_d_v = Vector(1, 0).rotate(tank.angle)
+
+        forw = tank_v + tank_d_v * 40
+        back = tank_v - tank_d_v * 40
+        positions.append(Position(forw.x, forw.y, "FORWARD"))
+        positions.append(Position(back.x, back.y, "BACKWARD"))
+
+        fforw = tank_v + tank_d_v * 80
+        fback = tank_v - tank_d_v * 80
+        positions.append(Position(fforw.x, fforw.y, "FAR FORWARD"))
+        positions.append(Position(fback.x, fback.y, "FAR BACKWARD"))
+
+        return positions
+
+class BonusPositionGetter:
+    def positions(self, tank, world):
+        return [Position(b.x, b.y, "BONUS %s" % bonus_name_by_type(b.type)) for b in world.bonuses]
+
+class LowDiagonalGetter:
+    def __init__(self, angle=PI/6):
+        self.angle = angle
+
+    def positions(self, tank, world):
+        positions = []
+
+        # Low diagonal move
+        tank_v = Vector(tank.x, tank.y)
+        tank_d_v = Vector(1, 0).rotate(tank.angle)
+
+        for a in [self.angle, - self.angle, PI - self.angle, self.angle - PI]:
+            pt = tank_v + tank_d_v.rotate(a) * 100
+            positions.append(Position(pt.x, pt.y, "TURN %.0f" % degrees(a)))
+        return positions

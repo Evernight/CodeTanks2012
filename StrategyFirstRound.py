@@ -9,7 +9,7 @@ class StrategyFirstRound:
         self.strategy = StrategyScalarField(
             tank,
             world,
-            BasicPositionGetter(),
+            [BasicPositionGetter()],
             [
                 BonusPosistionEstimator(factor=1.2),
                 LastTargetEstimator(400),

@@ -10,7 +10,7 @@ class StrategySecondRound:
         self.strategy = StrategyScalarField(
             tank,
             world,
-            BasicPositionGetter(),
+            [BasicPositionGetter()],
             [
                 BonusPosistionEstimator(1.2),
                 LastTargetEstimator(400),
