@@ -53,20 +53,6 @@ class MyStrategy:
             if DEBUG_MODE:
                 print(message)
 
-    __first_round_strategy = None
-    def first_round_strategy(self, tank, world):
-        if self.__first_round_strategy is None:
-            self.__first_round_strategy = StrategyOnePlayer(tank, world, self.memory, DEBUG_MODE)
-        self.__first_round_strategy.change_state(tank, world)
-        return self.__first_round_strategy
-
-    __second_round_strategy = None
-    def second_round_strategy(self, tank, world):
-        if self.__second_round_strategy is None:
-            self.__second_round_strategy = StrategySecondRound(tank, world, self.memory, DEBUG_MODE)
-        self.__second_round_strategy.change_state(tank, world)
-        return self.__second_round_strategy
-
     def move(self, tank, world, move):
         self.world = world
 
@@ -90,7 +76,7 @@ class MyStrategy:
         if len(allies) == 1 and not DEAD_TANK(allies[0]):
             StrategySecondRound(tank, world, self.memory, DEBUG_MODE).make_turn(move)
         else:
-            if len(enemies) > 5:
+            if len(enemies) > 2:
                 StrategyOnePlayer5Enemies(tank, world, self.memory, DEBUG_MODE).make_turn(move)
             else:
                 StrategyOnePlayer2Enemies(tank, world, self.memory, DEBUG_MODE).make_turn(move)

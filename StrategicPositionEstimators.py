@@ -1,4 +1,5 @@
 from math import sqrt, fabs
+from GamePhysics import MAX_DISTANCE
 from Geometry import Vector
 from PositionEstimators import PositionEstimator
 
@@ -117,6 +118,24 @@ class PositionalPairDangerEstimatorWODist(PositionEstimator):
                 for e2 in enemies[(i + 1):]:
                     positional_danger += self._get_danger(pos, e1, e2)
             positional_bonus = (1 - positional_danger) * self.max_value
+        except:
+            positional_bonus = 0
+        return positional_bonus
+
+
+class PositionalPowerDangerEstimator(PositionEstimator):
+    NAME = 'PosPower'
+
+    def __init__(self, power, max_value):
+        self.power = power
+        self.max_possible = MAX_DISTANCE**(2 * self.power)
+        self.max_value = max_value
+
+    def value(self, pos):
+        try:
+            enemies = self.context.enemies
+            safety = sum([((e.x - pos.x)**2 + (e.y - pos.y)**2)**self.power for e in enemies])/(self.context.enemies_count * self.max_possible)
+            positional_bonus = safety * self.max_value
         except:
             positional_bonus = 0
         return positional_bonus

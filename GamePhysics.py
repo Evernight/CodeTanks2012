@@ -2,6 +2,8 @@ from math import pi as PI, fabs, degrees, sqrt, hypot
 from Geometry import Vector, sign, numerically_zero
 from MyUtils import fictive_unit, is_going_to_move, NOT_TANK, solve_quadratic
 
+MAX_DISTANCE = 1500
+
 SHELL_VELOCITY = 14
 SHELL_ACCELERATION = -0.08
 INITIAL_SHELL_VELOCITY = 16.58333316713906
