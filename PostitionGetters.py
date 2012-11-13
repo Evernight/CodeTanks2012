@@ -4,14 +4,11 @@ from math import pi as PI
 from MyUtils import bonus_name_by_type
 from Position import Position
 
-GRID_HOR_COUNT = 7
-GRID_VERT_COUNT = 5
-
 class GridPositionGetter:
     def __init__(self, width, height):
         self.width = width
         self.height = height
-        _
+
     def positions(self, tank, world):
         positions = []
 
@@ -24,6 +21,40 @@ class GridPositionGetter:
                         world.height * (1 + j) / (self.height + 1),
                         "GRID %s/%s, %s/%s" % (i + 1, self.width, j + 1, self.height))
                 )
+
+        return positions
+
+class BorderPositionGetter:
+    def __init__(self, width, height, distance):
+        self.width = width
+        self.height = height
+        self.distance = distance
+
+    def positions(self, tank, world):
+        positions = []
+
+        for i in range(self.width - 1):
+            positions.append(Position(
+                world.width * (1 + i) / (self.width + 1),
+                world.height - self.distance,
+                "LOW BORDER %s/%s" %(i + 1, self.width)))
+
+            positions.append(Position(
+                world.width * (1 + i) / (self.width + 1),
+                self.distance,
+                "TOP BORDER %s/%s" %(i + 1, self.width)))
+
+        for j in range(self.height- 1):
+            positions.append(Position(
+                world.width - self.distance,
+                world.width * (1 + j) / (self.height + 1),
+                "RIGHT BORDER %s/%s" %(j + 1, self.height)))
+
+            positions.append(Position(
+                self.distance,
+                world.height * (1 + j) / (self.height + 1),
+                "LEFT BORDER %s/%s" %(j + 1, self.height)))
+
 
         return positions
 
@@ -61,18 +92,6 @@ class BasicPositionGetter:
 class LightBasicPositionGetter:
     def positions(self, tank, world):
         positions = []
-
-        # Grid
-        for i in range(7):
-            for j in range(5):
-                if i != 0 and i != 6 and j != 0 and j != 4:
-                    continue
-                positions.append(
-                    Position(
-                        world.width * (1 + i) / (GRID_HOR_COUNT + 1),
-                        world.height * (1 + j) / (GRID_VERT_COUNT + 1),
-                        "GRID %s, %s" % (i, j))
-                )
 
         # Current position
         positions.append(Position(tank.x, tank.y, "CURRENT"))

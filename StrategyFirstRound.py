@@ -1,6 +1,6 @@
 from StrategyScalarField import StrategyScalarField
 from SimplePositionEstimators import *
-from PostitionGetters import   TrivialPositionGetter, BasicPositionGetter, LightBasicPositionGetter
+from PostitionGetters import   TrivialPositionGetter, BasicPositionGetter, LightBasicPositionGetter, GridPositionGetter, BorderPositionGetter
 from StrategicPositionEstimators import *
 
 class StrategyOnePlayer5Enemies:
@@ -9,7 +9,7 @@ class StrategyOnePlayer5Enemies:
         self.strategy = StrategyScalarField(
             tank,
             world,
-            [LightBasicPositionGetter()],
+            [BasicPositionGetter(), BorderPositionGetter(7, 5, 100)],
             [
                 BonusPositionEstimator(factor=1.2),
                 LastTargetEstimator(400),
@@ -37,7 +37,7 @@ class StrategyOnePlayer2Enemies:
         self.strategy = StrategyScalarField(
             tank,
             world,
-            [BasicPositionGetter()],
+            [BasicPositionGetter(), GridPositionGetter(7, 5)],
             [
                 BonusPositionEstimator(factor=1.2),
                 LastTargetEstimator(400),
