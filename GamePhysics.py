@@ -3,6 +3,7 @@ from Geometry import Vector, sign, numerically_zero
 from MyUtils import fictive_unit, is_going_to_move, NOT_TANK, solve_quadratic
 
 MAX_DISTANCE = 1500
+AVERAGE_DISTANCE = 1000
 
 SHELL_VELOCITY = 14
 SHELL_ACCELERATION = -0.08

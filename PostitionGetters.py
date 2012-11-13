@@ -6,21 +6,30 @@ from Position import Position
 
 GRID_HOR_COUNT = 7
 GRID_VERT_COUNT = 5
-class BasicPositionGetter:
+
+class GridPositionGetter:
+    def __init__(self, width, height):
+        self.width = width
+        self.height = height
+        _
     def positions(self, tank, world):
         positions = []
 
         # Grid
-        for i in range(GRID_HOR_COUNT):
-            for j in range(GRID_VERT_COUNT):
-                if (i > 1 and i < 5) and (j == 2):
-                    continue
+        for i in range(self.width):
+            for j in range(self.height):
                 positions.append(
                     Position(
-                        world.width * (1 + i) / (GRID_HOR_COUNT + 1),
-                        world.height * (1 + j) / (GRID_VERT_COUNT + 1),
-                        "GRID %s, %s" % (i, j))
+                        world.width * (1 + i) / (self.width + 1),
+                        world.height * (1 + j) / (self.height + 1),
+                        "GRID %s/%s, %s/%s" % (i + 1, self.width, j + 1, self.height))
                 )
+
+        return positions
+
+class BasicPositionGetter:
+    def positions(self, tank, world):
+        positions = []
 
         # Current position
         positions.append(Position(tank.x, tank.y, "CURRENT"))

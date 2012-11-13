@@ -14,7 +14,7 @@ class StrategyOnePlayer5Enemies:
                 BonusPositionEstimator(factor=1.2),
                 LastTargetEstimator(400),
                 TimeToPositionEstimator(2),
-                PositionalPowerDangerEstimator(0.35, 3000),
+                PositionalPowerDangerEstimator(0.35, 9000),
                 TurretsDangerEstimator(),
                 FlyingShellEstimator(2000),
                 EdgePenaltyEstimator(),
