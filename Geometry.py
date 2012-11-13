@@ -1,5 +1,5 @@
 import numbers
-from math import fabs, sqrt, pi as PI, sin, cos, copysign, acos
+from math import fabs, sqrt, pi as PI, sin, cos, copysign, acos, hypot
 
 EPSILON_ERROR = 1e-9
 
@@ -24,7 +24,7 @@ class Vector:
         return Vector(self.x + other.x, self.y + other.y)
 
     def __sub__(self, other):
-        return self + other * (-1)
+        return Vector(self.x - other.x, self.y - other.y)
 
     def __mul__(self, other):
         return Vector(self.x * other, self.y * other)
@@ -44,7 +44,7 @@ class Vector:
         #raise("WTF man?")
 
     def length(self):
-        return sqrt(self.x**2 + self.y**2)
+        return hypot(self.x, self.y)
 
     def normalize(self):
         return self / self.length()

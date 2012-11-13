@@ -1,5 +1,5 @@
 from math import sqrt
-from field.PositionEstimators import PositionEstimator
+from PositionEstimators import PositionEstimator
 
 class PositionalDangerEstimator(PositionEstimator):
     """

@@ -1,8 +1,8 @@
 from StrategyScalarField import StrategyScalarField
-from field.SimplePositionEstimators import *
-from field.PostitionGetters import BasicPositionGetter
-from field.StrategicPositionEstimators import *
-from field.StrategicPositionEstimators2P import Distance2PEstimator
+from SimplePositionEstimators import *
+from PostitionGetters import TrivialPositionGetter, BasicPositionGetter, LightBasicPositionGetter
+from StrategicPositionEstimators import *
+from StrategicPositionEstimators2P import Distance2PEstimator
 
 class StrategySecondRound:
 

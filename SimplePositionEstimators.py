@@ -1,6 +1,6 @@
-from field.PositionEstimators import PositionEstimator
+from PositionEstimators import PositionEstimator
 from math import sqrt
-from MyUtils import unit_closest_to, distance
+from MyUtils import unit_closest_to
 from model.BonusType import BonusType
 
 class BonusPosistionEstimator(PositionEstimator):
@@ -48,7 +48,9 @@ class TimeToPositionEstimator(PositionEstimator):
         self.factor = factor
 
     def value(self, pos):
-        return -self.context.physics.estimate_time_to_position(pos.x, pos.y, self.context.tank) * self.factor
+        if not pos in self.context.est_time_cache:
+            self.context.est_time_cache[pos] = self.context.physics.estimate_time_to_position(pos.x, pos.y, self.context.tank)
+        return -self.context.est_time_cache[pos] * self.factor
 
 class EdgePenaltyEstimator(PositionEstimator):
     """
@@ -95,7 +97,11 @@ class FlyingShellEstimator(PositionEstimator):
 
     def value(self, pos):
         flying_shell_penalty = 0
+        if not pos in self.context.est_time_cache:
+            self.context.est_time_cache[pos] = self.context.physics.estimate_time_to_position(pos.x, pos.y, self.context.tank)
+        est_time = self.context.est_time_cache[pos]
+
         for shell in self.context.world.shells:
-            if self.context.physics.shell_will_hit_tank_going_to(shell, self.context.tank, pos.x, pos.y):
+            if self.context.physics.shell_will_hit_tank_going_to(shell, self.context.tank, pos.x, pos.y, et=est_time):
                 flying_shell_penalty = self.max_value
         return -flying_shell_penalty

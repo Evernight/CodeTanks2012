@@ -1,6 +1,6 @@
 from math import fabs
 from MyUtils import ALLY_TANK
-from field.PositionEstimators import PositionEstimator
+from PositionEstimators import PositionEstimator
 
 class Distance2PEstimator(PositionEstimator):
     """
@@ -15,7 +15,7 @@ class Distance2PEstimator(PositionEstimator):
         self.width = width
         self.optimal_distance = optimal_distance
 
-    def value(self):
+    def value(self, pos):
         tanks = self.context.world.tanks
         cur_tank = self.context.tank
 
@@ -23,6 +23,6 @@ class Distance2PEstimator(PositionEstimator):
         if len(allies) != 1:
             return 0
         ally = allies[0]
-        dist = ally.get_distance_to_unit(cur_tank)
+        dist = ally.get_distance_to(pos.x, pos.y)
 
         return (1 - fabs(dist - self.optimal_distance)/self.width) * self.max_value

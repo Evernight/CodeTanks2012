@@ -50,14 +50,14 @@ class Tank(Unit):
 
         self.engine_power = {
                                 TankType.MEDIUM: 7500.0,
-                                TankType.HEAVY: 7500.0,
+                                TankType.HEAVY: 8500.0,
                                 TankType.TANK_DESTROYER: 5000.0
                             }[type]
 
         self.engine_rear_power_factor = {
                                             TankType.MEDIUM: 0.75,
-                                            TankType.HEAVY: 0.5,
-                                            TankType.TANK_DESTROYER: 0.35
+                                            TankType.HEAVY: 0.65,
+                                            TankType.TANK_DESTROYER: 0.5
                                         }[type]
 
         self.turret_turn_speed = {
@@ -67,9 +67,9 @@ class Tank(Unit):
                                  }[type]
 
         self.turret_max_relative_angle = {
-                                             TankType.MEDIUM: 1.0 * pi / 180.0,
-                                             TankType.HEAVY: 0.5 * pi / 180.0,
-                                             TankType.TANK_DESTROYER: 1.5 * pi / 180.0
+                                             TankType.MEDIUM: 0.0 * pi / 180.0,
+                                             TankType.HEAVY: 0.0 * pi / 180.0,
+                                             TankType.TANK_DESTROYER: 15.0 * pi / 180.0
                                          }[type]
 
         self.crew_max_health = {
@@ -96,7 +96,7 @@ class Tank(Unit):
                                    TankType.TANK_DESTROYER: 125
                                }[type]
 
-        self.read_armor = {
+        self.rear_armor = {
                                    TankType.MEDIUM: 100,
                                    TankType.HEAVY: 100,
                                    TankType.TANK_DESTROYER: 100

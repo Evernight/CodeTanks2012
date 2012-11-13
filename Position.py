@@ -11,3 +11,6 @@ class Position:
 
     def distance(self, x, y):
         return hypot(self.x - x, self.y - y)
+
+    def __hash__(self):
+        return (self.x, self.y).__hash__()

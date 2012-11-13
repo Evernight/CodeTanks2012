@@ -42,21 +42,25 @@ class StrategyScalarField:
         self.tank = tank
         self.world = world
 
+        self.physics = WorldPhysics(world)
+
     def make_turn(self, move):
         return self._make_turn(self.tank, self.world, move)
 
     def _make_turn(self, tank, world, move):
+        # Precalc for estimation
+        self.enemies = list(filter(ALIVE_ENEMY_TANK, world.tanks))
+        self.health_fraction = tank.crew_health / tank.crew_max_health
+        self.hull_fraction = tank.hull_durability / tank.hull_max_durability
+        self.enemies_count = len(self.enemies)
+        self.EA_cache = {}
+        self.est_time_cache = {}
+
         def process_moving():
             positions = self.position_getter.positions(tank, world)
+            self.debug('Got %d positions' % len(positions))
             if not positions:
                 return
-
-            # Precalc for estimation
-            self.enemies = list(filter(ALIVE_ENEMY_TANK, world.tanks))
-            self.health_fraction = tank.crew_health / tank.crew_max_health
-            self.hull_fraction = tank.hull_durability / tank.hull_max_durability
-            self.enemies_count = len(self.enemies)
-            self.EA_cache = {}
 
             for e in self.position_estimators:
                 e.context = self
@@ -134,7 +138,7 @@ class StrategyScalarField:
                 angle_penalty = angle_penalty_factor * (angle_degrees**1.2)/2
                 # Headshot ^_^
                 if ((target.crew_health <= 20 or target.hull_durability <= 20) or
-                    (tank.premium_shell_count > 0 and (target.crew_health < 35 or target.hull_durability <= 35))):
+                    (tank.premium_shell_count > 0 and (target.crew_health <= 35 or target.hull_durability <= 35))):
                     finish_bonus = 30
                 else:
                     finish_bonus = 0
@@ -187,7 +191,10 @@ class StrategyScalarField:
                 fictive_unit(cur_target, est_pos[0], est_pos[1]),
                 TARGETING_FACTOR
             ):
-                move.fire_type = FireType.PREMIUM_PREFERRED
+                if self.health_fraction > 0.8 and self.hull_fraction > 0.6 and tank.get_distance_to_unit(cur_target) > 600 and tank.premium_shell_count <= 2:
+                    move.fire_type = FireType.REGULAR
+                else:
+                    move.fire_type = FireType.PREMIUM_PREFERRED
             else:
                 move.fire_type = FireType.NONE
 
@@ -195,7 +202,7 @@ class StrategyScalarField:
                 self.debug('!!! Obstacle is attacked, don\'t shoot')
                 move.fire_type = FireType.NONE
 
-            if world.tick < 10:
+            if world.tick < 10 + tank.teammate_index * 5:
                 move.fire_type = FireType.NONE
 
             if fabs(cur_angle) > PI/180 * 0.5:

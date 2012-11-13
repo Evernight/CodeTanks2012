@@ -1,4 +1,4 @@
-from MyUtils import ALLY_TANK
+from MyUtils import ALLY_TANK, lazy
 from StrategyFirstRound import StrategyFirstRound
 from StrategySecondRound import StrategySecondRound
 from WorldAnalysis import PhysicsAnalyser
@@ -51,6 +51,20 @@ class MyStrategy:
             if DEBUG_MODE:
                 print(message)
 
+    __first_round_strategy = None
+    def first_round_strategy(self, tank, world):
+        if self.__first_round_strategy is None:
+            self.__first_round_strategy = StrategyFirstRound(tank, world, self.memory, DEBUG_MODE)
+        self.__first_round_strategy.change_state(tank, world)
+        return self.__first_round_strategy
+
+    __second_round_strategy = None
+    def second_round_strategy(self, tank, world):
+        if self.__second_round_strategy is None:
+            self.__second_round_strategy = StrategySecondRound(tank, world, self.memory, DEBUG_MODE)
+        self.__second_round_strategy.change_state(tank, world)
+        return self.__second_round_strategy
+
     def move(self, tank, world, move):
         self.world = world
 
@@ -65,15 +79,12 @@ class MyStrategy:
 
         allies = list(filter(ALLY_TANK(tank.id), tanks))
         if len(allies) == 1:
-            if self.str2 is None:
-                self.str2 = StrategySecondRound(tank, world, self.memory, DEBUG_MODE)
-            self.str2.change_state(tank, world)
-            self.str2.make_turn(move)
+            #self.second_round_strategy(tank, world).make_turn(move)
+            StrategySecondRound(tank, world, self.memory, DEBUG_MODE).make_turn(move)
         else:
-            if self.str1 is None:
-                self.str1 = StrategyFirstRound(tank, world, self.memory, DEBUG_MODE)
-            self.str1.change_state(tank, world)
-            self.str1.make_turn(move)
+            #self.first_round_strategy(tank, world).make_turn(move)
+            StrategyFirstRound(tank, world, self.memory, DEBUG_MODE).make_turn(move)
+        #StrategySecondRound(tank, world, self.memory, DEBUG_MODE).make_turn(move)
 
         self.debug('_' * 64)
         self.debug('Output: left: %5.2f, right: %5.2f' % (move.left_track_power, move.right_track_power))
