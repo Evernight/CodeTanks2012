@@ -3,7 +3,7 @@ from math import sqrt
 from MyUtils import unit_closest_to
 from model.BonusType import BonusType
 
-class BonusPosistionEstimator(PositionEstimator):
+class BonusPositionEstimator(PositionEstimator):
     """
     Bonus priority:
     + Need this bonus
@@ -65,7 +65,7 @@ class EdgePenaltyEstimator(PositionEstimator):
 
     def value(self, pos):
         edges_penalty = max(0, -self.context.physics.distance_to_edge(pos.x, pos.y, self.context.world)**2/10 + 1000)
-        if pos.x < 0 or pos.y < 0 or pos.x > self.context.world.width or pos.y > self.context.world.height:
+        if pos.x < 10 or pos.y < 10 or pos.x > self.context.world.width - 10 or pos.y > self.context.world.height - 10:
             edges_penalty = 5000
         #        if bonus_summand != 0:
         #            edges_penalty = 0

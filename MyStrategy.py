@@ -1,4 +1,4 @@
-from MyUtils import ALLY_TANK, lazy
+from MyUtils import ALLY_TANK, lazy, DEAD_TANK
 from StrategyFirstRound import StrategyFirstRound
 from StrategySecondRound import StrategySecondRound
 from WorldAnalysis import PhysicsAnalyser
@@ -70,15 +70,21 @@ class MyStrategy:
 
         self.debug('')
         self.debug('#' * 64)
-        self.debug('========================= (Tick) %-5s =========================' % world.tick)
-        self.debug('Tank %s (x=%s, y=%s, health=%4s/%4s, super_shells=%2s)' %
-                   (tank.teammate_index, tank.x, tank.y, tank.crew_health, tank.crew_max_health, tank.premium_shell_count))
+        self.debug('========================= (Tick) #%-4s =========================' % world.tick)
+        self.debug('Tank %s (x=%s, y=%s, health=%4s/%4s, hull=%4s/%4s, super_shells=%2s, reload=%3s/%3s)' %
+                   (tank.teammate_index, tank.x, tank.y, tank.crew_health, tank.crew_max_health,
+                    tank.hull_durability, tank.hull_max_durability, tank.premium_shell_count,
+                    tank.remaining_reloading_time, tank.reloading_time))
         self.debug('#' * 64)
+
+        if DEAD_TANK(tank):
+            self.debug('DEAD x_x')
+            return
 
         tanks = world.tanks
 
         allies = list(filter(ALLY_TANK(tank.id), tanks))
-        if len(allies) == 1:
+        if len(allies) == 1 and not DEAD_TANK(allies[0]):
             #self.second_round_strategy(tank, world).make_turn(move)
             StrategySecondRound(tank, world, self.memory, DEBUG_MODE).make_turn(move)
         else:

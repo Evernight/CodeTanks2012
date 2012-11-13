@@ -12,14 +12,14 @@ class StrategySecondRound:
             world,
             [BasicPositionGetter()],
             [
-                BonusPosistionEstimator(1.2),
+                BonusPositionEstimator(1.2),
                 LastTargetEstimator(400),
                 TimeToPositionEstimator(2),
                 PositionalDangerEstimator(),
                 TurretsDangerEstimator(),
                 FlyingShellEstimator(2000),
                 EdgePenaltyEstimator(),
-                Distance2PEstimator(500, 120, 300)
+                Distance2PEstimator(300, 120, 300)
             ],
             memory,
             debug_on

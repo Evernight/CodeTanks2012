@@ -25,4 +25,4 @@ class Distance2PEstimator(PositionEstimator):
         ally = allies[0]
         dist = ally.get_distance_to(pos.x, pos.y)
 
-        return (1 - fabs(dist - self.optimal_distance)/self.width) * self.max_value
+        return max(0, (1 - fabs(dist - self.optimal_distance)/self.width)) * self.max_value

@@ -11,7 +11,7 @@ class StrategyFirstRound:
             world,
             [BasicPositionGetter()],
             [
-                BonusPosistionEstimator(factor=1.2),
+                BonusPositionEstimator(factor=1.2),
                 LastTargetEstimator(400),
                 TimeToPositionEstimator(2),
                 PositionalDangerEstimator(),
