@@ -1,4 +1,4 @@
-from math import sqrt
+from math import sqrt, fabs
 
 class PositionEstimator:
     context = None
@@ -11,3 +11,6 @@ class StoppingPenaltyEstimator(PositionEstimator):
         #if bonus_summand != 0:
         #    stopping_penalty = 0
         return stopping_penalty
+
+def ring_linear_bonus(r, width, max_value, distance):
+    return max(0, (1 - fabs(distance - r)/width)) * max_value

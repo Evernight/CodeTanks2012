@@ -1,7 +1,7 @@
 from math import sqrt, fabs
 from GamePhysics import MAX_DISTANCE, AVERAGE_DISTANCE
 from Geometry import Vector
-from PositionEstimators import PositionEstimator
+from PositionEstimators import PositionEstimator, ring_linear_bonus
 
 class PositionalDangerEstimator(PositionEstimator):
     """
@@ -90,39 +90,6 @@ class PositionalPairDangerEstimator(PositionEstimator):
             positional_bonus = 0
         return positional_bonus
 
-class PositionalPairDangerEstimatorWODist(PositionEstimator):
-    NAME = 'PairPos'
-
-    def __init__(self, max_value):
-        self.max_value = max_value
-
-    def _get_danger(self, pos, tank1, tank2):
-        tank1_v = Vector(tank1.x, tank1.y)
-        tank2_v = Vector(tank2.x, tank2.y)
-        tank_v = Vector(pos.x, pos.y)
-
-        d1 = (tank1_v - tank_v).normalize()
-        d2 = (tank2_v - tank_v).normalize()
-        # the more 'danger' is, the more dangerous position is. Values: [0..1]
-        danger = fabs(1 - d1.scalar_product(d2))/2
-
-        return sqrt(danger)
-
-    def value(self, pos):
-        positional_danger = 0
-        try:
-            enemies = self.context.enemies
-            if len(enemies) < 2:
-                return 0
-            for i, e1 in enumerate(enemies):
-                for e2 in enemies[(i + 1):]:
-                    positional_danger += self._get_danger(pos, e1, e2)
-            positional_bonus = (1 - positional_danger) * self.max_value
-        except:
-            positional_bonus = 0
-        return positional_bonus
-
-
 class PositionalPowerDangerEstimator(PositionEstimator):
     NAME = 'PosPower'
 
@@ -142,13 +109,58 @@ class PositionalPowerDangerEstimator(PositionEstimator):
             positional_bonus = 0
         return positional_bonus
 
-class BordersBonusEstimator(PositionEstimator):
-    NAME = 'PosPower'
+#class BordersBonusEstimator(PositionEstimator):
+#    NAME = 'PosPower'
+#
+#    def __init__(self, power, max_value):
+#        self.power = power
+#        self.max_possible = AVERAGE_DISTANCE**(2 * self.power)
+#        self.max_value = max_value
+#
+#    def value(self, pos):
+#        pass
 
-    def __init__(self, power, max_value):
-        self.power = power
-        self.max_possible = AVERAGE_DISTANCE**(2 * self.power)
+class DuelPositionEstimator(PositionEstimator):
+    NAME = 'Duel'
+
+    def __init__(self, max_value):
         self.max_value = max_value
 
     def value(self, pos):
-        pass
+        try:
+            enemies = self.context.enemies
+            if len(enemies) != 1:
+                return
+            enemy = enemies[0]
+            dist = enemy.get_distance_to(pos.x, pos.y)
+
+            enemy_health_fraction = enemy.crew_health / enemy.crew_max_health
+            enemy_hull_fraction = enemy.hull_durability / enemy.hull_max_durability
+
+            if self.context.health_fraction >= 0.75 and self.context.hull_fraction >= 0.45:
+                if enemy_health_fraction > 0.75 and enemy_hull_fraction >= 0.45:
+                    return ring_linear_bonus(700, 500, self.max_value, dist)
+                elif enemy_health_fraction > 0.3 and enemy_hull_fraction >= 0.2:
+                    return ring_linear_bonus(500, 300, self.max_value, dist)
+                else:
+                    return ring_linear_bonus(200, 200, self.max_value, dist)
+
+            elif self.context.health_fraction >= 0.4 and self.context.hull_fraction >= 0.25:
+                if enemy_health_fraction > 0.75 and enemy_hull_fraction >= 0.45:
+                    return ring_linear_bonus(900, 400, self.max_value, dist)
+                elif enemy_health_fraction > 0.3 and enemy_hull_fraction >= 0.2:
+                    return ring_linear_bonus(700, 400, self.max_value, dist)
+                else:
+                    return ring_linear_bonus(200, 500, self.max_value, dist)
+
+            else:
+                if enemy_health_fraction > 0.75 and enemy_hull_fraction >= 0.45:
+                    return ring_linear_bonus(1100, 400, self.max_value, dist)
+                elif enemy_health_fraction > 0.3 and enemy_hull_fraction >= 0.2:
+                    return ring_linear_bonus(900, 600, self.max_value, dist)
+                else:
+                    return ring_linear_bonus(500, 400, self.max_value, dist)
+
+        except:
+            positional_bonus = 0
+        return positional_bonus

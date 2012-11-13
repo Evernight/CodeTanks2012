@@ -1,16 +1,18 @@
 from MyUtils import ALLY_TANK, DEAD_TANK, ALIVE_ENEMY_TANK
-from StrategyFirstRound import StrategyOnePlayer5Enemies, StrategyOnePlayer2Enemies
+from StrategyFirstRound import StrategyOnePlayer5Enemies, StrategyOnePlayer2Enemies, StrategyOnePlayerDuel
 from StrategySecondRound import StrategySecondRound
 from WorldAnalysis import PhysicsAnalyser
 from model.TankType import TankType
 from collections import deque, defaultdict
 
 # TODO:
-# * new safety function
+# * shell will hit fix
+# * aggression bonus
+# * new safety function in 2p game
 # * 2p targets smart choice
+#  * velocity extrapolating + estimate ability to predict target position
 
 #  * alternate unreachable targets
-#  * velocity extrapolating + estimate ability to predict target position
 
 #  * realistic moving and time estimation (mechanics)
 #  * take target orientation into account when shooting / orientation of the tank
@@ -78,8 +80,10 @@ class MyStrategy:
         else:
             if len(enemies) > 3:
                 StrategyOnePlayer5Enemies(tank, world, self.memory, DEBUG_MODE).make_turn(move)
-            else:
+            elif len(enemies) > 1:
                 StrategyOnePlayer2Enemies(tank, world, self.memory, DEBUG_MODE).make_turn(move)
+            else:
+                StrategyOnePlayerDuel(tank, world, self.memory, DEBUG_MODE).make_turn(move)
 
         self.debug('_' * 64)
         self.debug('Output: left: %5.2f, right: %5.2f' % (move.left_track_power, move.right_track_power))

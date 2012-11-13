@@ -39,4 +39,4 @@ class FarDistancePenalty2P(PositionEstimator):
         ally = allies[0]
         dist = ally.get_distance_to(pos.x, pos.y)
 
-        return - max(0, dist - self.danger_dist)/(1500 - self.danger_dist) * self.max_value
+        return -max(0, dist - self.danger_dist)/(1500 - self.danger_dist) * self.max_value
