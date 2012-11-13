@@ -1,5 +1,5 @@
-from MyUtils import ALLY_TANK, lazy, DEAD_TANK
-from StrategyFirstRound import StrategyFirstRound
+from MyUtils import ALLY_TANK, DEAD_TANK, ALIVE_ENEMY_TANK
+from StrategyFirstRound import StrategyOnePlayer5Enemies, StrategyOnePlayer2Enemies
 from StrategySecondRound import StrategySecondRound
 from WorldAnalysis import PhysicsAnalyser
 from model.TankType import TankType
@@ -56,7 +56,7 @@ class MyStrategy:
     __first_round_strategy = None
     def first_round_strategy(self, tank, world):
         if self.__first_round_strategy is None:
-            self.__first_round_strategy = StrategyFirstRound(tank, world, self.memory, DEBUG_MODE)
+            self.__first_round_strategy = StrategyOnePlayer(tank, world, self.memory, DEBUG_MODE)
         self.__first_round_strategy.change_state(tank, world)
         return self.__first_round_strategy
 
@@ -86,13 +86,14 @@ class MyStrategy:
         tanks = world.tanks
 
         allies = list(filter(ALLY_TANK(tank.id), tanks))
+        enemies = list(filter(ALIVE_ENEMY_TANK, tanks))
         if len(allies) == 1 and not DEAD_TANK(allies[0]):
-            #self.second_round_strategy(tank, world).make_turn(move)
             StrategySecondRound(tank, world, self.memory, DEBUG_MODE).make_turn(move)
         else:
-            #self.first_round_strategy(tank, world).make_turn(move)
-            StrategyFirstRound(tank, world, self.memory, DEBUG_MODE).make_turn(move)
-        #StrategySecondRound(tank, world, self.memory, DEBUG_MODE).make_turn(move)
+            if len(enemies) > 2:
+                StrategyOnePlayer5Enemies(tank, world, self.memory, DEBUG_MODE).make_turn(move)
+            else:
+                StrategyOnePlayer2Enemies(tank, world, self.memory, DEBUG_MODE).make_turn(move)
 
         self.debug('_' * 64)
         self.debug('Output: left: %5.2f, right: %5.2f' % (move.left_track_power, move.right_track_power))
