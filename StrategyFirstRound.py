@@ -9,7 +9,7 @@ class StrategyOnePlayer5Enemies:
         self.strategy = StrategyScalarField(
             tank,
             world,
-            [BasicPositionGetter(), BorderPositionGetter(7, 5, 100)],
+            [BasicPositionGetter(), BorderPositionGetter(7, 5, 120), GridPositionGetter(2, 2)],
             [
                 BonusPositionEstimator(factor=1.2),
                 LastTargetEstimator(400),

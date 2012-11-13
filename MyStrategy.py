@@ -76,7 +76,7 @@ class MyStrategy:
         if len(allies) == 1 and not DEAD_TANK(allies[0]):
             StrategySecondRound(tank, world, self.memory, DEBUG_MODE).make_turn(move)
         else:
-            if len(enemies) > 0:
+            if len(enemies) > 3:
                 StrategyOnePlayer5Enemies(tank, world, self.memory, DEBUG_MODE).make_turn(move)
             else:
                 StrategyOnePlayer2Enemies(tank, world, self.memory, DEBUG_MODE).make_turn(move)

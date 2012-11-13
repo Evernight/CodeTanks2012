@@ -17,7 +17,7 @@ MAX_POSITION_ITERATIONS = 3
 TARGETING_FACTOR = 0.3
 ENEMY_TARGETING_FACTOR = 0.8
 BONUS_FACTOR = 1.25
-DEAD_TANK_OBSTACLE_FACTOR = 1.05
+DEAD_TANK_OBSTACLE_FACTOR = 1.15
 
 # Memorizing stuff
 VELOCITY_ESTIMATION_PERIOD = 3
@@ -193,7 +193,7 @@ class StrategyScalarField:
                 fictive_unit(cur_target, est_pos[0], est_pos[1]),
                 TARGETING_FACTOR
             ):
-                if self.health_fraction > 0.8 and self.hull_fraction > 0.6 and tank.get_distance_to_unit(cur_target) > 600 and tank.premium_shell_count <= 2:
+                if self.health_fraction > 0.8 and self.hull_fraction > 0.5 and tank.get_distance_to_unit(cur_target) > 400 and tank.premium_shell_count <= 2:
                     move.fire_type = FireType.REGULAR
                 else:
                     move.fire_type = FireType.PREMIUM_PREFERRED
