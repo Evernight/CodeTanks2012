@@ -1,6 +1,6 @@
 from StrategyScalarField import StrategyScalarField
 from SimplePositionEstimators import *
-from PostitionGetters import TrivialPositionGetter, BasicPositionGetter, LightBasicPositionGetter
+from PostitionGetters import TrivialPositionGetter, BasicPositionGetter, LightBasicPositionGetter, GridPositionGetter
 from StrategicPositionEstimators import *
 from StrategicPositionEstimators2P import Distance2PEstimator, FarDistancePenalty2P
 
@@ -10,12 +10,12 @@ class StrategySecondRound4Enemies:
         self.strategy = StrategyScalarField(
             tank,
             world,
-            [BasicPositionGetter()],
+            [BasicPositionGetter(), GridPositionGetter(7, 5)],
             [
                 BonusPositionEstimator(factor=1.2),
                 LastTargetEstimator(400),
                 TimeToPositionEstimator(2),
-                PositionalDangerEstimator(),
+                PositionalPowerDangerEstimator(0.35, 6000),
                 TurretsDangerEstimator(),
                 FlyingShellEstimator(2000),
                 EdgePenaltyEstimator(),
@@ -40,12 +40,12 @@ class StrategySecondRound2Enemies:
         self.strategy = StrategyScalarField(
             tank,
             world,
-            [BasicPositionGetter()],
+            [BasicPositionGetter(), GridPositionGetter(7, 5)],
             [
                 BonusPositionEstimator(factor=1.4),
                 LastTargetEstimator(400),
                 TimeToPositionEstimator(2),
-                PositionalDangerEstimator(),
+                PositionalPowerDangerEstimator(0.35, 4000),
                 TurretsDangerEstimator(),
                 FlyingShellEstimator(2000),
                 EdgePenaltyEstimator(),
