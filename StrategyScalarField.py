@@ -99,6 +99,11 @@ class StrategyScalarField:
                     if pos.name == 'FORWARD' or pos.name == 'BACKWARD' or pos.name == 'CURRENT':
                         out_pos(pos)
 
+                self.debug('=' * 16)
+                for pos in positions:
+                    if pos.name.find('BORDER') != -1:
+                        out_pos(pos)
+
 
             next_position = None
 

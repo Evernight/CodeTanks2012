@@ -55,8 +55,8 @@ class TurretsDangerEstimator(PositionEstimator):
         turrets_danger_penalty *= turrets_danger_penalty_factor
         return -turrets_danger_penalty
 
-class PositionalPairDangerEstimator(PositionEstimator):
-    NAME = 'PairPos'
+class HideBehindEstimator(PositionEstimator):
+    NAME = 'HideBonus'
 
     def __init__(self, max_value):
         self.max_value = max_value
@@ -77,9 +77,11 @@ class PositionalPairDangerEstimator(PositionEstimator):
         positional_danger = 0
         try:
             enemies = self.context.enemies
+            tank = self.context.tank
             if len(enemies) < 2:
                 return 0
             max_sum = 0
+            enemies = sorted(enemies, key=lambda e: e.get_distance_to_unit(tank))[:3]
             for i, e1 in enumerate(enemies):
                 for e2 in enemies[(i + 1):]:
                     dist = e1.get_distance_to_unit(e2)

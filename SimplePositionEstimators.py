@@ -103,7 +103,7 @@ class FlyingShellEstimator(PositionEstimator):
 
         for shell in self.context.world.shells:
             if self.context.physics.shell_will_hit_tank_going_to(shell, self.context.tank, pos.x, pos.y, et=est_time):
-                flying_shell_penalty = self.max_value
+                flying_shell_penalty += self.max_value
         return -flying_shell_penalty
 
 class AddConstantEstimator(PositionEstimator):

@@ -8,7 +8,8 @@ from collections import deque, defaultdict
 # TODO:
 # * new safety function in 2p game
 # * 2p targets smart choice
-# * fix last target bug
+
+# * hide behind tanks
 
 # * velocity extrapolating + estimate ability to predict target position
 # * synchronize moving and shooting
