@@ -47,7 +47,7 @@ class BorderPositionGetter:
         for j in range(self.height- 1):
             positions.append(Position(
                 world.width - self.distance,
-                world.width * (1 + j) / (self.height + 1),
+                world.height * (1 + j) / (self.height + 1),
                 "RIGHT BORDER %s/%s" %(j + 1, self.height)))
 
             positions.append(Position(

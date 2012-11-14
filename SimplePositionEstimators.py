@@ -59,16 +59,16 @@ class EdgePenaltyEstimator(PositionEstimator):
     # TODO: relate to bonus
     NAME = 'Edges'
 
-    def __init__(self):
-        #TODO: do do
-        pass
+    def __init__(self, border_value, width):
+        self.border_value = border_value
+        self.width = width
+
+        self.c = width**2/border_value
 
     def value(self, pos):
-        edges_penalty = max(0, -self.context.physics.distance_to_edge(pos.x, pos.y, self.context.world)**2/10 + 1000)
+        edges_penalty = max(0, -self.context.physics.distance_to_edge(pos.x, pos.y, self.context.world)**2/self.c + self.border_value)
         if pos.x < 10 or pos.y < 10 or pos.x > self.context.world.width - 10 or pos.y > self.context.world.height - 10:
             edges_penalty = 5000
-        #        if bonus_summand != 0:
-        #            edges_penalty = 0
         return -edges_penalty
 
 class LastTargetEstimator(PositionEstimator):

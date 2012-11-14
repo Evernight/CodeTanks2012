@@ -18,7 +18,7 @@ class StrategyOnePlayer5Enemies:
                 HideBehindEstimator(5000),
 #                TurretsDangerEstimator(),
                 FlyingShellEstimator(2000),
-                EdgePenaltyEstimator(),
+                EdgePenaltyEstimator(1000, 10),
             ],
             memory,
             debug_on
@@ -45,7 +45,7 @@ class StrategyOnePlayer2Enemies:
                 PositionalPowerDangerEstimator(0.35, 4000),
                 TurretsDangerEstimator(),
                 FlyingShellEstimator(2000),
-                EdgePenaltyEstimator(),
+                EdgePenaltyEstimator(1000, 60),
                 AddConstantEstimator(3000)
             ],
             memory,
@@ -73,7 +73,7 @@ class StrategyOnePlayerDuel:
                 DuelPositionEstimator(1000),
                 TurretsDangerEstimator(),
                 FlyingShellEstimator(2000),
-                EdgePenaltyEstimator(),
+                EdgePenaltyEstimator(1000, 120),
                 AddConstantEstimator(3000)
             ],
             memory,
