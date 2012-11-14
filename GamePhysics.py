@@ -23,6 +23,8 @@ FICTIVE_ACCELERATION = 0.7
 
 DANGEROUS_WIDTH = 150
 
+MAX_TARGET_EST_DISTANCE = 200
+
 SHIFT_DISTANCE = 100
 class WorldPhysics:
     def __init__(self, world):
@@ -160,6 +162,11 @@ class WorldPhysics:
                 t = (sqrt(v0**2 + 2*a*d) - v0)/a
             except:
                 t = -v0/a
+
+            tv = hypot(target.speedX, target.speedY)
+            print(tv * t)
+            if tv * t > MAX_TARGET_EST_DISTANCE:
+                t = MAX_TARGET_EST_DISTANCE/tv
             coord = (target.x + target.speedX * t, target.y + target.speedY * t)
         return coord
 

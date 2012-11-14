@@ -7,7 +7,6 @@ from collections import deque, defaultdict
 
 # TODO:
 # * new safety function in 2p game
-# * 2p targets smart choice
 
 # * hide behind tanks
 
