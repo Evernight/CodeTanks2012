@@ -164,7 +164,7 @@ class WorldPhysics:
                 t = -v0/a
 
             tv = hypot(target.speedX, target.speedY)
-            print(tv * t)
+            #print(tv * t)
             if tv * t > MAX_TARGET_EST_DISTANCE:
                 t = MAX_TARGET_EST_DISTANCE/tv
             coord = (target.x + target.speedX * t, target.y + target.speedY * t)
