@@ -1,3 +1,4 @@
+from StrategicPositionEstimators2P import Distance2PEstimator
 from StrategicPositionEstimators3P import CloseDistancePenalty3P, RunForEnemy
 from StrategyScalarField import StrategyScalarField
 from SimplePositionEstimators import *
@@ -31,6 +32,36 @@ class StrategyThirdRound:
 
     def make_turn(self, move):
         return self.strategy.make_turn(move)
+
+
+class StrategyThirdRoundTwoLeft:
+
+    def __init__(self, tank, world, memory, debug_on):
+        self.strategy = StrategyScalarField(
+            tank,
+            world,
+            [BasicPositionGetter(), GridPositionGetter(7, 5)],
+            [
+                BonusPositionEstimator(factor=1.4, ammo_crate=800, repair_max=1100),
+                LastTargetEstimator(400),
+                TimeToPositionEstimator(2),
+                PositionalPowerDangerEstimator(0.35, 4000),
+                TurretsDangerEstimator(),
+                FlyingShellEstimator(2000),
+                EdgePenaltyEstimator(1000, 100),
+                Distance2PEstimator(400, 200, 700, 200, 1000),
+                AddConstantEstimator(3000),
+                ],
+            memory,
+            debug_on
+        )
+
+    def change_state(self, *args, **kwargs):
+        return self.strategy.change_state(*args, **kwargs)
+
+    def make_turn(self, move):
+        return self.strategy.make_turn(move)
+
 
 class StrategyHeavy:
 

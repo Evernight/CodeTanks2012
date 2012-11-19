@@ -1,7 +1,7 @@
 from MyUtils import ALLY_TANK, DEAD_TANK, ALIVE_ENEMY_TANK
 from StrategyFirstRound import StrategyOnePlayer5Enemies, StrategyOnePlayer2Enemies, StrategyOnePlayerDuel
 from StrategySecondRound import StrategySecondRound4Enemies, StrategySecondRound2Enemies
-from StrategyThirdRound import StrategyThirdRound, StrategyHeavy
+from StrategyThirdRound import StrategyThirdRound, StrategyHeavy, StrategyThirdRoundTwoLeft
 from WorldAnalysis import PhysicsAnalyser
 from model.TankType import TankType
 from collections import deque, defaultdict
@@ -33,8 +33,7 @@ else:
 PHYSICS_RESEARCH_MODE = False
 
 HEAVY_TANK_TEST = 1
-
-TEST_STRATEGY = HEAVY_TANK_TEST
+TEST_STRATEGY = 0
 
 # ================ CONSTANTS
 # Phys analysis
@@ -81,26 +80,31 @@ class MyStrategy:
 
         if len(world.players) == 2:
             # MAIN
-            if TEST_STRATEGY == HEAVY_TANK_TEST:
-                StrategyHeavy(tank, world, self.memory, DEBUG_MODE).make_turn(move)
+            if len(allies) == 2:
+                strategy = StrategyThirdRound(tank, world, self.memory, DEBUG_MODE)
+            elif len(allies) == 1:
+                strategy = StrategyThirdRoundTwoLeft(tank, world, self.memory, DEBUG_MODE)
             else:
-                StrategyThirdRound(tank, world, self.memory, DEBUG_MODE).make_turn(move)
-
+                if len(enemies) > 1:
+                    strategy = StrategyOnePlayer2Enemies(tank, world, self.memory, DEBUG_MODE)
+                else:
+                    strategy = StrategyOnePlayerDuel(tank, world, self.memory, DEBUG_MODE)
 
         elif len(allies) == 1 and not DEAD_TANK(allies[0]):
             if len(enemies) > 2:
-                StrategySecondRound4Enemies(tank, world, self.memory, DEBUG_MODE).make_turn(move)
+                strategy = StrategySecondRound4Enemies(tank, world, self.memory, DEBUG_MODE)
             elif len(enemies) > 1:
-                StrategySecondRound2Enemies(tank, world, self.memory, DEBUG_MODE).make_turn(move)
+                strategy = StrategySecondRound2Enemies(tank, world, self.memory, DEBUG_MODE)
             else:
-                StrategyOnePlayerDuel(tank, world, self.memory, DEBUG_MODE).make_turn(move)
+                strategy = StrategyOnePlayerDuel(tank, world, self.memory, DEBUG_MODE)
         else:
             if len(enemies) > 3:
-                StrategyOnePlayer5Enemies(tank, world, self.memory, DEBUG_MODE).make_turn(move)
+                strategy = StrategyOnePlayer5Enemies(tank, world, self.memory, DEBUG_MODE)
             elif len(enemies) > 1:
-                StrategyOnePlayer2Enemies(tank, world, self.memory, DEBUG_MODE).make_turn(move)
+                strategy = StrategyOnePlayer2Enemies(tank, world, self.memory, DEBUG_MODE)
             else:
-                StrategyOnePlayerDuel(tank, world, self.memory, DEBUG_MODE).make_turn(move)
+                strategy = StrategyOnePlayerDuel(tank, world, self.memory, DEBUG_MODE)
+        strategy.make_turn(move)
 
         self.debug('_' * 64)
         self.debug('Output: left: %5.2f, right: %5.2f' % (move.left_track_power, move.right_track_power))
