@@ -9,15 +9,8 @@ from math import pi as PI
 
 # ================ CONSTANTS
 # Moving
-from model.FireType import FireType
 
 MAX_POSITION_ITERATIONS = 3
-
-# Targeting
-TARGETING_FACTOR = 0.3
-ENEMY_TARGETING_FACTOR = 0.8
-BONUS_FACTOR = 1.25
-DEAD_TANK_OBSTACLE_FACTOR = 1.15
 
 # Memorizing stuff
 VELOCITY_ESTIMATION_PERIOD = 3

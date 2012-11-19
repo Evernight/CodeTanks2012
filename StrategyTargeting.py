@@ -1,4 +1,44 @@
-def process_shooting():
+from math import fabs, hypot
+from queue import PriorityQueue
+import operator
+from random import random
+from GamePhysics import WorldPhysics
+from Geometry import sign
+from MyUtils import ALIVE_ENEMY_TANK, filter_or, DEAD_TANK, ALLY_TANK, fictive_unit
+from math import pi as PI
+from model.FireType import FireType
+
+TARGETING_FACTOR = 0.3
+ENEMY_TARGETING_FACTOR = 0.8
+BONUS_FACTOR = 1.25
+DEAD_TANK_OBSTACLE_FACTOR = 1.15
+class StrategyTargeting:
+    def __init__(self, tank, world, position_getters, position_estimators, memory, debug_on=False):
+        self.tank = tank
+        self.world = world
+        self.debug_mode = debug_on
+        self.position_getters = position_getters
+        self.position_estimators = position_estimators
+        self.memory = memory
+
+        self.physics = WorldPhysics(world)
+
+    def debug(self, message, end='\n',ticks_period=5):
+        if self.world.tick % ticks_period == 0:
+            if self.debug_mode:
+                print(message,end=end)
+
+    def change_state(self, tank, world):
+        self.tank = tank
+        self.world = world
+
+        self.physics = WorldPhysics(world)
+
+    def make_turn(self, move):
+        return self._make_turn(self.tank, self.world, move)
+
+    def _make_turn(self, tank, world, move):
+        def process_shooting():
             targets = filter(ALIVE_ENEMY_TANK, world.tanks)
 
             if not targets:
@@ -84,3 +124,5 @@ def process_shooting():
 
             if fabs(cur_angle) > PI/180 * 0.5:
                 move.turret_turn = sign(cur_angle)
+
+        process_shooting()
