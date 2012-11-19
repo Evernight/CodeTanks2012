@@ -2,6 +2,7 @@ from itertools import chain
 from math import pi as PI, fabs, degrees, sqrt, hypot
 from Geometry import Vector, sign, numerically_zero
 from MyUtils import fictive_unit, is_going_to_move, NOT_TANK, solve_quadratic
+from model.TankType import TankType
 
 MAX_DISTANCE = 1500
 AVERAGE_DISTANCE = 1000
@@ -35,6 +36,9 @@ class WorldPhysics:
         return min(x, world.width - x, y, world.height - y)
 
     def move_to_position(self, x, y, tank, move):
+        if tank.type == TankType.HEAVY:
+            return self.move_to_position_ht(x, y, tank, move)
+
         if tank.get_distance_to(x, y) < TARGET_REACHED_DISTANCE:
             return 0, 0
 
@@ -301,3 +305,43 @@ class WorldPhysics:
         return [(p1.x, p1.y, pos[2] + " $L"),
                 (p2.x, p2.y, pos[2] + " $R")]
 
+
+
+    def move_to_position_ht(self, x, y, tank, move):
+        if tank.get_distance_to(x, y) < TARGET_REACHED_DISTANCE:
+            return 0, 0
+
+        angle = tank.get_angle_to(x, y)
+        dist = tank.get_distance_to(x, y)
+
+        def get_values(angle, multiplier=1):
+            #if fabs(angle) < PI/6 and fabs(tank.angular_speed) < 0.02:
+            #    left, right = 1, 1
+            #else:
+            #    left, right = 1, -1
+            if dist < 300:
+                left, right = 1, 1 - 8 * angle / PI
+            elif dist < 700:
+                # Dirty fix for now (long distance)
+                left, right = 1, 1 - 7 * angle / PI
+                if fabs(tank.angular_speed) > 0.025:
+                    left, right = 1, 1 - 2 * angle / PI
+            else:
+                # Dirty fix for now (long distance)
+                left, right = 1, 1 - 4 * angle / PI
+                if fabs(tank.angular_speed) > 0.02:
+                    left, right = 1, 1 - 2 * angle / PI
+
+            return left * multiplier, right * multiplier
+
+        #print('angle=%s, dist=%s' % (angle, dist))
+        if (fabs(angle) > 5*PI/6 and dist < 800) or (fabs(angle) > BACKWARDS_THRESHOLD and dist < 200) or (fabs(angle) > PI/2 and dist < 200):
+            if angle > 0:
+                move.left_track_power, move.right_track_power = get_values(PI - fabs(angle), -1)
+            else:
+                move.right_track_power, move.left_track_power = get_values(PI - fabs(angle), -1)
+        else:
+            if angle > 0:
+                move.left_track_power, move.right_track_power = get_values(fabs(angle))
+            else:
+                move.right_track_power, move.left_track_power = get_values(fabs(angle))
