@@ -6,6 +6,7 @@ from GamePhysics import WorldPhysics
 from Geometry import sign
 from MyUtils import ALIVE_ENEMY_TANK, filter_or, DEAD_TANK, ALLY_TANK, fictive_unit
 from math import pi as PI
+from itertools import chain
 
 # ================ CONSTANTS
 # Moving
@@ -176,15 +177,19 @@ class StrategyScalarField:
 
             est_pos = self.physics.estimate_target_position(cur_target, tank)
 
-            def bonus_attacked():
+            def bonus_is_attacked():
                 for bonus in world.bonuses:
                     if (self.physics.will_hit(tank, bonus, BONUS_FACTOR) and
                         tank.get_distance_to_unit(bonus) < tank.get_distance_to(*est_pos)):
                         return bonus
                 return False
 
-            def dead_tank_attacked():
-                for obstacle in filter(filter_or(DEAD_TANK, ALLY_TANK(tank.id)), world.tanks):
+            def obstacle_is_attacked():
+                obstacles = chain(
+                    filter(filter_or(DEAD_TANK, ALLY_TANK(tank.id)), world.tanks),
+                    world.obstacles
+                )
+                for obstacle in obstacles:
                     next_position = self.physics.estimate_target_position(obstacle, tank)
                     next_unit = fictive_unit(obstacle, next_position[0], next_position[1])
                     if (self.physics.will_hit(tank, next_unit, DEAD_TANK_OBSTACLE_FACTOR) and
@@ -205,7 +210,7 @@ class StrategyScalarField:
             else:
                 move.fire_type = FireType.NONE
 
-            if bonus_attacked() or dead_tank_attacked():
+            if bonus_is_attacked() or obstacle_is_attacked():
                 self.debug('!!! Obstacle is attacked, don\'t shoot')
                 move.fire_type = FireType.NONE
 

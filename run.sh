@@ -1,6 +1,6 @@
 #!/bin/bash
 
-cd ../tools/runner_2
+cd ../tools/runner_4
 /bin/bash local-runner-sync.sh
 
 echo 'waiting...'
