@@ -34,6 +34,6 @@ class RunForEnemy(PositionEstimator):
         result = 0
         for enemy in enemies:
             dist = enemy.get_distance_to(pos.x, pos.y)
-            result += (1 - dist / MAX_DISTANCE) * self.max_value / len(enemies)
+            result = max(result, (1 - dist / MAX_DISTANCE) * self.max_value / len(enemies))
 
         return result

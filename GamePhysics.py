@@ -1,3 +1,4 @@
+from itertools import chain
 from math import pi as PI, fabs, degrees, sqrt, hypot
 from Geometry import Vector, sign, numerically_zero
 from MyUtils import fictive_unit, is_going_to_move, NOT_TANK, solve_quadratic
@@ -275,7 +276,12 @@ class WorldPhysics:
         dist = tank.get_distance_to(x, y)
         if (p - tank_v).is_zero():
             return False
-        for obj in filter(NOT_TANK(tank.id), world.tanks):
+
+        obstacles = chain(
+            filter(NOT_TANK(tank.id), world.tanks),
+            world.obstacles
+        )
+        for obj in obstacles:
             obj_dist = tank.get_distance_to_unit(obj)
             if self.vector_is_intersecting_object(tank_v, p - tank_v, obj, factor=1.2) and obj_dist < dist:
                 if not is_going_to_move(obj):

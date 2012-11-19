@@ -121,7 +121,7 @@ class StrategyScalarField:
                     next_position = cur
                     break
                 position_iteration += 1
-                self.debug('!!! Skipping the best position, iteration %d' % position_iteration)
+                self.debug('!!! Skipping best position, iteration %d' % position_iteration)
 
             self.debug("GOING TO [%10s] (%8.2f, %8.2f); distance=%8.2f, ETA=%8.2f" %
                        (next_position.name, next_position.x, next_position.y,
