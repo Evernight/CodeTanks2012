@@ -16,7 +16,7 @@ class StrategyThirdRound:
                 LastTargetEstimator(300),
                 TimeToPositionEstimator(2),
                 PositionalPowerDangerEstimator(0.35, 5000),
-                SmartTurretsDangerEstimator(100, 500),
+                SmartTurretsDangerEstimator(100, 300),
                 FlyingShellEstimator(2000),
                 EdgePenaltyEstimator(1000, 60),
                 CloseDistancePenalty3P(200, 1000),

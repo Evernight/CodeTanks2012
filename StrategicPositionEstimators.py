@@ -183,6 +183,6 @@ class SmartTurretsDangerEstimator(PositionEstimator):
             if reload > self.max_reload_time:
                 continue
             factor = 1 - reload/self.max_reload_time
-            turrets_danger_penalty += factor * dist
+            turrets_danger_penalty += factor * dist * self.max_value
 
         return -turrets_danger_penalty
