@@ -1,7 +1,7 @@
 from MyUtils import ALLY_TANK, DEAD_TANK, ALIVE_ENEMY_TANK
 from StrategyFirstRound import StrategyOnePlayer5Enemies, StrategyOnePlayer2Enemies, StrategyOnePlayerDuel
 from StrategySecondRound import StrategySecondRound4Enemies, StrategySecondRound2Enemies
-from StrategyThirdRound import StrategyThirdRound
+from StrategyThirdRound import StrategyThirdRound, StrategyHeavy
 from WorldAnalysis import PhysicsAnalyser
 from model.TankType import TankType
 from collections import deque, defaultdict
@@ -31,6 +31,10 @@ if __debug__:
 else:
     DEBUG_MODE = False
 PHYSICS_RESEARCH_MODE = False
+
+HEAVY_TANK_TEST = 1
+
+TEST_STRATEGY = HEAVY_TANK_TEST
 
 # ================ CONSTANTS
 # Phys analysis
@@ -74,9 +78,13 @@ class MyStrategy:
 
         allies = list(filter(ALLY_TANK(tank.id), tanks))
         enemies = list(filter(ALIVE_ENEMY_TANK, tanks))
+
         if len(world.players) == 2:
             # MAIN
-            StrategyThirdRound(tank, world, self.memory, DEBUG_MODE).make_turn(move)
+            if TEST_STRATEGY == HEAVY_TANK_TEST:
+                StrategyHeavy(tank, world, self.memory, DEBUG_MODE).make_turn(move)
+            else:
+                StrategyThirdRound(tank, world, self.memory, DEBUG_MODE).make_turn(move)
 
 
         elif len(allies) == 1 and not DEAD_TANK(allies[0]):
@@ -98,4 +106,8 @@ class MyStrategy:
         self.debug('Output: left: %5.2f, right: %5.2f' % (move.left_track_power, move.right_track_power))
 
     def select_tank(self, tank_index, team_size):
+        if team_size == 3:
+            if TEST_STRATEGY == HEAVY_TANK_TEST:
+                return TankType.HEAVY
+
         return TankType.MEDIUM

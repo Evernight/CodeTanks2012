@@ -51,6 +51,7 @@ class StrategyScalarField:
     def _make_turn(self, tank, world, move):
         # Precalc for estimation
         self.enemies = list(filter(ALIVE_ENEMY_TANK, world.tanks))
+        self.allies = list(filter(ALLY_TANK(tank.id), world.tanks))
         self.health_fraction = tank.crew_health / tank.crew_max_health
         self.hull_fraction = tank.hull_durability / tank.hull_max_durability
         self.enemies_count = len(self.enemies)
