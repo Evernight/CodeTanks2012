@@ -105,9 +105,11 @@ class MyStrategy:
         self.debug('_' * 64)
         self.debug('Output: left: %5.2f, right: %5.2f' % (move.left_track_power, move.right_track_power))
 
+        self.analysis.store_shell_velocity(world)
+
     def select_tank(self, tank_index, team_size):
         if team_size == 3:
             if TEST_STRATEGY == HEAVY_TANK_TEST:
                 return TankType.HEAVY
 
-        return TankType.MEDIUM
+        return TankType.HEAVY
