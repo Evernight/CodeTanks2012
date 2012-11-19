@@ -10,13 +10,13 @@ class StrategyThirdRound:
         self.strategy = StrategyScalarField(
             tank,
             world,
-            [BasicPositionGetter(), GridPositionGetter(7, 5)],
+            [BasicPositionGetter(30, 70), GridPositionGetter(7, 5)],
             [
                 BonusPositionEstimator(factor=1.2, medikit_min=100, medikit_max=1500, repair_min=100, repair_max=900, ammo_crate=700),
                 LastTargetEstimator(300),
                 TimeToPositionEstimator(2),
                 PositionalPowerDangerEstimator(0.35, 5000),
-                TurretsDangerEstimator(),
+                SmartTurretsDangerEstimator(100, 500),
                 FlyingShellEstimator(2000),
                 EdgePenaltyEstimator(1000, 60),
                 CloseDistancePenalty3P(200, 1000),

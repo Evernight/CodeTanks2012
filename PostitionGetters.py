@@ -59,6 +59,10 @@ class BorderPositionGetter:
         return positions
 
 class BasicPositionGetter:
+    def __init__(self, short_direction=40, long_direction=80):
+        self.short_direction = short_direction
+        self.long_direction = long_direction
+
     def positions(self, tank, world):
         positions = []
 
@@ -68,13 +72,13 @@ class BasicPositionGetter:
         # Forward and back direction
         tank_v = Vector(tank.x, tank.y)
         tank_d_v = Vector(1, 0).rotate(tank.angle)
-        forw = tank_v + tank_d_v * 40
-        back = tank_v - tank_d_v * 40
+        forw = tank_v + tank_d_v * self.short_direction
+        back = tank_v - tank_d_v * self.short_direction
         positions.append(Position(forw.x, forw.y, "FORWARD"))
         positions.append(Position(back.x, back.y, "BACKWARD"))
 
-        fforw = tank_v + tank_d_v * 80
-        fback = tank_v - tank_d_v * 80
+        fforw = tank_v + tank_d_v * self.long_direction
+        fback = tank_v - tank_d_v * self.long_direction
         positions.append(Position(fforw.x, fforw.y, "FAR FORWARD"))
         positions.append(Position(fback.x, fback.y, "FAR BACKWARD"))
 

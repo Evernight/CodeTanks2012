@@ -166,3 +166,23 @@ class DuelPositionEstimator(PositionEstimator):
         except:
             positional_bonus = 0
         return positional_bonus
+
+
+class SmartTurretsDangerEstimator(PositionEstimator):
+    NAME = 'Turrets'
+
+    def __init__(self, max_reload_time, max_value):
+        self.max_value = max_value
+        self.max_reload_time = max_reload_time
+
+    def value(self, pos):
+        turrets_danger_penalty = 0
+        for enemy in self.context.enemies:
+            dist = self.context.physics.attacked_area(pos.x, pos.y, enemy, cache=self.context.EA_cache)
+            reload = enemy.remaining_reloading_time
+            if reload > self.max_reload_time:
+                continue
+            factor = 1 - reload/self.max_reload_time
+            turrets_danger_penalty += factor * dist
+
+        return -turrets_danger_penalty

@@ -137,6 +137,10 @@ class StrategyScalarField:
 
             def get_target_priority(tank, target):
                 health_fraction = tank.crew_health / tank.crew_max_health
+
+                # ================
+                # DISTANCE
+                # ================
                 angle_penalty_factor = (1 + (1 - health_fraction) * 1.5 -
                                         (1 - max(0, 150 - tank.remaining_reloading_time)/150) * 1)
 
@@ -144,19 +148,27 @@ class StrategyScalarField:
 
                 distance_penalty = tank.get_distance_to_unit(target) / 10
                 angle_penalty = angle_penalty_factor * (angle_degrees**1.2)/2
-                # Headshot ^_^
+
+                # ================
+                # FINISH
+                # ================
                 if ((target.crew_health <= 20 or target.hull_durability <= 20) or
                     (tank.premium_shell_count > 0 and (target.crew_health <= 35 or target.hull_durability <= 35))):
                     finish_bonus = 30
                 else:
                     finish_bonus = 0
 
+                # ================
+                # RESPONSE
+                # ================
                 if self.physics.attacked_area(tank.x, tank.y, target, cache=self.EA_cache) > 0.5:
                     attacking_me_bonus = 20
                 else:
                     attacking_me_bonus = 0
 
-                # Last target priority
+                # ================
+                # LAST TARGET
+                # ================
                 last_target_bonus = 0
                 if self.memory.last_turret_target_id:
                     if self.memory.last_turret_target_id == target.id:
@@ -186,24 +198,29 @@ class StrategyScalarField:
 
             def obstacle_is_attacked():
                 obstacles = chain(
-                    filter(filter_or(DEAD_TANK, ALLY_TANK(tank.id)), world.tanks),
+                    filter(DEAD_TANK, world.tanks),
+                    filter(ALLY_TANK(tank.id), world.tanks),
                     world.obstacles
                 )
                 for obstacle in obstacles:
                     next_position = self.physics.estimate_target_position(obstacle, tank)
                     next_unit = fictive_unit(obstacle, next_position[0], next_position[1])
-                    if (self.physics.will_hit(tank, next_unit, DEAD_TANK_OBSTACLE_FACTOR) and
-                        tank.get_distance_to_unit(obstacle) < tank.get_distance_to(*est_pos)):
+
+                    blocked = ((self.physics.will_hit(tank, next_unit, DEAD_TANK_OBSTACLE_FACTOR)
+                                or self.physics.will_hit(tank, obstacle, DEAD_TANK_OBSTACLE_FACTOR))
+                               and tank.get_distance_to_unit(obstacle) < tank.get_distance_to(*est_pos))
+                    if blocked:
                         return obstacle
                 return False
 
             cur_angle = tank.get_turret_angle_to(*est_pos)
-            if self.physics.will_hit(
+            good_to_shoot = self.physics.will_hit(
                 tank,
                 fictive_unit(cur_target, est_pos[0], est_pos[1]),
                 TARGETING_FACTOR
-            ):
-                if self.health_fraction > 0.8 and self.hull_fraction > 0.5 and tank.get_distance_to_unit(cur_target) > 400 and tank.premium_shell_count <= 2:
+            )
+            if good_to_shoot:
+                if self.health_fraction > 0.8 and self.hull_fraction > 0.5 and tank.get_distance_to_unit(cur_target) > 400 and tank.premium_shell_count <= 3:
                     move.fire_type = FireType.REGULAR
                 else:
                     move.fire_type = FireType.PREMIUM_PREFERRED
