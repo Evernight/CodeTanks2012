@@ -1,7 +1,7 @@
 from MyUtils import ALLY_TANK, DEAD_TANK, ALIVE_ENEMY_TANK
 from StrategyFirstRound import StrategyOnePlayer5Enemies, StrategyOnePlayer2Enemies, StrategyOnePlayerDuel
 from StrategySecondRound import StrategySecondRound4Enemies, StrategySecondRound2Enemies
-from StrategyThirdRound import StrategyThirdRound, StrategyThirdRoundTwoLeft, StrategyThirdRoundPrevail
+from StrategyThirdRound import StrategyThirdRound, StrategyThirdRoundTwoLeft, StrategyThirdRoundPrevail, StrategyThirdRoundTotalPrevail, StrategyThirdRoundTwoLeftPrevail
 from WorldAnalysis import PhysicsAnalyser
 from model.TankType import TankType
 from collections import deque, defaultdict
@@ -75,12 +75,17 @@ class MyStrategy:
         if len(world.players) == 2:
             # MAIN
             if len(allies) == 2:
-                if len(enemies) > 1:
+                if len(enemies) == 3:
                     strategy = StrategyThirdRound(tank, world, self.memory, DEBUG_MODE)
-                else:
+                elif len(enemies) == 2:
                     strategy = StrategyThirdRoundPrevail(tank, world, self.memory, DEBUG_MODE)
+                else:
+                    strategy = StrategyThirdRoundTotalPrevail(tank, world, self.memory, DEBUG_MODE)
             elif len(allies) == 1:
-                strategy = StrategyThirdRoundTwoLeft(tank, world, self.memory, DEBUG_MODE)
+                if len(enemies) > 1:
+                    strategy = StrategyThirdRoundTwoLeft(tank, world, self.memory, DEBUG_MODE)
+                else:
+                    strategy = StrategyThirdRoundTwoLeftPrevail(tank, world, self.memory, DEBUG_MODE)
             else:
                 if len(enemies) > 1:
                     strategy = StrategyOnePlayer2Enemies(tank, world, self.memory, DEBUG_MODE)

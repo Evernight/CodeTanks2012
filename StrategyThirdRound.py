@@ -20,41 +20,10 @@ class StrategyThirdRound:
                 HideBehindObstacle(250),
                 SmartTurretsDangerEstimator(50, 200),
                 FlyingShellEstimator(2000),
-                LinearEdgePenaltyEstimator(100, 500),
+                LinearEdgePenaltyEstimator(400, 500),
                 CloseDistancePenalty3P(200, 1000),
                 AddConstantEstimator(3000),
             ],
-            memory,
-            debug_on
-        )
-
-    def change_state(self, *args, **kwargs):
-        return self.strategy.change_state(*args, **kwargs)
-
-    def make_turn(self, move):
-        return self.strategy.make_turn(move)
-
-
-class StrategyThirdRoundTwoLeft:
-
-    def __init__(self, tank, world, memory, debug_on):
-        self.strategy = StrategyScalarField(
-            tank,
-            world,
-            [BasicPositionGetter(30, 100), GridPositionGetter(7, 5)],
-            [
-                BonusPositionEstimator(factor=1.2, medikit_min=100, medikit_max=1500, repair_min=100, repair_max=900, ammo_crate=700),
-                LastTargetEstimator(400),
-                TimeToPositionEstimator(2),
-                BeAroundWeakestEnemy(4000, 1000, 300),
-                HideBehindObstacle(250),
-                SmartTurretsDangerEstimator(100, 400),
-                FlyingShellEstimator(2000),
-                LinearEdgePenaltyEstimator(50, 200),
-                Distance2PEstimator(300, 120, 400, 200, 1000),
-                FarDistancePenalty2P(600, 1000),
-                AddConstantEstimator(3000),
-                ],
             memory,
             debug_on
         )
@@ -81,8 +50,98 @@ class StrategyThirdRoundPrevail:
                 HideBehindObstacle(250),
                 SmartTurretsDangerEstimator(100, 400),
                 FlyingShellEstimator(2000),
-                LinearEdgePenaltyEstimator(50, 200),
+                LinearEdgePenaltyEstimator(400, 500),
                 CloseDistancePenalty3P(200, 1000),
+                AddConstantEstimator(3000),
+                ],
+            memory,
+            debug_on
+        )
+
+    def change_state(self, *args, **kwargs):
+        return self.strategy.change_state(*args, **kwargs)
+
+    def make_turn(self, move):
+        return self.strategy.make_turn(move)
+
+class StrategyThirdRoundTotalPrevail:
+
+    def __init__(self, tank, world, memory, debug_on):
+        self.strategy = StrategyScalarField(
+            tank,
+            world,
+            [BasicPositionGetter(30, 100), GridPositionGetter(7, 5)],
+            [
+                BonusPositionEstimator(factor=1.2, medikit_min=100, medikit_max=1500, repair_min=100, repair_max=900, ammo_crate=700),
+                LastTargetEstimator(400),
+                TimeToPositionEstimator(2),
+                BeAroundWeakestEnemy(4000, 200, 300),
+                HideBehindObstacle(250),
+                SmartTurretsDangerEstimator(100, 400),
+                FlyingShellEstimator(2000),
+                LinearEdgePenaltyEstimator(400, 500),
+                CloseDistancePenalty3P(200, 1000),
+                AddConstantEstimator(3000),
+                ],
+            memory,
+            debug_on
+        )
+
+    def change_state(self, *args, **kwargs):
+        return self.strategy.change_state(*args, **kwargs)
+
+    def make_turn(self, move):
+        return self.strategy.make_turn(move)
+
+
+class StrategyThirdRoundTwoLeft:
+
+    def __init__(self, tank, world, memory, debug_on):
+        self.strategy = StrategyScalarField(
+            tank,
+            world,
+            [BasicPositionGetter(30, 100), GridPositionGetter(7, 5)],
+            [
+                BonusPositionEstimator(factor=1.2, medikit_min=100, medikit_max=1500, repair_min=100, repair_max=900, ammo_crate=700),
+                LastTargetEstimator(400),
+                TimeToPositionEstimator(2),
+                BeAroundWeakestEnemy(4000, 1000, 300),
+                HideBehindObstacle(250),
+                SmartTurretsDangerEstimator(100, 400),
+                FlyingShellEstimator(2000),
+                LinearEdgePenaltyEstimator(400, 500),
+                Distance2PEstimator(300, 120, 400, 200, 1000),
+                FarDistancePenalty2P(600, 1000),
+                AddConstantEstimator(3000),
+                ],
+            memory,
+            debug_on
+        )
+
+    def change_state(self, *args, **kwargs):
+        return self.strategy.change_state(*args, **kwargs)
+
+    def make_turn(self, move):
+        return self.strategy.make_turn(move)
+
+class StrategyThirdRoundTwoLeftPrevail:
+
+    def __init__(self, tank, world, memory, debug_on):
+        self.strategy = StrategyScalarField(
+            tank,
+            world,
+            [BasicPositionGetter(30, 100), GridPositionGetter(7, 5)],
+            [
+                BonusPositionEstimator(factor=1.2, medikit_min=100, medikit_max=1500, repair_min=100, repair_max=900, ammo_crate=700),
+                LastTargetEstimator(400),
+                TimeToPositionEstimator(2),
+                BeAroundWeakestEnemy(4000, 300, 300),
+                HideBehindObstacle(250),
+                SmartTurretsDangerEstimator(100, 400),
+                FlyingShellEstimator(2000),
+                LinearEdgePenaltyEstimator(400, 500),
+                Distance2PEstimator(300, 120, 400, 200, 1000),
+                FarDistancePenalty2P(600, 1000),
                 AddConstantEstimator(3000),
                 ],
             memory,
