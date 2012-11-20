@@ -52,7 +52,7 @@ class MyStrategy:
         self.memory = MyStrategy.Memory()
         self.analysis = PhysicsAnalyser(PHYSICS_RESEARCH_MODE)
 
-    def debug(self, message, ticks_period=5):
+    def debug(self, message, ticks_period=10):
         if self.world.tick % ticks_period == 0:
             if DEBUG_MODE:
                 print(message)
@@ -116,4 +116,4 @@ class MyStrategy:
             if TEST_STRATEGY == HEAVY_TANK_TEST:
                 return TankType.HEAVY
 
-        return TankType.HEAVY
+        return TankType.MEDIUM

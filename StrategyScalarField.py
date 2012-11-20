@@ -34,7 +34,7 @@ class StrategyScalarField:
 
         self.physics = WorldPhysics(world)
 
-    def debug(self, message, end='\n',ticks_period=5):
+    def debug(self, message, end='\n',ticks_period=10):
         if self.world.tick % ticks_period == 0:
             if self.debug_mode:
                 print(message,end=end)
