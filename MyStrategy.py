@@ -1,4 +1,4 @@
-from MyUtils import ALLY_TANK, DEAD_TANK, ALIVE_ENEMY_TANK
+from MyUtils import ALLY_TANK, DEAD_TANK, ALIVE_ENEMY_TANK, ALIVE_ALLY_TANK
 from StrategyFirstRound import StrategyOnePlayer5Enemies, StrategyOnePlayer2Enemies, StrategyOnePlayerDuel
 from StrategySecondRound import StrategySecondRound4Enemies, StrategySecondRound2Enemies
 from StrategyThirdRound import StrategyThirdRound, StrategyThirdRoundTwoLeft, StrategyThirdRoundPrevail, StrategyThirdRoundTotalPrevail, StrategyThirdRoundTwoLeftPrevail
@@ -74,6 +74,7 @@ class MyStrategy:
 
         if len(world.players) == 2:
             # MAIN
+            allies = list(filter(ALIVE_ALLY_TANK, tanks))
             if len(allies) == 2:
                 if len(enemies) == 3:
                     strategy = StrategyThirdRound(tank, world, self.memory, DEBUG_MODE)

@@ -5,6 +5,7 @@ from model.BonusType import BonusType
 from model.Unit import Unit
 
 ALIVE_ENEMY_TANK = lambda t: not t.teammate and t.crew_health > 0 and t.hull_durability > 0
+ALIVE_ALLY_TANK = lambda t: not t.teammate and t.crew_health > 0 and t.hull_durability > 0
 ENEMY_TANK = lambda t: not t.teammate
 DEAD_TANK = lambda t: t.crew_health == 0 or t.hull_durability == 0
 def ALLY_TANK(id):
@@ -17,6 +18,9 @@ UNIT_TO_POINT = lambda unit: (unit.x, unit.y)
 
 def filter_or(*filter_functions):
     return lambda t: any([f(t) for f in filter_functions])
+
+def filter_and(*filter_functions):
+    return lambda t: all([f(t) for f in filter_functions])
 
 def fictive_unit(prototype, x, y):
     return Unit(0, prototype.width, prototype.height, x, y, 0, 0, prototype.angle, 0)
