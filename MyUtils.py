@@ -5,7 +5,7 @@ from model.BonusType import BonusType
 from model.Unit import Unit
 
 ALIVE_ENEMY_TANK = lambda t: not t.teammate and t.crew_health > 0 and t.hull_durability > 0
-ALIVE_ALLY_TANK = lambda t: not t.teammate and t.crew_health > 0 and t.hull_durability > 0
+ALIVE_ALLY_TANK = lambda t: t.teammate and t.crew_health > 0 and t.hull_durability > 0
 ENEMY_TANK = lambda t: not t.teammate
 DEAD_TANK = lambda t: t.crew_health == 0 or t.hull_durability == 0
 def ALLY_TANK(id):
