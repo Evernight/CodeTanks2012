@@ -52,7 +52,7 @@ class BeAroundWeakestEnemy(PositionEstimator):
             enemy_health = enemy.crew_health/enemy.crew_max_health
 
             dist = enemy.get_distance_to(pos.x, pos.y)
-            result += ring_linear_bonus(enemy_health * self.max_value, 300, 800, dist) / len(enemies)
+            result += ring_linear_bonus(enemy_health * 800, 300, self.max_value, dist) / len(enemies)
             #result = max(result, (1 - dist / MAX_DISTANCE) * self.max_value / len(enemies))
 
         return result
