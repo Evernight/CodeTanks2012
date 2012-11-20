@@ -289,9 +289,9 @@ class WorldPhysics:
             obj_dist = tank.get_distance_to_unit(obj)
             if self.vector_is_intersecting_object(tank_v, p - tank_v, obj, factor=1.2) and obj_dist < dist:
                 if not is_going_to_move(obj):
-                    return True
+                    return obj
                 if obj_dist < 100:
-                    return True
+                    return obj
         return False
 
     def get_new_positions(self, pos, tank):

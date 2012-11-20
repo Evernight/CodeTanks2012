@@ -1,5 +1,5 @@
 from StrategicPositionEstimators2P import Distance2PEstimator
-from StrategicPositionEstimators3P import CloseDistancePenalty3P, RunForEnemy, BeAroundWeakestEnemy
+from StrategicPositionEstimators3P import CloseDistancePenalty3P, RunForEnemy, BeAroundWeakestEnemy, HideBehindObstacle
 from StrategyScalarField import StrategyScalarField
 from SimplePositionEstimators import *
 from PostitionGetters import TrivialPositionGetter, BasicPositionGetter, LightBasicPositionGetter, GridPositionGetter
@@ -17,7 +17,8 @@ class StrategyThirdRound:
                 LastTargetEstimator(400),
                 TimeToPositionEstimator(2),
                 #PositionalPowerDangerEstimator(0.35, 5000),
-                BeAroundWeakestEnemy(2000),
+                BeAroundWeakestEnemy(2000, 900, 300),
+                HideBehindObstacle(250),
                 SmartTurretsDangerEstimator(100, 400),
                 FlyingShellEstimator(2000),
                 EdgePenaltyEstimator(200, 300),

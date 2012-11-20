@@ -122,6 +122,8 @@ class StrategyScalarField:
                     break
                 position_iteration += 1
                 self.debug('!!! Skipping best position, iteration %d' % position_iteration)
+                if self.debug_mode:
+                    self.debug('(blocked by %s)' % str(self.physics.position_is_blocked(cur.x, cur.y, tank, world)))
 
             self.debug("GOING TO [%10s] (%8.2f, %8.2f); distance=%8.2f, ETA=%8.2f" %
                        (next_position.name, next_position.x, next_position.y,
