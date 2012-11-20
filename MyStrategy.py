@@ -74,7 +74,7 @@ class MyStrategy:
 
         if len(world.players) == 2:
             # MAIN
-            allies = list(filter(ALIVE_ALLY_TANK, tanks))
+            allies = list(filter(ALIVE_ALLY_TANK, allies))
             if len(allies) == 2:
                 if len(enemies) == 3:
                     strategy = StrategyThirdRound(tank, world, self.memory, DEBUG_MODE)
