@@ -43,7 +43,7 @@ class ResponseTEstimator(TargetEstimator):
         return attacking_me_bonus
 
 class LastTargetTEstimator(TargetEstimator):
-    NAME = "Response"
+    NAME = "Last Target"
 
     def value(self, target):
         last_target_bonus = 0

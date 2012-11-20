@@ -7,7 +7,7 @@ from StrategicPositionEstimators import *
 from StrategyScalarFieldMO import ScalarFieldMovingStrategy
 from StrategyTargeting import EstimatorsTargetingStrategy
 from TargetEstimators import DistancePenaltyTEstimator, FinishTEstimator, ResponseTEstimator, LastTargetTEstimator, AddConstantTEstimator, AnglePenaltyTEstimator
-from TargetingClasses import OldShootDecisionMaker
+from TargetingClasses import OldShootDecisionMaker, ThirdRoundShootDecisionMaker
 
 old_targeting_strategy = EstimatorsTargetingStrategy(
     [
@@ -19,6 +19,17 @@ old_targeting_strategy = EstimatorsTargetingStrategy(
         AddConstantTEstimator()
     ],
     OldShootDecisionMaker()
+)
+
+third_round_targeting_strategy = EstimatorsTargetingStrategy(
+    [
+        AnglePenaltyTEstimator(),
+        DistancePenaltyTEstimator(),
+        FinishTEstimator(),
+        ResponseTEstimator(),
+        AddConstantTEstimator()
+    ],
+    ThirdRoundShootDecisionMaker()
 )
 
 strategy_third_round = make_composite_strategy(
@@ -37,7 +48,7 @@ strategy_third_round = make_composite_strategy(
             AddConstantEstimator(3000)
         ]
     ),
-    old_targeting_strategy
+    third_round_targeting_strategy
 )
 
 strategy_third_round_prevail = make_composite_strategy(
@@ -56,7 +67,7 @@ strategy_third_round_prevail = make_composite_strategy(
             AddConstantEstimator(3000)
         ]
     ),
-    old_targeting_strategy
+    third_round_targeting_strategy
 )
 
 strategy_third_round_total_prevail = make_composite_strategy(
@@ -75,7 +86,7 @@ strategy_third_round_total_prevail = make_composite_strategy(
             AddConstantEstimator(3000)
         ]
     ),
-    old_targeting_strategy
+    third_round_targeting_strategy
 )
 
 strategy_third_round_two_left = make_composite_strategy(
@@ -95,7 +106,7 @@ strategy_third_round_two_left = make_composite_strategy(
             AddConstantEstimator(3000)
         ]
     ),
-    old_targeting_strategy
+    third_round_targeting_strategy
 )
 
 strategy_third_round_two_left_prevail = make_composite_strategy(
@@ -115,5 +126,5 @@ strategy_third_round_two_left_prevail = make_composite_strategy(
             AddConstantEstimator(3000)
         ]
     ),
-    old_targeting_strategy
+    third_round_targeting_strategy
 )

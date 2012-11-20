@@ -41,6 +41,7 @@ class MyStrategy:
             self.velocity_history = defaultdict(deque)
             self.last_target_position = {}
             self.last_turret_target_id = None
+            self.last_shot_tick = None
 
     def __init__(self):
         self.memory = MyStrategy.Memory()
