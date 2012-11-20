@@ -107,6 +107,8 @@ class MyStrategy:
                 strategy = StrategyOnePlayer2Enemies(tank, world, self.memory, DEBUG_MODE)
             else:
                 strategy = StrategyOnePlayerDuel(tank, world, self.memory, DEBUG_MODE)
+
+        self.debug("Strategy: %s" % strategy.__class__)
         strategy.make_turn(move)
 
         self.debug('_' * 64)
