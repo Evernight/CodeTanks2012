@@ -1,36 +1,38 @@
 from math import fabs, hypot
-from queue import PriorityQueue
 import operator
-from random import random
 from GamePhysics import WorldPhysics
 from Geometry import sign
-from MyUtils import ALIVE_ENEMY_TANK, filter_or, DEAD_TANK, ALLY_TANK, fictive_unit
+from MyUtils import ALIVE_ENEMY_TANK, DEAD_TANK, ALLY_TANK, fictive_unit
 from math import pi as PI
+from itertools import chain
 from model.FireType import FireType
 
+# ================ CONSTANTS
+# Targeting
 TARGETING_FACTOR = 0.3
 ENEMY_TARGETING_FACTOR = 0.8
 BONUS_FACTOR = 1.25
 DEAD_TANK_OBSTACLE_FACTOR = 1.15
-class StrategyTargeting:
-    def __init__(self, tank, world, position_getters, position_estimators, memory, debug_on=False):
-        self.tank = tank
-        self.world = world
-        self.debug_mode = debug_on
-        self.position_getters = position_getters
-        self.position_estimators = position_estimators
-        self.memory = memory
 
-        self.physics = WorldPhysics(world)
+# Memorizing stuff
+VELOCITY_ESTIMATION_PERIOD = 3
+VELOCITY_ESTIMATION_COUNT = 10
 
-    def debug(self, message, end='\n',ticks_period=5):
+class OldTargetingStrategy:
+
+    def __init__(self):
+        pass
+
+    def debug(self, message, end='\n',ticks_period=10):
         if self.world.tick % ticks_period == 0:
             if self.debug_mode:
                 print(message,end=end)
 
-    def change_state(self, tank, world):
+    def change_state(self, tank, world, memory, debug_on):
         self.tank = tank
         self.world = world
+        self.debug_mode = debug_on
+        self.memory = memory
 
         self.physics = WorldPhysics(world)
 
@@ -38,6 +40,13 @@ class StrategyTargeting:
         return self._make_turn(self.tank, self.world, move)
 
     def _make_turn(self, tank, world, move):
+        # Precalc for estimation
+        self.enemies = list(filter(ALIVE_ENEMY_TANK, world.tanks))
+        self.allies = list(filter(ALLY_TANK(tank.id), world.tanks))
+        self.health_fraction = tank.crew_health / tank.crew_max_health
+        self.hull_fraction = tank.hull_durability / tank.hull_max_durability
+        self.enemies_count = len(self.enemies)
+
         def process_shooting():
             targets = filter(ALIVE_ENEMY_TANK, world.tanks)
 
@@ -46,6 +55,10 @@ class StrategyTargeting:
 
             def get_target_priority(tank, target):
                 health_fraction = tank.crew_health / tank.crew_max_health
+
+                # ================
+                # DISTANCE
+                # ================
                 angle_penalty_factor = (1 + (1 - health_fraction) * 1.5 -
                                         (1 - max(0, 150 - tank.remaining_reloading_time)/150) * 1)
 
@@ -53,19 +66,27 @@ class StrategyTargeting:
 
                 distance_penalty = tank.get_distance_to_unit(target) / 10
                 angle_penalty = angle_penalty_factor * (angle_degrees**1.2)/2
-                # Headshot ^_^
+
+                # ================
+                # FINISH
+                # ================
                 if ((target.crew_health <= 20 or target.hull_durability <= 20) or
                     (tank.premium_shell_count > 0 and (target.crew_health <= 35 or target.hull_durability <= 35))):
                     finish_bonus = 30
                 else:
                     finish_bonus = 0
 
+                # ================
+                # RESPONSE
+                # ================
                 if self.physics.attacked_area(tank.x, tank.y, target, cache=self.EA_cache) > 0.5:
                     attacking_me_bonus = 20
                 else:
                     attacking_me_bonus = 0
 
-                # Last target priority
+                # ================
+                # LAST TARGET
+                # ================
                 last_target_bonus = 0
                 if self.memory.last_turret_target_id:
                     if self.memory.last_turret_target_id == target.id:
@@ -86,36 +107,45 @@ class StrategyTargeting:
 
             est_pos = self.physics.estimate_target_position(cur_target, tank)
 
-            def bonus_attacked():
+            def bonus_is_attacked():
                 for bonus in world.bonuses:
                     if (self.physics.will_hit(tank, bonus, BONUS_FACTOR) and
                         tank.get_distance_to_unit(bonus) < tank.get_distance_to(*est_pos)):
                         return bonus
                 return False
 
-            def dead_tank_attacked():
-                for obstacle in filter(filter_or(DEAD_TANK, ALLY_TANK(tank.id)), world.tanks):
+            def obstacle_is_attacked():
+                obstacles = chain(
+                    filter(DEAD_TANK, world.tanks),
+                    filter(ALLY_TANK(tank.id), world.tanks),
+                    world.obstacles
+                )
+                for obstacle in obstacles:
                     next_position = self.physics.estimate_target_position(obstacle, tank)
                     next_unit = fictive_unit(obstacle, next_position[0], next_position[1])
-                    if (self.physics.will_hit(tank, next_unit, DEAD_TANK_OBSTACLE_FACTOR) and
-                        tank.get_distance_to_unit(obstacle) < tank.get_distance_to(*est_pos)):
+
+                    blocked = ((self.physics.will_hit(tank, next_unit, DEAD_TANK_OBSTACLE_FACTOR)
+                                or self.physics.will_hit(tank, obstacle, DEAD_TANK_OBSTACLE_FACTOR))
+                               and tank.get_distance_to_unit(obstacle) < tank.get_distance_to(*est_pos))
+                    if blocked:
                         return obstacle
                 return False
 
             cur_angle = tank.get_turret_angle_to(*est_pos)
-            if self.physics.will_hit(
+            good_to_shoot = self.physics.will_hit(
                 tank,
                 fictive_unit(cur_target, est_pos[0], est_pos[1]),
                 TARGETING_FACTOR
-            ):
-                if self.health_fraction > 0.8 and self.hull_fraction > 0.5 and tank.get_distance_to_unit(cur_target) > 400 and tank.premium_shell_count <= 2:
+            )
+            if good_to_shoot:
+                if self.health_fraction > 0.8 and self.hull_fraction > 0.5 and tank.get_distance_to_unit(cur_target) > 400 and tank.premium_shell_count <= 3:
                     move.fire_type = FireType.REGULAR
                 else:
                     move.fire_type = FireType.PREMIUM_PREFERRED
             else:
                 move.fire_type = FireType.NONE
 
-            if bonus_attacked() or dead_tank_attacked():
+            if bonus_is_attacked() or obstacle_is_attacked():
                 self.debug('!!! Obstacle is attacked, don\'t shoot')
                 move.fire_type = FireType.NONE
 
@@ -124,5 +154,76 @@ class StrategyTargeting:
 
             if fabs(cur_angle) > PI/180 * 0.5:
                 move.turret_turn = sign(cur_angle)
-
         process_shooting()
+
+
+class EstimatorsTargetingStrategy:
+
+    def __init__(self, target_estimators, decision_maker):
+        self.target_estimators = target_estimators
+        self.decision_maker = decision_maker
+
+    def debug(self, message, end='\n',ticks_period=10):
+        if self.world.tick % ticks_period == 0:
+            if self.debug_mode:
+                print(message,end=end)
+
+    def change_state(self, tank, world, memory, debug_on):
+        self.tank = tank
+        self.world = world
+        self.debug_mode = debug_on
+        self.memory = memory
+
+        self.physics = WorldPhysics(world)
+
+    def make_turn(self, move):
+        return self._make_turn(self.tank, self.world, move)
+
+    def _make_turn(self, tank, world, move):
+        # Precalc for estimation
+        self.enemies = list(filter(ALIVE_ENEMY_TANK, world.tanks))
+        self.allies = list(filter(ALLY_TANK(tank.id), world.tanks))
+        self.health_fraction = tank.crew_health / tank.crew_max_health
+        self.hull_fraction = tank.hull_durability / tank.hull_max_durability
+        self.enemies_count = len(self.enemies)
+
+        targets = filter(ALIVE_ENEMY_TANK, world.tanks)
+
+        if not targets:
+            return
+
+        for e in self.target_estimators:
+            e.context = self
+
+        get_target_priority = lambda target: sum([e.value(target) for e in self.target_estimators])
+
+        if self.debug_mode:
+            targets = sorted(targets, key=lambda t : t.player_name)
+            self.debug(' ' * 50, end='')
+            for e in self.target_estimators:
+                self.debug('%14s' % e.NAME, end='')
+            self.debug('%14s' % 'RESULT', end='')
+            self.debug('')
+
+            def out_tgt(tgt):
+                def tgt_to_str(tgt):
+                    return "TARGET [%12s] (x=%8.2f, y=%8.2f)" % (tgt.player_name, tgt.x, tgt.y)
+                self.debug('%-50s' % (tgt_to_str(tgt) + ' : '), end='')
+                res = 0
+                for e in self.target_estimators:
+                    v = e.value(tgt)
+                    self.debug('%14.2f' % v, end='')
+                    res += v
+                self.debug('%14.2f' % res, end='')
+                self.debug('')
+
+            for tgt in targets:
+                out_tgt(tgt)
+
+        targets_f = [(t, get_target_priority(t)) for t in targets]
+
+        cur_target = max(targets_f, key=operator.itemgetter(1))[0]
+        self.memory.last_turret_target_id = cur_target.id
+
+        self.decision_maker.context = self
+        self.decision_maker.process(cur_target, move)

@@ -3,6 +3,11 @@ from math import sqrt
 from MyUtils import unit_closest_to
 from model.BonusType import BonusType
 
+class StoppingPenaltyEstimator(PositionEstimator):
+    def value(self, pos):
+        stopping_penalty = (1 + 2 * max(0, 100 - self.context.tank.get_distance_to(pos.x, pos.y)))**1.2
+        return stopping_penalty
+
 class BonusPositionEstimator(PositionEstimator):
     """
     Bonus priority:

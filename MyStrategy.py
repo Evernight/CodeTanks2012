@@ -1,7 +1,7 @@
 from MyUtils import ALLY_TANK, DEAD_TANK, ALIVE_ENEMY_TANK, ALIVE_ALLY_TANK
 from StrategyFirstRound import StrategyOnePlayer5Enemies, StrategyOnePlayer2Enemies, StrategyOnePlayerDuel
 from StrategySecondRound import StrategySecondRound4Enemies, StrategySecondRound2Enemies
-from StrategyThirdRound import StrategyThirdRound, StrategyThirdRoundTwoLeft, StrategyThirdRoundPrevail, StrategyThirdRoundTotalPrevail, StrategyThirdRoundTwoLeftPrevail
+from StrategyThirdRound import strategy_third_round, strategy_third_round_prevail, strategy_third_round_total_prevail, strategy_third_round_two_left, strategy_third_round_two_left_prevail
 from WorldAnalysis import PhysicsAnalyser
 from model.TankType import TankType
 from collections import deque, defaultdict
@@ -77,16 +77,18 @@ class MyStrategy:
             allies = list(filter(ALIVE_ALLY_TANK, allies))
             if len(allies) == 2:
                 if len(enemies) == 3:
-                    strategy = StrategyThirdRound(tank, world, self.memory, DEBUG_MODE)
+                    strategy = strategy_third_round
                 elif len(enemies) == 2:
-                    strategy = StrategyThirdRoundPrevail(tank, world, self.memory, DEBUG_MODE)
+                    strategy = strategy_third_round_prevail
                 else:
-                    strategy = StrategyThirdRoundTotalPrevail(tank, world, self.memory, DEBUG_MODE)
+                    strategy = strategy_third_round_total_prevail
+
             elif len(allies) == 1:
                 if len(enemies) > 1:
-                    strategy = StrategyThirdRoundTwoLeft(tank, world, self.memory, DEBUG_MODE)
+                    strategy = strategy_third_round_two_left
                 else:
-                    strategy = StrategyThirdRoundTwoLeftPrevail(tank, world, self.memory, DEBUG_MODE)
+                    strategy = strategy_third_round_two_left_prevail
+
             else:
                 if len(enemies) > 1:
                     strategy = StrategyOnePlayer2Enemies(tank, world, self.memory, DEBUG_MODE)
@@ -109,6 +111,7 @@ class MyStrategy:
                 strategy = StrategyOnePlayerDuel(tank, world, self.memory, DEBUG_MODE)
 
         self.debug("Strategy: %s" % strategy.__class__)
+        strategy.change_state(tank, world, self.memory, DEBUG_MODE)
         strategy.make_turn(move)
 
         self.debug('_' * 64)
