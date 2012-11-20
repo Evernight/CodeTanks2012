@@ -11,7 +11,7 @@ class StrategyThirdRound:
         self.strategy = StrategyScalarField(
             tank,
             world,
-            [BasicPositionGetter(30, 100), GridPositionGetter(7, 5)],
+            [BasicPositionGetter(35, 90), GridPositionGetter(7, 5)],
             [
                 BonusPositionEstimator(factor=1.2, medikit_min=100, medikit_max=1500, repair_min=100, repair_max=900, ammo_crate=700),
                 LastTargetEstimator(400),
@@ -20,7 +20,7 @@ class StrategyThirdRound:
                 HideBehindObstacle(250),
                 SmartTurretsDangerEstimator(50, 200),
                 FlyingShellEstimator(2000),
-                LinearEdgePenaltyEstimator(400, 500),
+                EdgePenaltyEstimator(1000, 60),
                 CloseDistancePenalty3P(200, 1000),
                 AddConstantEstimator(3000),
             ],
@@ -41,7 +41,7 @@ class StrategyThirdRoundPrevail:
         self.strategy = StrategyScalarField(
             tank,
             world,
-            [BasicPositionGetter(30, 100), GridPositionGetter(7, 5)],
+            [BasicPositionGetter(35, 90), GridPositionGetter(7, 5)],
             [
                 BonusPositionEstimator(factor=1.2, medikit_min=100, medikit_max=1500, repair_min=100, repair_max=900, ammo_crate=700),
                 LastTargetEstimator(400),
@@ -50,7 +50,7 @@ class StrategyThirdRoundPrevail:
                 HideBehindObstacle(250),
                 SmartTurretsDangerEstimator(100, 400),
                 FlyingShellEstimator(2000),
-                LinearEdgePenaltyEstimator(400, 500),
+                EdgePenaltyEstimator(1000, 60),
                 CloseDistancePenalty3P(200, 1000),
                 AddConstantEstimator(3000),
                 ],
@@ -70,7 +70,7 @@ class StrategyThirdRoundTotalPrevail:
         self.strategy = StrategyScalarField(
             tank,
             world,
-            [BasicPositionGetter(30, 100), GridPositionGetter(7, 5)],
+            [BasicPositionGetter(35, 90), GridPositionGetter(7, 5)],
             [
                 BonusPositionEstimator(factor=1.2, medikit_min=100, medikit_max=1500, repair_min=100, repair_max=900, ammo_crate=700),
                 LastTargetEstimator(400),
@@ -79,7 +79,7 @@ class StrategyThirdRoundTotalPrevail:
                 HideBehindObstacle(250),
                 SmartTurretsDangerEstimator(100, 400),
                 FlyingShellEstimator(2000),
-                LinearEdgePenaltyEstimator(400, 500),
+                EdgePenaltyEstimator(1000, 60),
                 CloseDistancePenalty3P(200, 1000),
                 AddConstantEstimator(3000),
                 ],
@@ -100,7 +100,7 @@ class StrategyThirdRoundTwoLeft:
         self.strategy = StrategyScalarField(
             tank,
             world,
-            [BasicPositionGetter(30, 100), GridPositionGetter(7, 5)],
+            [BasicPositionGetter(35, 90), GridPositionGetter(7, 5)],
             [
                 BonusPositionEstimator(factor=1.2, medikit_min=100, medikit_max=1500, repair_min=100, repair_max=900, ammo_crate=700),
                 LastTargetEstimator(400),
@@ -109,7 +109,7 @@ class StrategyThirdRoundTwoLeft:
                 HideBehindObstacle(250),
                 SmartTurretsDangerEstimator(100, 400),
                 FlyingShellEstimator(2000),
-                LinearEdgePenaltyEstimator(400, 500),
+                EdgePenaltyEstimator(1000, 60),
                 Distance2PEstimator(300, 120, 400, 200, 1000),
                 FarDistancePenalty2P(600, 1000),
                 AddConstantEstimator(3000),
@@ -130,7 +130,7 @@ class StrategyThirdRoundTwoLeftPrevail:
         self.strategy = StrategyScalarField(
             tank,
             world,
-            [BasicPositionGetter(30, 100), GridPositionGetter(7, 5)],
+            [BasicPositionGetter(35, 90), GridPositionGetter(7, 5)],
             [
                 BonusPositionEstimator(factor=1.2, medikit_min=100, medikit_max=1500, repair_min=100, repair_max=900, ammo_crate=700),
                 LastTargetEstimator(400),
@@ -139,7 +139,7 @@ class StrategyThirdRoundTwoLeftPrevail:
                 HideBehindObstacle(250),
                 SmartTurretsDangerEstimator(100, 400),
                 FlyingShellEstimator(2000),
-                LinearEdgePenaltyEstimator(400, 500),
+                EdgePenaltyEstimator(1000, 60),
                 Distance2PEstimator(300, 120, 400, 200, 1000),
                 FarDistancePenalty2P(600, 1000),
                 AddConstantEstimator(3000),

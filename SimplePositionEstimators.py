@@ -52,6 +52,7 @@ class TimeToPositionEstimator(PositionEstimator):
             self.context.est_time_cache[pos] = self.context.physics.estimate_time_to_position(pos.x, pos.y, self.context.tank)
         return -self.context.est_time_cache[pos] * self.factor
 
+MIN_EDGE_DISTANCE = 20
 class EdgePenaltyEstimator(PositionEstimator):
     """
     Don't stick to fucking edges
@@ -67,7 +68,7 @@ class EdgePenaltyEstimator(PositionEstimator):
 
     def value(self, pos):
         edges_penalty = max(0, -self.context.physics.distance_to_edge(pos.x, pos.y, self.context.world)**2/self.c + self.border_value)
-        if pos.x < 10 or pos.y < 10 or pos.x > self.context.world.width - 10 or pos.y > self.context.world.height - 10:
+        if pos.x < MIN_EDGE_DISTANCE or pos.y < MIN_EDGE_DISTANCE or pos.x > self.context.world.width - MIN_EDGE_DISTANCE or pos.y > self.context.world.height - MIN_EDGE_DISTANCE:
             edges_penalty = 5000
         return -edges_penalty
 
@@ -82,7 +83,7 @@ class LinearEdgePenaltyEstimator(PositionEstimator):
 
     def value(self, pos):
         edges_penalty = max(0, -self.context.physics.distance_to_edge(pos.x, pos.y, self.context.world)/self.c + self.border_value)
-        if pos.x < 10 or pos.y < 10 or pos.x > self.context.world.width - 10 or pos.y > self.context.world.height - 10:
+        if pos.x < MIN_EDGE_DISTANCE or pos.y < MIN_EDGE_DISTANCE or pos.x > self.context.world.width - MIN_EDGE_DISTANCE or pos.y > self.context.world.height - MIN_EDGE_DISTANCE:
             edges_penalty = 5000
         return -edges_penalty
 
