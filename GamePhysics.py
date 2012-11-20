@@ -169,9 +169,13 @@ class WorldPhysics:
                 t = -v0/a
 
             tv = hypot(target.speedX, target.speedY)
-            #print(tv * t)
+
+            # some dirty fixes
             if tv * t > MAX_TARGET_EST_DISTANCE:
                 t = MAX_TARGET_EST_DISTANCE/tv
+            if tv * t > MAX_TARGET_EST_DISTANCE and d > 800:
+                t = 100/tv
+
             coord = (target.x + target.speedX * t, target.y + target.speedY * t)
         return coord
 
@@ -266,7 +270,7 @@ class WorldPhysics:
             dir = tank_v - pt_v
             shell_v = Vector(shell.x, shell.y)
             shell_speed = Vector(shell.speedX, shell.speedY)
-            next_shell = shell_v + shell_speed * t
+            next_shell = shell_v + shell_speed * (t + 5)
             if sign((shell_v - tank_v).cross_product(dir)) == sign(dir.cross_product(next_shell - tank_v)):
                 return True
             else:
