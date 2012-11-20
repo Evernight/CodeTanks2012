@@ -71,6 +71,21 @@ class EdgePenaltyEstimator(PositionEstimator):
             edges_penalty = 5000
         return -edges_penalty
 
+class LinearEdgePenaltyEstimator(PositionEstimator):
+    NAME = 'Edges'
+
+    def __init__(self, border_value, width):
+        self.border_value = border_value
+        self.width = width
+
+        self.c = width/border_value
+
+    def value(self, pos):
+        edges_penalty = max(0, -self.context.physics.distance_to_edge(pos.x, pos.y, self.context.world)/self.c + self.border_value)
+        if pos.x < 10 or pos.y < 10 or pos.x > self.context.world.width - 10 or pos.y > self.context.world.height - 10:
+            edges_penalty = 5000
+        return -edges_penalty
+
 class LastTargetEstimator(PositionEstimator):
     NAME = 'Last_Target'
 

@@ -1,30 +1,24 @@
 from MyUtils import ALLY_TANK, DEAD_TANK, ALIVE_ENEMY_TANK
 from StrategyFirstRound import StrategyOnePlayer5Enemies, StrategyOnePlayer2Enemies, StrategyOnePlayerDuel
 from StrategySecondRound import StrategySecondRound4Enemies, StrategySecondRound2Enemies
-from StrategyThirdRound import StrategyThirdRound, StrategyHeavy, StrategyThirdRoundTwoLeft, StrategyThirdRoundPrevail
+from StrategyThirdRound import StrategyThirdRound, StrategyThirdRoundTwoLeft, StrategyThirdRoundPrevail
 from WorldAnalysis import PhysicsAnalyser
 from model.TankType import TankType
 from collections import deque, defaultdict
 
 # TODO:
-# * new safety function in 2p game
-
-# * hide behind tanks
-
-# * velocity extrapolating + estimate ability to predict target position
-# * synchronize moving and shooting
-
-#  * alternate unreachable targets
+# * targeting refactoring
+# * smart shooting
+# * alternate unreachable targets
 
 #  * realistic moving and time estimation (mechanics)
 #  * take target orientation into account when shooting / orientation of the tank
 #  * when targeting take current moving destination into account (or the opposite)
-#  * different modes of behaviour
-#  * remove bonuses I'll fail to get because of exist time from targets
+#  * remove bonuses I'll fail to get because of their time of exist
 #  * even more precise short distance estimation?
-#  * profiling again?
+#  * profiling
 #  * fix "stucked" position
-#  * defensive mode?
+# * synchronize moving and shooting
 
 if __debug__:
     DEBUG_MODE = True
