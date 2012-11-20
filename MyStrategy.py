@@ -21,7 +21,7 @@ from collections import deque, defaultdict
 # * synchronize moving and shooting
 
 if __debug__:
-    DEBUG_MODE = True
+    DEBUG_MODE = False
 else:
     DEBUG_MODE = False
 PHYSICS_RESEARCH_MODE = False

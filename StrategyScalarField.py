@@ -12,7 +12,7 @@ from itertools import chain
 # Moving
 from model.FireType import FireType
 
-MAX_POSITION_ITERATIONS = 30
+MAX_POSITION_ITERATIONS = 10
 
 # Targeting
 TARGETING_FACTOR = 0.3

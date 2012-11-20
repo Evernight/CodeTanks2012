@@ -16,7 +16,7 @@ class StrategyThirdRound:
                 BonusPositionEstimator(factor=1.2, medikit_min=100, medikit_max=1500, repair_min=100, repair_max=900, ammo_crate=700),
                 LastTargetEstimator(400),
                 TimeToPositionEstimator(2),
-                BeAroundWeakestEnemy(4000, 1000, 300),
+                BeAroundWeakestEnemy(4000, 900, 300),
                 HideBehindObstacle(250),
                 SmartTurretsDangerEstimator(50, 200),
                 FlyingShellEstimator(2000),
