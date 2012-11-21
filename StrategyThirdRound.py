@@ -48,7 +48,7 @@ strategy_third_round = make_composite_strategy(
             SmartTurretsDangerEstimator(100, 400),
             FlyingShellEstimator(2000),
             EdgePenaltyEstimator(1000, 60),
-            CloseDistancePenalty3P(200, 1000),
+            CloseDistancePenalty3P(200, 1000)
         ]
     ),
     third_round_targeting_strategy,
@@ -87,7 +87,7 @@ strategy_third_round_total_prevail = make_composite_strategy(
             SmartTurretsDangerEstimator(100, 400),
             FlyingShellEstimator(2000),
             EdgePenaltyEstimator(1000, 60),
-            CloseDistancePenalty3P(200, 1000),
+            CloseDistancePenalty3P(200, 1000)
         ]
     ),
     third_round_targeting_strategy,
@@ -107,7 +107,7 @@ strategy_third_round_two_left = make_composite_strategy(
             FlyingShellEstimator(2000),
             EdgePenaltyEstimator(1000, 60),
             Distance2PEstimator(300, 120, 400, 200, 1000),
-            FarDistancePenalty2P(600, 1000),
+            FarDistancePenalty2P(600, 1000)
         ]
     ),
     third_round_targeting_strategy,
@@ -127,7 +127,7 @@ strategy_third_round_two_left_prevail = make_composite_strategy(
             FlyingShellEstimator(2000),
             EdgePenaltyEstimator(1000, 60),
             Distance2PEstimator(300, 120, 400, 200, 1000),
-            FarDistancePenalty2P(600, 1000),
+            FarDistancePenalty2P(600, 1000)
         ]
     ),
     third_round_targeting_strategy,

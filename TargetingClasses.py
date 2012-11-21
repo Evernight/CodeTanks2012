@@ -114,8 +114,11 @@ def get_target_data(context):
     center = Vector(target.x - tank.x, target.y - tank.y)
 
     v0 = target_speed.projection(target_direction)
-    target_avoid_distance_forward = max_move_distance(v0, FICTIVE_TARGET_ACCELERATION, MAX_TARGET_SPEED, t)
-    target_avoid_distance_backward = max_move_distance(v0, -FICTIVE_TARGET_ACCELERATION * 0.75, MAX_TARGET_SPEED, t)
+    target_health_fraction = target.crew_health/target.crew_max_health
+    efficency = (1 + target_health_fraction)/2
+
+    target_avoid_distance_forward = max_move_distance(v0, FICTIVE_TARGET_ACCELERATION * efficency, MAX_TARGET_SPEED * efficency, t)
+    target_avoid_distance_backward = max_move_distance(v0, -FICTIVE_TARGET_ACCELERATION * 0.75 * efficency, MAX_TARGET_SPEED * efficency, t)
     max_pos = target_v + target_avoid_distance_forward * target_direction
     min_pos = target_v + target_avoid_distance_backward * target_direction
 
