@@ -34,18 +34,20 @@ TEST_STRATEGY = 0
 # Phys analysis
 ANALYSIS_TARGET_SAVE_DISTANCE = 80
 
+class Memory:
+    def __init__(self):
+        self.velocity_history = defaultdict(deque)
+        self.last_target_position = {}
+        self.last_turret_target_id = None
+        self.last_shot_tick = None
+        self.target_id = {}
+global_memory = Memory()
+
 # Utils
 class MyStrategy:
 
-    class Memory:
-        def __init__(self):
-            self.velocity_history = defaultdict(deque)
-            self.last_target_position = {}
-            self.last_turret_target_id = None
-            self.last_shot_tick = None
-
     def __init__(self):
-        self.memory = MyStrategy.Memory()
+        self.memory = global_memory
         self.analysis = PhysicsAnalyser(PHYSICS_RESEARCH_MODE)
 
     def debug(self, message, ticks_period=10):

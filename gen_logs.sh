@@ -4,7 +4,7 @@ cd ../tools/repeater/
 ./repeater.sh $1 &
 
 echo "Wow"
-sleep 10
+sleep 1
 echo "GO"
 
 cd ../../src/

@@ -2,6 +2,7 @@ from math import fabs, pi as PI, sqrt, cos
 from GamePhysics import SHELL_ACCELERATION, INITIAL_SHELL_VELOCITY, LOW_ANGLE, FICTIVE_ACCELERATION
 from Geometry import Vector
 from MyUtils import solve_quadratic, fictive_unit
+from TargetingClasses import get_target_data
 
 class TargetEstimator:
     context = None
@@ -166,3 +167,16 @@ class DebugVarianceTEstimator(TargetEstimator):
 
         return "fw=%s, bw=%s, t=%s, var=%s, wid=%s, degree=%s, shoot=%s" % (int(target_avoid_distance_forward), int(target_avoid_distance_backward), int(t), int(var), vulnerable_width,
                                                                             fabs(tank.get_turret_angle_to(estimate_pos.x, estimate_pos.y)) / PI * 180, shoot)
+
+class DebugSmartShootingTEstimator(TargetEstimator):
+    NAME = "Debug"
+    debugging = True
+
+    def debug_value(self, target):
+        self.physics = self.context.physics
+        self.cur_target = target
+        self.world = self.context.world
+        self.tank = self.context.tank
+        self.memory = self.context.memory
+
+        return str(get_target_data(self))

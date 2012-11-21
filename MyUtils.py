@@ -1,4 +1,5 @@
 from math import hypot, sqrt
+import operator
 from Geometry import numerically_zero
 from model import Tank
 from model.BonusType import BonusType
@@ -80,3 +81,11 @@ def lazy(func):
             setattr(self, attr_name, value)
         return value
     return wrapper
+
+def inverse_dict(d, x):
+    return list(map(operator.itemgetter(0), list(filter(lambda v: v[1] == x,  d.items()))))
+
+def index_in_sorted(l, x):
+    for item in enumerate(sorted(l)):
+        if item[1] == x:
+            return item[0]
