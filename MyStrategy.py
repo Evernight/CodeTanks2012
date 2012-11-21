@@ -7,9 +7,9 @@ from model.TankType import TankType
 from collections import deque, defaultdict
 
 # TODO:
-# * targeting refactoring
-# * smart shooting
-# * alternate unreachable targets
+# * smart shooting, more precise target estimation
+# * fix "stuck" positions
+# * more precise estimation of tank dangerousness
 
 #  * realistic moving and time estimation (mechanics)
 #  * take target orientation into account when shooting / orientation of the tank
@@ -17,7 +17,6 @@ from collections import deque, defaultdict
 #  * remove bonuses I'll fail to get because of their time of exist
 #  * even more precise short distance estimation?
 #  * profiling
-#  * fix "stucked" position
 # * synchronize moving and shooting
 
 if __debug__:
