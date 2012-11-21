@@ -1,3 +1,4 @@
+from Geometry import Vector
 from MyUtils import ALLY_TANK, DEAD_TANK, ALIVE_ENEMY_TANK, ALIVE_ALLY_TANK
 from StrategyFirstRound import StrategyOnePlayer5Enemies, StrategyOnePlayer2Enemies, StrategyOnePlayerDuel
 from StrategySecondRound import StrategySecondRound4Enemies, StrategySecondRound2Enemies
@@ -17,7 +18,7 @@ from collections import deque, defaultdict
 #  * remove bonuses I'll fail to get because of their time of exist
 #  * even more precise short distance estimation?
 #  * profiling
-# * synchronize moving and shooting
+#  * synchronize moving and shooting
 
 if __debug__:
     DEBUG_MODE = True
@@ -121,6 +122,10 @@ class MyStrategy:
         self.debug('Output: left: %5.2f, right: %5.2f, fire type: %d' % (move.left_track_power, move.right_track_power, move.fire_type))
 
         #self.analysis.store_shell_velocity(world)
+        if PHYSICS_RESEARCH_MODE:
+            for tank in world.tanks:
+                if tank.player_name == "EmptyPlayer":
+                    print(Vector(tank.speedX, tank.speedY).length())
 
     def select_tank(self, tank_index, team_size):
         if team_size == 3:

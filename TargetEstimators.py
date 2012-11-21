@@ -1,8 +1,13 @@
-from math import fabs, pi as PI
+from math import fabs, pi as PI, sqrt, cos
+from GamePhysics import SHELL_ACCELERATION, INITIAL_SHELL_VELOCITY, LOW_ANGLE, FICTIVE_ACCELERATION
 from Geometry import Vector
+from MyUtils import solve_quadratic
 
 class TargetEstimator:
     context = None
+    debugging = False
+    def value(self, target):
+        return 0
 
 class AnglePenaltyTEstimator(TargetEstimator):
     NAME = "Angle"
@@ -91,3 +96,64 @@ class BehindObstacleTEstimator(TargetEstimator):
         if self.context.physics.vector_is_intersecting_object(tank_v , target_v - tank_v, obstacle, 1.05):
             penalty = self.max_value
         return -penalty
+
+class DebugTargetSpeedTEstimator(TargetEstimator):
+    NAME = "Speed"
+    debugging = True
+
+    def debug_value(self, target):
+        target_speed = Vector(target.speedX, target.speedY)
+        return "%4.2f" % target_speed.length()
+
+FICTIVE_TARGET_ACCELERATION = 0.07
+MAX_TARGET_SPEED = 4
+class DebugVarianceTEstimator(TargetEstimator):
+    NAME = "Variance"
+    debugging = True
+
+    def debug_value(self, target):
+        tank = self.context.tank
+        b = tank.angle + tank.turret_relative_angle
+        e = Vector(1, 0)
+        q = e.rotate(b)
+
+        target_v = Vector(target.x, target.y)
+        target_direction = Vector(1, 0).rotate(target.angle)
+        target_speed = Vector(target.speedX, target.speedY)
+
+        def get_hit_time():
+            v0 = INITIAL_SHELL_VELOCITY
+            a = SHELL_ACCELERATION
+            d = tank.get_distance_to_unit(target)
+            return solve_quadratic(a/2, v0, -d)
+
+        def max_move_distance(v0, a, max_v, t):
+            #TODO: this estimation is rough
+            if fabs(v0 + a * t) > max_v:
+                t1 = fabs((max_v - v0) / a)
+                t2 = t - t1
+            else:
+                t1 = t
+                t2 = 0
+            if a > 0:
+                return a*t1**2/2 + v0 * t1 + max_v * t2
+            else:
+                return a*t1**2/2 + v0 * t1 - max_v * t2
+
+        t = get_hit_time()
+        center = Vector(target.x - tank.x, target.y - tank.y)
+
+        v0 = target_speed.projection(target_direction)
+        target_avoid_distance_forward = max_move_distance(v0, FICTIVE_TARGET_ACCELERATION, MAX_TARGET_SPEED, t)
+        target_avoid_distance_backward = max_move_distance(v0, -FICTIVE_TARGET_ACCELERATION * 0.75, MAX_TARGET_SPEED, t)
+
+        target_turret_n_cos = cos(fabs(b - target.angle) + PI/2)
+
+        var = (target_avoid_distance_forward - target_avoid_distance_backward) * target_turret_n_cos
+
+        estimate_pos = target_v + target_direction * ((target_avoid_distance_forward + target_avoid_distance_backward) / 2)
+        vulnerable_width = max(90 * target_turret_n_cos, 60 * (1 - target_turret_n_cos))
+
+        shoot = var <= vulnerable_width and fabs(tank.get_turret_angle_to(estimate_pos.x, estimate_pos.y)) < PI/180
+
+        return (int(target_avoid_distance_forward), int(t), int(target_avoid_distance_backward), int(var), vulnerable_width, shoot)

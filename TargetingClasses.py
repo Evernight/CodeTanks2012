@@ -1,7 +1,8 @@
 from itertools import chain
-from math import fabs
-from Geometry import sign
-from MyUtils import DEAD_TANK, ALLY_TANK, fictive_unit
+from math import fabs, cos
+from GamePhysics import INITIAL_SHELL_VELOCITY, SHELL_ACCELERATION
+from Geometry import sign, Vector
+from MyUtils import DEAD_TANK, ALLY_TANK, fictive_unit, solve_quadratic
 from model.FireType import FireType
 from math import pi as PI
 
@@ -79,7 +80,59 @@ class ThirdRoundShootDecisionMaker(ShootDecisionMaker):
         self.physics = self.context.physics
         world = self.context.world
 
-        est_pos = self.physics.estimate_target_position(cur_target, tank)
+        FICTIVE_TARGET_ACCELERATION = 0.07
+        MAX_TARGET_SPEED = 4
+        def calculate_stuff():
+            # New Decision Maker
+            tank = self.context.tank
+            target = cur_target
+
+            b = tank.angle + tank.turret_relative_angle
+            e = Vector(1, 0)
+            q = e.rotate(b)
+
+            target_v = Vector(target.x, target.y)
+            target_direction = Vector(1, 0).rotate(target.angle)
+            target_speed = Vector(target.speedX, target.speedY)
+
+            def get_hit_time():
+                v0 = INITIAL_SHELL_VELOCITY
+                a = SHELL_ACCELERATION
+                d = tank.get_distance_to_unit(target)
+                return solve_quadratic(a/2, v0, -d)
+
+            def max_move_distance(v0, a, max_v, t):
+                #TODO: this estimation is rough
+                if fabs(v0 + a * t) > max_v:
+                    t1 = fabs((max_v - v0) / a)
+                    t2 = t - t1
+                else:
+                    t1 = t
+                    t2 = 0
+                if a > 0:
+                    return a*t1**2/2 + v0 * t1 + max_v * t2
+                else:
+                    return a*t1**2/2 + v0 * t1 - max_v * t2
+
+            t = get_hit_time()
+            center = Vector(target.x - tank.x, target.y - tank.y)
+
+            v0 = target_speed.projection(target_direction)
+            target_avoid_distance_forward = max_move_distance(v0, FICTIVE_TARGET_ACCELERATION, MAX_TARGET_SPEED, t)
+            target_avoid_distance_backward = max_move_distance(v0, -FICTIVE_TARGET_ACCELERATION * 0.75, MAX_TARGET_SPEED, t)
+
+            target_turret_n_cos = cos(fabs(b - target.angle) + PI/2)
+
+            var = (target_avoid_distance_forward - target_avoid_distance_backward) * target_turret_n_cos
+
+            estimate_pos = target_v + target_direction * ((target_avoid_distance_forward + target_avoid_distance_backward) / 2)
+            vulnerable_width = max(90 * target_turret_n_cos, 60 * (1 - target_turret_n_cos))
+
+            shoot = var <= vulnerable_width and fabs(tank.get_turret_angle_to(estimate_pos.x, estimate_pos.y)) < PI/180
+
+            return ((estimate_pos.x, estimate_pos.y), shoot)
+
+        est_pos, good_to_shoot = calculate_stuff()
 
         def bonus_is_attacked():
             for bonus in world.bonuses:
@@ -107,11 +160,11 @@ class ThirdRoundShootDecisionMaker(ShootDecisionMaker):
 
         cur_angle = tank.get_turret_angle_to(*est_pos)
 
-        good_to_shoot = self.physics.will_hit(
-            tank,
-            fictive_unit(cur_target, est_pos[0], est_pos[1]),
-            0.5
-        )
+#        good_to_shoot = self.physics.will_hit(
+#            tank,
+#            fictive_unit(cur_target, est_pos[0], est_pos[1]),
+#            0.5
+#        )
         if good_to_shoot:
             if self.context.health_fraction > 0.8 and self.context.hull_fraction > 0.5 and tank.get_distance_to_unit(cur_target) > 400 and tank.premium_shell_count <= 3:
                 move.fire_type = FireType.REGULAR
@@ -123,12 +176,6 @@ class ThirdRoundShootDecisionMaker(ShootDecisionMaker):
         if bonus_is_attacked() or obstacle_is_attacked():
             self.context.debug('!!! Obstacle is attacked, don\'t shoot')
             move.fire_type = FireType.NONE
-
-#        if tank.remaining_reloading_time == 0 and move.fire_type != FireType.NONE:
-#            if memory.last_shot_tick is None or memory.last_shot_tick < world.tick - 2:
-#                memory.last_shot_tick = world.tick
-#            else:
-#                move.fire_type = FireType.NONE
 
         if fabs(cur_angle) > PI/180 * 0.5:
             move.turret_turn = sign(cur_angle)

@@ -6,7 +6,7 @@ from PostitionGetters import BasicPositionGetter, GridPositionGetter
 from StrategicPositionEstimators import *
 from StrategyScalarFieldMO import ScalarFieldMovingStrategy
 from StrategyTargeting import EstimatorsTargetingStrategy
-from TargetEstimators import DistancePenaltyTEstimator, FinishTEstimator, ResponseTEstimator, LastTargetTEstimator, AddConstantTEstimator, AnglePenaltyTEstimator, AttackWeakestTEstimator, BehindObstacleTEstimator
+from TargetEstimators import DistancePenaltyTEstimator, FinishTEstimator, ResponseTEstimator, LastTargetTEstimator, AddConstantTEstimator, AnglePenaltyTEstimator, AttackWeakestTEstimator, BehindObstacleTEstimator, DebugVarianceTEstimator, DebugTargetSpeedTEstimator
 from TargetingClasses import OldShootDecisionMaker, ThirdRoundShootDecisionMaker
 
 default_3R_position_getters = [BasicPositionGetter(35, 90), GridPositionGetter(7, 5, excluded=[(4, 3)])]
@@ -29,6 +29,8 @@ third_round_targeting_strategy = EstimatorsTargetingStrategy(
         DistancePenaltyTEstimator(),
         BehindObstacleTEstimator(20),
         AttackWeakestTEstimator(50),
+        DebugVarianceTEstimator(),
+        DebugTargetSpeedTEstimator(),
         AddConstantTEstimator(180)
     ],
     ThirdRoundShootDecisionMaker()
