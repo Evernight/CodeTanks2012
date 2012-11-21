@@ -262,7 +262,18 @@ class WorldPhysics:
             return True
         if dist < 150:
             # short distance
-            return self.shell_will_hit(shell, fictive_unit(tank, x, y), factor=1.05)
+            result = self.shell_will_hit(shell, fictive_unit(tank, x, y), factor=1.05)
+            if result:
+                pt_v = Vector(x, y)
+                tank_v = Vector(tank.x, tank.y)
+                dir = pt_v - tank_v
+                shell_speed = Vector(shell.speedX, shell.speedY)
+                if dir.is_zero() or shell_speed.is_zero():
+                    return result
+                if dir.angle(shell_speed) < PI/8 and shell.get_distance_to(x, y) > d:
+                    return False
+            return result
+
         else:
             # long distance, check if our direction is intersecting segment between shell and shell + v_shell*t
             pt_v = Vector(x, y)

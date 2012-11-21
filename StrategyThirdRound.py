@@ -6,7 +6,7 @@ from PostitionGetters import BasicPositionGetter, GridPositionGetter
 from StrategicPositionEstimators import *
 from StrategyScalarFieldMO import ScalarFieldMovingStrategy
 from StrategyTargeting import EstimatorsTargetingStrategy
-from TargetEstimators import DistancePenaltyTEstimator, FinishTEstimator, ResponseTEstimator, LastTargetTEstimator, AddConstantTEstimator, AnglePenaltyTEstimator, AttackWeakestTEstimator
+from TargetEstimators import DistancePenaltyTEstimator, FinishTEstimator, ResponseTEstimator, LastTargetTEstimator, AddConstantTEstimator, AnglePenaltyTEstimator, AttackWeakestTEstimator, BehindObstacleTEstimator
 from TargetingClasses import OldShootDecisionMaker, ThirdRoundShootDecisionMaker
 
 old_targeting_strategy = EstimatorsTargetingStrategy(
@@ -27,6 +27,7 @@ third_round_targeting_strategy = EstimatorsTargetingStrategy(
         DistancePenaltyTEstimator(),
         #FinishTEstimator(5),
         #ResponseTEstimator(),
+        BehindObstacleTEstimator(20),
         AttackWeakestTEstimator(50),
         AddConstantTEstimator()
     ],
@@ -42,7 +43,7 @@ strategy_third_round = make_composite_strategy(
             TimeToPositionEstimator(2),
             BeAroundWeakestEnemy(4000, 900, 600),
             HideBehindObstacle(250),
-            SmartTurretsDangerEstimator(50, 200),
+            SmartTurretsDangerEstimator(100, 400),
             FlyingShellEstimator(2000),
             EdgePenaltyEstimator(1000, 60),
             CloseDistancePenalty3P(200, 1000),

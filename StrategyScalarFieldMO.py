@@ -1,8 +1,10 @@
+from math import hypot
 from queue import PriorityQueue
 import operator
 from random import random
-from GamePhysics import WorldPhysics
-from MyUtils import ALIVE_ENEMY_TANK, ALLY_TANK
+from GamePhysics import WorldPhysics, SHELL_ACCELERATION
+from Geometry import Vector
+from MyUtils import ALIVE_ENEMY_TANK, ALLY_TANK, solve_quadratic
 
 # ================ CONSTANTS
 # Moving
@@ -115,3 +117,18 @@ class ScalarFieldMovingStrategy:
         self.physics.move_to_position(next_position.x, next_position.y, tank, move)
 
         self.debug('=' * 16)
+        if self.debug_mode:
+            for shell in world.shells:
+                v0 = hypot(shell.speedX, shell.speedY)
+                a = SHELL_ACCELERATION
+                d = tank.get_distance_to_unit(shell)
+                tank_v = Vector(tank.x, tank.y)
+                shell_v = Vector(shell.x, shell.y)
+                shell_speed = Vector(shell.speedX, shell.speedY)
+                #d = shell.get_distance_to(x, y)
+                t = solve_quadratic(a/2, v0, -d)
+
+                self.debug('SHELL [%12s] (%8.2f, %8.2f) v=%s, will hit=%s, hit time=%8.2f' %
+                           (shell.player_name, shell.x, shell.y, shell_speed.length(), str(self.physics.shell_will_hit(shell, tank, factor=1.05)), t) )
+
+            self.debug('=' * 16)

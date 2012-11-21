@@ -82,7 +82,7 @@ class HideBehindObstacle(PositionEstimator):
         for enemy in enemies:
             enemy_v = Vector(enemy.x, enemy. y)
 
-            if self.context.physics.vector_is_intersecting_object(pos_v , enemy_v - pos_v , obstacle, 1.1):
+            if self.context.physics.vector_is_intersecting_object(pos_v , enemy_v - pos_v , obstacle, 1.05):
                 if self.context.health_fraction <= 0.3 or tank.remaining_reloading_time > 100:
                     result += self.max_value
                 else:
