@@ -59,8 +59,11 @@ class LastTargetTEstimator(TargetEstimator):
 class AddConstantTEstimator(TargetEstimator):
     NAME = "C"
 
+    def __init__(self, max_value):
+        self.max_value = max_value
+
     def value(self, target):
-        return 180
+        return self.max_value
 
 class AttackWeakestTEstimator(TargetEstimator):
     NAME = "Weakest"

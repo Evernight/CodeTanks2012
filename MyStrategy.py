@@ -57,7 +57,7 @@ class MyStrategy:
 
         self.debug('')
         self.debug('#' * 64)
-        self.debug('========================= (Tick) #%-4s =========================' % world.tick)
+        self.debug('======================== (Tick) T%s#%-4s ========================' % (tank.teammate_index, world.tick))
         self.debug('Tank %s (x=%s, y=%s, health=%4s/%4s, hull=%4s/%4s, super_shells=%2s, reload=%3s/%3s)' %
                    (tank.teammate_index, tank.x, tank.y, tank.crew_health, tank.crew_max_health,
                     tank.hull_durability, tank.hull_max_durability, tank.premium_shell_count,
@@ -111,7 +111,10 @@ class MyStrategy:
             else:
                 strategy = StrategyOnePlayerDuel(tank, world, self.memory, DEBUG_MODE)
 
-        self.debug("Strategy: %s" % strategy.__class__)
+        try:
+            self.debug("Strategy: %s" % strategy.name)
+        except:
+            pass
         strategy.change_state(tank, world, self.memory, DEBUG_MODE)
         strategy.make_turn(move)
 

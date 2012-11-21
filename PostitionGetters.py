@@ -5,9 +5,10 @@ from MyUtils import bonus_name_by_type
 from Position import Position
 
 class GridPositionGetter:
-    def __init__(self, width, height):
+    def __init__(self, width, height, excluded=()):
         self.width = width
         self.height = height
+        self.excluded = excluded
 
     def positions(self, tank, world):
         positions = []
@@ -15,6 +16,8 @@ class GridPositionGetter:
         # Grid
         for i in range(self.width):
             for j in range(self.height):
+                if (i, j) in self.excluded:
+                    continue
                 positions.append(
                     Position(
                         world.width * (1 + i) / (self.width + 1),
