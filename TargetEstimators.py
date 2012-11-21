@@ -23,10 +23,13 @@ class DistancePenaltyTEstimator(TargetEstimator):
 class FinishTEstimator(TargetEstimator):
     NAME = "Finish"
 
+    def __init__(self, max_value):
+        self.max_value = max_value
+
     def value(self, target):
         if ((target.crew_health <= 20 or target.hull_durability <= 20) or
             (self.context.tank.premium_shell_count > 0 and (target.crew_health <= 35 or target.hull_durability <= 35))):
-            finish_bonus = 30
+            finish_bonus = self.max_value
         else:
             finish_bonus = 0
         return finish_bonus
@@ -57,3 +60,13 @@ class AddConstantTEstimator(TargetEstimator):
 
     def value(self, target):
         return 180
+
+class AttackWeakestTEstimator(TargetEstimator):
+    NAME = "Weakest"
+
+    def __init__(self, max_value):
+        self.max_value = max_value
+
+    def value(self, target):
+        weakest_bonus = (1 - target.crew_health / target.crew_max_health) * self.max_value
+        return weakest_bonus
