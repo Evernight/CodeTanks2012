@@ -195,7 +195,6 @@ class EstimatorsTargetingStrategy:
         for e in self.target_estimators:
             e.context = self
 
-        get_target_priority = lambda target: sum([e.value(target) for e in self.target_estimators])
 
         if self.debug_mode:
             targets = sorted(targets, key=lambda t : t.player_name)
@@ -219,6 +218,8 @@ class EstimatorsTargetingStrategy:
 
             for tgt in targets:
                 out_tgt(tgt)
+
+        get_target_priority = lambda target: sum([e.value(target) for e in self.target_estimators])
 
         targets_f = [(t, get_target_priority(t)) for t in targets]
 

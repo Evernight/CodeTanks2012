@@ -11,7 +11,6 @@ class ShootDecisionMaker:
 # ================ CONSTANTS
 # Targeting
 TARGETING_FACTOR = 0.3
-ENEMY_TARGETING_FACTOR = 0.8
 BONUS_FACTOR = 1.25
 DEAD_TANK_OBSTACLE_FACTOR = 1.15
 class OldShootDecisionMaker(ShootDecisionMaker):
@@ -111,7 +110,7 @@ class ThirdRoundShootDecisionMaker(ShootDecisionMaker):
         good_to_shoot = self.physics.will_hit(
             tank,
             fictive_unit(cur_target, est_pos[0], est_pos[1]),
-            0.6
+            0.5
         )
         if good_to_shoot:
             if self.context.health_fraction > 0.8 and self.context.hull_fraction > 0.5 and tank.get_distance_to_unit(cur_target) > 400 and tank.premium_shell_count <= 3:

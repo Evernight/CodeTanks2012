@@ -116,7 +116,7 @@ class MyStrategy:
         strategy.make_turn(move)
 
         self.debug('_' * 64)
-        self.debug('Output: left: %5.2f, right: %5.2f' % (move.left_track_power, move.right_track_power))
+        self.debug('Output: left: %5.2f, right: %5.2f, fire type: %d' % (move.left_track_power, move.right_track_power, move.fire_type))
 
         #self.analysis.store_shell_velocity(world)
 
