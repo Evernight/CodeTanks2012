@@ -39,9 +39,11 @@ class StrategyScalarField:
             if self.debug_mode:
                 print(message,end=end)
 
-    def change_state(self, tank, world):
+    def change_state(self, tank, world, memory, debug_on):
         self.tank = tank
         self.world = world
+        self.debug_mode = debug_on
+        self.memory = memory
 
         self.physics = WorldPhysics(world)
 

@@ -125,11 +125,11 @@ class ThirdRoundShootDecisionMaker(ShootDecisionMaker):
             self.context.debug('!!! Obstacle is attacked, don\'t shoot')
             move.fire_type = FireType.NONE
 
-        if tank.remaining_reloading_time == 0 and move.fire_type != FireType.NONE:
-            if memory.last_shot_tick is None or memory.last_shot_tick < world.tick - 2:
-                memory.last_shot_tick = world.tick
-            else:
-                move.fire_type = FireType.NONE
+#        if tank.remaining_reloading_time == 0 and move.fire_type != FireType.NONE:
+#            if memory.last_shot_tick is None or memory.last_shot_tick < world.tick - 2:
+#                memory.last_shot_tick = world.tick
+#            else:
+#                move.fire_type = FireType.NONE
 
         if fabs(cur_angle) > PI/180 * 0.5:
             move.turret_turn = sign(cur_angle)
