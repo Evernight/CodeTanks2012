@@ -80,8 +80,8 @@ class ThirdRoundShootDecisionMaker(ShootDecisionMaker):
         self.physics = self.context.physics
         world = self.context.world
 
-        FICTIVE_TARGET_ACCELERATION = 0.07
-        MAX_TARGET_SPEED = 4
+        FICTIVE_TARGET_ACCELERATION = 0.1
+        MAX_TARGET_SPEED = 3.2
         def calculate_stuff():
             # New Decision Maker
             tank = self.context.tank
@@ -178,4 +178,4 @@ class ThirdRoundShootDecisionMaker(ShootDecisionMaker):
             move.fire_type = FireType.NONE
 
         if fabs(cur_angle) > PI/180 * 0.5:
-            move.turret_turn = sign(cur_angle)
+            move.turret_turn = cur_angle

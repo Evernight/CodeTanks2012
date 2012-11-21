@@ -147,13 +147,13 @@ class DebugVarianceTEstimator(TargetEstimator):
         target_avoid_distance_forward = max_move_distance(v0, FICTIVE_TARGET_ACCELERATION, MAX_TARGET_SPEED, t)
         target_avoid_distance_backward = max_move_distance(v0, -FICTIVE_TARGET_ACCELERATION * 0.75, MAX_TARGET_SPEED, t)
 
-        target_turret_n_cos = cos(fabs(b - target.angle) + PI/2)
+        target_turret_n_cos = fabs(cos(fabs(b - target.angle) + PI/2))
 
-        var = (target_avoid_distance_forward - target_avoid_distance_backward) * target_turret_n_cos
+        var = fabs((target_avoid_distance_forward - target_avoid_distance_backward) * target_turret_n_cos)
 
         estimate_pos = target_v + target_direction * ((target_avoid_distance_forward + target_avoid_distance_backward) / 2)
         vulnerable_width = max(90 * target_turret_n_cos, 60 * (1 - target_turret_n_cos))
 
-        shoot = var <= vulnerable_width and fabs(tank.get_turret_angle_to(estimate_pos.x, estimate_pos.y)) < PI/180
+        shoot = var <= vulnerable_width and fabs(tank.get_turret_angle_to(estimate_pos.x, estimate_pos.y)) < PI/180 * 0.5
 
         return (int(target_avoid_distance_forward), int(t), int(target_avoid_distance_backward), int(var), vulnerable_width, shoot)
