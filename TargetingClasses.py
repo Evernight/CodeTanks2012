@@ -124,14 +124,18 @@ def get_target_data(context):
     var = fabs((target_avoid_distance_forward - target_avoid_distance_backward) * target_turret_n_cos)
 
     allies_targeting = inverse_dict(context.memory.target_id, target.id)
-    if len(allies_targeting) <= 1:
+
+    def single_attacker():
         estimate_pos = target_v + target_direction * ((target_avoid_distance_forward + target_avoid_distance_backward) / 2)
         vulnerable_width = max(90 * target_turret_n_cos, 60 * (1 - target_turret_n_cos))
 
         shoot = physics.will_hit(tank, fictive_unit(target, max_pos.x, max_pos.y), 0.9) and physics.will_hit(tank, fictive_unit(target, min_pos.x, min_pos.y), 0.9)
+        if 0.5 < fabs(target_turret_n_cos) < 0.9659258262890683:
+            shoot = False
 
         return ((estimate_pos.x, estimate_pos.y), shoot, target_avoid_distance_forward, target_avoid_distance_backward, 'SINGLE')
-    else:
+
+    def multiple_attackers():
         if context.memory.target_id.get(tank.id) != target.id:
             return None
         cnt = len(allies_targeting)
@@ -144,7 +148,15 @@ def get_target_data(context):
         estimate_pos = target_v + target_direction * shift
 
         shoot = fabs(tank.get_turret_angle_to(estimate_pos.x, estimate_pos.y)) < PI/180 * 1
+        if 0.5 < fabs(target_turret_n_cos) < 0.9659258262890683:
+            shoot = False
         return ((estimate_pos.x, estimate_pos.y), shoot, target_avoid_distance_forward, target_avoid_distance_backward, 'SEVERAL %d, shift=%8.2f' % (ind, shift))
+
+    if len(allies_targeting) <= 1 or var < 30:
+        return single_attacker()
+    else:
+        return multiple_attackers()
+
 
 class ThirdRoundShootDecisionMaker(ShootDecisionMaker):
     def process(self, cur_target, move):
