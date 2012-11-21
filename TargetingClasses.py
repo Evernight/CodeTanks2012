@@ -132,19 +132,19 @@ def get_target_data(context):
 
         return ((estimate_pos.x, estimate_pos.y), shoot, target_avoid_distance_forward, target_avoid_distance_backward, 'SINGLE')
     else:
-        if context.memory.target_id[tank.id] != target.id:
+        if context.memory.target_id.get(tank.id) != target.id:
             return None
         cnt = len(allies_targeting)
         ind = index_in_sorted(allies_targeting, tank.id)
 
         segment = (target_avoid_distance_forward - target_avoid_distance_backward)/(cnt + 1)
 
-        shift = segment * (ind + 1) - target_avoid_distance_backward
+        shift = segment * (ind + 1) + target_avoid_distance_backward
 
         estimate_pos = target_v + target_direction * shift
 
         shoot = fabs(tank.get_turret_angle_to(estimate_pos.x, estimate_pos.y)) < PI/180 * 1
-        return ((estimate_pos.x, estimate_pos.y), shoot, target_avoid_distance_forward, target_avoid_distance_backward, 'SEVERAL %d' % ind)
+        return ((estimate_pos.x, estimate_pos.y), shoot, target_avoid_distance_forward, target_avoid_distance_backward, 'SEVERAL %d, shift=%8.2f' % (ind, shift))
 
 class ThirdRoundShootDecisionMaker(ShootDecisionMaker):
     def process(self, cur_target, move):
