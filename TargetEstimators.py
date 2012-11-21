@@ -131,8 +131,12 @@ class DebugVarianceTEstimator(TargetEstimator):
 
         def max_move_distance(v0, a, max_v, t):
             #TODO: this estimation is rough
+            v0 = max(-max_v, min(v0, max_v))
             if fabs(v0 + a * t) > max_v:
-                t1 = fabs((max_v - v0) / a)
+                if a > 0:
+                    t1 = fabs((max_v - v0) / a)
+                else:
+                    t1 = fabs((-max_v - v0) / a)
                 t2 = t - t1
             else:
                 t1 = t

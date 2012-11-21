@@ -104,8 +104,12 @@ class ThirdRoundShootDecisionMaker(ShootDecisionMaker):
 
             def max_move_distance(v0, a, max_v, t):
                 #TODO: this estimation is rough
+                v0 = max(-max_v, min(v0, max_v))
                 if fabs(v0 + a * t) > max_v:
-                    t1 = fabs((max_v - v0) / a)
+                    if a > 0:
+                        t1 = fabs((max_v - v0) / a)
+                    else:
+                        t1 = fabs((-max_v - v0) / a)
                     t2 = t - t1
                 else:
                     t1 = t
@@ -131,7 +135,7 @@ class ThirdRoundShootDecisionMaker(ShootDecisionMaker):
             estimate_pos = target_v + target_direction * ((target_avoid_distance_forward + target_avoid_distance_backward) / 2)
             vulnerable_width = max(90 * target_turret_n_cos, 60 * (1 - target_turret_n_cos))
 
-            shoot = physics.will_hit(tank, fictive_unit(target, max_pos.x, max_pos.y)) and physics.will_hit(tank, fictive_unit(target, min_pos.x, min_pos.y))
+            shoot = physics.will_hit(tank, fictive_unit(target, max_pos.x, max_pos.y), 0.9) and physics.will_hit(tank, fictive_unit(target, min_pos.x, min_pos.y), 0.9)
 
             return ((estimate_pos.x, estimate_pos.y), shoot)
 
