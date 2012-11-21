@@ -137,7 +137,9 @@ def get_target_data(context):
         cnt = len(allies_targeting)
         ind = index_in_sorted(allies_targeting, tank.id)
 
-        shift = (target_avoid_distance_forward + target_avoid_distance_backward)/(cnt + 1) * ind
+        segment = (target_avoid_distance_forward - target_avoid_distance_backward)/(cnt + 1)
+
+        shift = segment * (ind + 1) - target_avoid_distance_backward
 
         estimate_pos = target_v + target_direction * shift
 

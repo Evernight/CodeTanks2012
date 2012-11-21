@@ -68,6 +68,7 @@ class MyStrategy:
         self.debug('#' * 64)
 
         if DEAD_TANK(tank):
+            self.memory.target_id[tank.id] = None
             self.debug('DEAD x_x')
             return
 
