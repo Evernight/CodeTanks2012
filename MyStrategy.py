@@ -9,6 +9,7 @@ from collections import deque, defaultdict
 
 # TODO:
 # * smart shooting, more precise target estimation
+# * shoot shells
 # * fix "stuck" positions
 # * more precise estimation of tank dangerousness
 

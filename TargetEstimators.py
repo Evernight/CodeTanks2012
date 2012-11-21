@@ -1,7 +1,7 @@
 from math import fabs, pi as PI, sqrt, cos
 from GamePhysics import SHELL_ACCELERATION, INITIAL_SHELL_VELOCITY, LOW_ANGLE, FICTIVE_ACCELERATION
 from Geometry import Vector
-from MyUtils import solve_quadratic
+from MyUtils import solve_quadratic, fictive_unit
 
 class TargetEstimator:
     context = None
@@ -113,6 +113,8 @@ class DebugVarianceTEstimator(TargetEstimator):
 
     def debug_value(self, target):
         tank = self.context.tank
+        physics = self.context.physics
+
         b = tank.angle + tank.turret_relative_angle
         e = Vector(1, 0)
         q = e.rotate(b)
@@ -124,7 +126,7 @@ class DebugVarianceTEstimator(TargetEstimator):
         def get_hit_time():
             v0 = INITIAL_SHELL_VELOCITY
             a = SHELL_ACCELERATION
-            d = tank.get_distance_to_unit(target)
+            d = max(0, tank.get_distance_to_unit(target) - 60)
             return solve_quadratic(a/2, v0, -d)
 
         def max_move_distance(v0, a, max_v, t):
@@ -146,6 +148,8 @@ class DebugVarianceTEstimator(TargetEstimator):
         v0 = target_speed.projection(target_direction)
         target_avoid_distance_forward = max_move_distance(v0, FICTIVE_TARGET_ACCELERATION, MAX_TARGET_SPEED, t)
         target_avoid_distance_backward = max_move_distance(v0, -FICTIVE_TARGET_ACCELERATION * 0.75, MAX_TARGET_SPEED, t)
+        max_pos = target_v + target_avoid_distance_forward * target_direction
+        min_pos = target_v + target_avoid_distance_backward * target_direction
 
         target_turret_n_cos = fabs(cos(fabs(b - target.angle) + PI/2))
 
@@ -154,6 +158,7 @@ class DebugVarianceTEstimator(TargetEstimator):
         estimate_pos = target_v + target_direction * ((target_avoid_distance_forward + target_avoid_distance_backward) / 2)
         vulnerable_width = max(90 * target_turret_n_cos, 60 * (1 - target_turret_n_cos))
 
-        shoot = var <= vulnerable_width and fabs(tank.get_turret_angle_to(estimate_pos.x, estimate_pos.y)) < PI/180 * 0.5
+        shoot = physics.will_hit(tank, fictive_unit(target, max_pos.x, max_pos.y)) and physics.will_hit(tank, fictive_unit(target, min_pos.x, min_pos.y))
 
-        return (int(target_avoid_distance_forward), int(t), int(target_avoid_distance_backward), int(var), vulnerable_width, shoot)
+        return "fw=%s, bw=%s, t=%s, var=%s, wid=%s, degree=%s, shoot=%s" % (int(target_avoid_distance_forward), int(target_avoid_distance_backward), int(t), int(var), vulnerable_width,
+                                                                            fabs(tank.get_turret_angle_to(estimate_pos.x, estimate_pos.y)) / PI * 180, shoot)
