@@ -2,13 +2,12 @@ from Geometry import Vector
 from MyUtils import ALLY_TANK, DEAD_TANK, ALIVE_ENEMY_TANK, ALIVE_ALLY_TANK
 from StrategyFirstRound import StrategyOnePlayer5Enemies, StrategyOnePlayer2Enemies, StrategyOnePlayerDuel
 from StrategySecondRound import StrategySecondRound4Enemies, StrategySecondRound2Enemies
-from StrategyThirdRound import strategy_third_round, strategy_third_round_prevail, strategy_third_round_total_prevail, strategy_third_round_two_left, strategy_third_round_two_left_prevail
+from StrategyThirdRound import strategy_third_round, strategy_third_round_prevail, strategy_third_round_total_prevail, strategy_third_round_two_left, strategy_third_round_two_left_prevail, strategy_third_round_last_man_standing
 from WorldAnalysis import PhysicsAnalyser
 from model.TankType import TankType
 from collections import deque, defaultdict
 
 # TODO:
-# * smart shooting, more precise target estimation
 # * shoot shells
 # * fix "stuck" positions
 # * more precise estimation of tank dangerousness
@@ -99,9 +98,9 @@ class MyStrategy:
 
             else:
                 if len(enemies) > 1:
-                    strategy = StrategyOnePlayer2Enemies(tank, world, self.memory, DEBUG_MODE)
+                    strategy = strategy_third_round_last_man_standing
                 else:
-                    strategy = StrategyOnePlayerDuel(tank, world, self.memory, DEBUG_MODE)
+                    strategy = strategy_third_round_last_man_standing
 
         elif len(allies) == 1 and not DEAD_TANK(allies[0]):
             if len(enemies) > 2:

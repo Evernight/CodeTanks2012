@@ -71,8 +71,9 @@ class OldShootDecisionMaker(ShootDecisionMaker):
         if fabs(cur_angle) > PI/180 * 0.5:
             move.turret_turn = sign(cur_angle)
 
-FICTIVE_TARGET_ACCELERATION = 0.12
-MAX_TARGET_SPEED = 4.0
+FICTIVE_TARGET_ACCELERATION = 0.08
+MAX_TARGET_SPEED = 3.3
+BACKWARDS_FICTIVE_MULTIPLIER = 0.9
 def get_target_data(context):
     # New Decision Maker
     tank = context.tank
@@ -119,7 +120,7 @@ def get_target_data(context):
     efficency = (1 + target_health_fraction)/2
 
     target_avoid_distance_forward = max_move_distance(v0, FICTIVE_TARGET_ACCELERATION * efficency, MAX_TARGET_SPEED * efficency, t)
-    target_avoid_distance_backward = max_move_distance(v0, -FICTIVE_TARGET_ACCELERATION * 0.75 * efficency, MAX_TARGET_SPEED * efficency, t)
+    target_avoid_distance_backward = max_move_distance(v0, -FICTIVE_TARGET_ACCELERATION * BACKWARDS_FICTIVE_MULTIPLIER * efficency, MAX_TARGET_SPEED * efficency, t)
     max_pos = target_v + target_avoid_distance_forward * target_direction
     min_pos = target_v + target_avoid_distance_backward * target_direction
 
