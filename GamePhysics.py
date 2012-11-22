@@ -1,6 +1,6 @@
 from itertools import chain
 from math import pi as PI, fabs, degrees, sqrt, hypot
-from Geometry import Vector, sign, numerically_zero
+from Geometry import Vector, sign, numerically_zero, get_unit_corners, segments_are_intersecting
 from MyUtils import fictive_unit, is_going_to_move, NOT_TANK, solve_quadratic
 from model.TankType import TankType
 
@@ -154,6 +154,28 @@ class WorldPhysics:
             return True
         return False
 
+    def will_hit_precise(self, tank, target, ricochet_angle=PI/6):
+        """
+        Returns True if tank will hit rectangular object
+        """
+        b = tank.angle + tank.turret_relative_angle
+        e = Vector(1, 0)
+        q = e.rotate(b)
+
+        tank_v = Vector(tank.x, tank.y)
+
+        c1, c2, c3, c4 = get_unit_corners(target)
+
+        hit_v = tank_v + q * MAX_DISTANCE
+
+        def will_hit_side(p1, p2):
+            intersecting = segments_are_intersecting(tank_v, hit_v, p1, p2),
+            angle = q.angle(p2 - p1)
+            safe = ricochet_angle < angle < PI - ricochet_angle
+            return intersecting and safe
+
+        result = will_hit_side(c1, c2) or will_hit_side(c2, c3) or will_hit_side(c3, c4) or will_hit_side(c4, c1)
+        return result
 
     def estimate_target_position(self, target, tank):
         """

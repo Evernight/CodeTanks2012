@@ -136,6 +136,7 @@ def get_target_data(context):
         max_pos_fu = fictive_unit(target, max_pos.x, max_pos.y)
         min_pos_fu = fictive_unit(target, min_pos.x, min_pos.y)
         shoot = physics.will_hit(tank, max_pos_fu, 0.9) and physics.will_hit(tank, min_pos_fu, 0.9)
+        shoot_precise = physics.will_hit_precise(tank, max_pos_fu) and physics.will_hit_precise(tank, min_pos_fu)
 #        if 0.5 < fabs(target_turret_n_cos) < 0.9659258262890683:
 #            shoot = False
 
@@ -143,7 +144,7 @@ def get_target_data(context):
         closest_corner = min(all_corners, key=lambda c: c.distance(tank_v))
         estimate_pos = closest_corner
 
-        comment = 'SINGLE, closest corner'
+        comment = 'SINGLE, closest corner; %s' % shoot_precise
 
         return ((estimate_pos.x, estimate_pos.y), shoot, target_avoid_distance_forward, target_avoid_distance_backward, comment)
 
@@ -231,14 +232,17 @@ class ThirdRoundShootDecisionMaker(ShootDecisionMaker):
             move.fire_type = FireType.NONE
 
         # Shoot bullets
-        b = tank.angle + tank.turret_relative_angle
-        for shell in world.shells:
-            can_counter = fabs(PI - (shell.angle - b)) < PI/180 * 4
-            if can_counter:
-                can_counter = can_counter and physics.shell_will_hit(shell, tank) and shell.get_distance_to_unit(tank) < 100
-            if can_counter:
-                self.context.debug('!!! Possible to counter flying bullet')
-                move.fire_type = FireType.REGULAR
+        def process_bullets():
+            b = tank.angle + tank.turret_relative_angle
+            for shell in world.shells:
+                can_counter = fabs(PI - (shell.angle - b)) < PI/180 * 4
+                if can_counter:
+                    can_counter = can_counter and physics.shell_will_hit(shell, tank) and shell.get_distance_to_unit(tank) < 100
+                if can_counter:
+                    self.context.debug('!!! Possible to counter flying bullet')
+                    move.fire_type = FireType.REGULAR
+
+        #process_bullets()
 
         if fabs(cur_angle) > PI/180 * 0.5:
             move.turret_turn = cur_angle / PI * 180

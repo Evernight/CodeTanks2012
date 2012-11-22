@@ -84,8 +84,28 @@ def get_unit_corners(unit):
 
     return [c1, c2, c3, c4]
 
+def ordered_points(c, p1, p2, p3):
+    v1 = p1 - c
+    v2 = p2 - c
+    v3 = p3 - c
+    return sign(v1.cross_product(v2)) == sign(v2.cross_product(v3))
+
+def segments_are_intersecting(p1, p2, q1, q2):
+    return (
+        ordered_points(p1, q1, p2, q2) and
+        ordered_points(p2, q1, p1, q2) and
+        ordered_points(q1, p1, q2, p2) and
+        ordered_points(q2, p1, q1, p2))
+
 
 if __name__ == "__main__":
     print('Test')
     print(Vector(1, 0).rotate(7*PI/4) == Vector(sqrt(2)/2, -sqrt(2)/2))
     print(Vector(2, 0).normalize())
+
+    print(segments_are_intersecting(
+        Vector(0, 0),
+        Vector(5, 5),
+        Vector(0, 1),
+        Vector(-6, -2),
+    ))

@@ -106,7 +106,7 @@ class DebugTargetSpeedTEstimator(TargetEstimator):
         target_speed = Vector(target.speedX, target.speedY)
         return "%4.2f" % target_speed.length()
 
-FICTIVE_TARGET_ACCELERATION = 0.07
+FICTIVE_TARGET_ACCELERATION = 0.08
 MAX_TARGET_SPEED = 4
 class DebugVarianceTEstimator(TargetEstimator):
     NAME = "Variance"
