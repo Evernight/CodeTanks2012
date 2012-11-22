@@ -55,6 +55,20 @@ class TurretsDangerEstimator(PositionEstimator):
         turrets_danger_penalty *= turrets_danger_penalty_factor
         return -turrets_danger_penalty
 
+class SimpleTurretsDangerEstimator(PositionEstimator):
+    NAME = 'Turrets'
+
+    def __init__(self, max_value):
+        self.max_value = max_value
+
+    def value(self, pos):
+        turrets_danger_penalty = 0
+        for enemy in self.context.enemies:
+            turrets_danger_penalty += self.context.physics.attacked_area(pos.x, pos.y, enemy, cache=self.context.EA_cache)
+
+        turrets_danger_penalty *= self.max_value
+        return -turrets_danger_penalty
+
 class HideBehindEstimator(PositionEstimator):
     NAME = 'HideBonus'
 

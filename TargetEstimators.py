@@ -193,3 +193,59 @@ class DebugDangerousnessTEstimator(TargetEstimator):
         self.memory = self.context.memory
 
         return "%8.2f" % target_dangerousness_for_tank(target, self.tank)
+
+
+class TargetConvenienceEstimator(TargetEstimator):
+    NAME = "Convenience"
+
+    def __init__(self, max_value):
+        self.max_value = max_value
+
+    def value(self, target):
+        tank = self.context.tank
+
+        tank_v = Vector(tank.x, tank.y)
+        target_v = Vector(target.x, target.y)
+
+        #b = tank.angle + tank.turret_relative_angle
+        b = (target_v - tank_v).angle(Vector(1, 0))
+
+        target_direction = Vector(1, 0).rotate(target.angle)
+        target_speed = Vector(target.speedX, target.speedY)
+
+        def get_hit_time():
+            v0 = INITIAL_SHELL_VELOCITY
+            a = SHELL_ACCELERATION
+            d = max(0, tank.get_distance_to_unit(target) - 60)
+            return solve_quadratic(a/2, v0, -d)
+
+        def max_move_distance(v0, a, max_v, t):
+            v0 = max(-max_v, min(v0, max_v))
+            if fabs(v0 + a * t) > max_v:
+                if a > 0:
+                    t1 = fabs((max_v - v0) / a)
+                else:
+                    t1 = fabs((-max_v - v0) / a)
+                t2 = t - t1
+            else:
+                t1 = t
+                t2 = 0
+            if a > 0:
+                return a*t1**2/2 + v0 * t1 + max_v * t2
+            else:
+                return a*t1**2/2 + v0 * t1 - max_v * t2
+
+        t = get_hit_time()
+
+        v0 = target_speed.projection(target_direction)
+        target_health_fraction = target.crew_health/target.crew_max_health
+        efficency = (1 + target_health_fraction)/2
+
+        target_avoid_distance_forward = max_move_distance(v0, FICTIVE_TARGET_ACCELERATION * efficency, MAX_TARGET_SPEED * efficency, t)
+        target_avoid_distance_backward = max_move_distance(v0, -FICTIVE_TARGET_ACCELERATION * 0.75 * efficency, MAX_TARGET_SPEED * efficency, t)
+
+        target_turret_n_cos = fabs(cos(fabs(b - target.angle) + PI/2))
+
+        var = fabs((target_avoid_distance_forward - target_avoid_distance_backward) * target_turret_n_cos)
+
+        return (1 - var/200) * self.max_value

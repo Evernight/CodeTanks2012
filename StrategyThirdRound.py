@@ -6,7 +6,7 @@ from PostitionGetters import BasicPositionGetter, GridPositionGetter
 from StrategicPositionEstimators import *
 from StrategyScalarFieldMO import ScalarFieldMovingStrategy
 from StrategyTargeting import EstimatorsTargetingStrategy
-from TargetEstimators import DistancePenaltyTEstimator, FinishTEstimator, ResponseTEstimator, LastTargetTEstimator, AddConstantTEstimator, AnglePenaltyTEstimator, AttackWeakestTEstimator, BehindObstacleTEstimator, DebugSmartShootingTEstimator, DebugDangerousnessTEstimator
+from TargetEstimators import DistancePenaltyTEstimator, FinishTEstimator, ResponseTEstimator, LastTargetTEstimator, AddConstantTEstimator, AnglePenaltyTEstimator, AttackWeakestTEstimator, BehindObstacleTEstimator, DebugSmartShootingTEstimator, DebugDangerousnessTEstimator, TargetConvenienceEstimator
 from TargetingClasses import OldShootDecisionMaker, ThirdRoundShootDecisionMaker
 
 default_3R_position_getters = [BasicPositionGetter(35, 90), GridPositionGetter(7, 5, excluded=[(3, 3), (4, 3), (5, 3)])]
@@ -29,8 +29,9 @@ third_round_targeting_strategy = EstimatorsTargetingStrategy(
         DistancePenaltyTEstimator(),
         BehindObstacleTEstimator(40),
         AttackWeakestTEstimator(40),
-        DebugSmartShootingTEstimator(),
+        #DebugSmartShootingTEstimator(),
         DebugDangerousnessTEstimator(),
+        TargetConvenienceEstimator(30),
         AddConstantTEstimator(180)
     ],
     ThirdRoundShootDecisionMaker()
@@ -47,7 +48,8 @@ strategy_third_round = make_composite_strategy(
             TimeToPositionEstimator(2),
             BeAroundWeakestEnemyV2(2000, 900, 600, 500),
             HideBehindObstacle(250),
-            SmartTurretsDangerEstimator(100, 400),
+            #SmartTurretsDangerEstimator(100, 400),
+            SimpleTurretsDangerEstimator(400),
             FlyingShellEstimator(2000),
             default_edge_penalty_estimator,
             AlliesDistance3P(250, 1100, 600, 1500)
@@ -66,7 +68,8 @@ strategy_third_round_prevail = make_composite_strategy(
             TimeToPositionEstimator(2),
             BeAroundWeakestEnemyV2(2000, 800, 600, 500),
             HideBehindObstacle(250),
-            SmartTurretsDangerEstimator(100, 400),
+            #SmartTurretsDangerEstimator(100, 400),
+            SimpleTurretsDangerEstimator(400),
             FlyingShellEstimator(2000),
             default_edge_penalty_estimator,
             AlliesDistance3P(250, 1100, 600, 1500)
@@ -85,7 +88,8 @@ strategy_third_round_total_prevail = make_composite_strategy(
             TimeToPositionEstimator(2),
             BeAroundWeakestEnemyV2(2000, 300, 600, 500),
             HideBehindObstacle(250),
-            SmartTurretsDangerEstimator(100, 400),
+            #SmartTurretsDangerEstimator(100, 400),
+            SimpleTurretsDangerEstimator(400),
             FlyingShellEstimator(2000),
             default_edge_penalty_estimator,
             AlliesDistance3P(250, 1100, 600, 1500)
@@ -104,7 +108,8 @@ strategy_third_round_two_left = make_composite_strategy(
             TimeToPositionEstimator(2),
             BeAroundWeakestEnemyV2(2000, 900, 600, 500),
             HideBehindObstacle(250),
-            SmartTurretsDangerEstimator(100, 400),
+            #SmartTurretsDangerEstimator(100, 400),
+            SimpleTurretsDangerEstimator(400),
             FlyingShellEstimator(2000),
             default_edge_penalty_estimator,
             Distance2PEstimator(300, 120, 400, 200, 1000),
@@ -124,7 +129,8 @@ strategy_third_round_two_left_prevail = make_composite_strategy(
             TimeToPositionEstimator(2),
             BeAroundWeakestEnemyV2(2000, 700, 600, 500),
             HideBehindObstacle(250),
-            SmartTurretsDangerEstimator(100, 400),
+            #SmartTurretsDangerEstimator(100, 400),
+            SimpleTurretsDangerEstimator(400),
             FlyingShellEstimator(2000),
             default_edge_penalty_estimator,
             Distance2PEstimator(300, 120, 400, 200, 1000),

@@ -36,9 +36,6 @@ class WorldPhysics:
         return min(x, world.width - x, y, world.height - y)
 
     def move_to_position(self, x, y, tank, move):
-        if tank.type == TankType.HEAVY:
-            return self.move_to_position_ht(x, y, tank, move)
-
         if tank.get_distance_to(x, y) < TARGET_REACHED_DISTANCE:
             return 0, 0
 
@@ -290,7 +287,7 @@ class WorldPhysics:
         t = solve_quadratic(a/2, v0, -d)
 
         if self.shell_will_hit(shell, tank, factor=1.05) and et > t:
-            return True
+            return 1
         if dist < 150:
             # short distance
             result = self.shell_will_hit(shell, fictive_unit(tank, x, y), factor=1.05)
@@ -300,9 +297,10 @@ class WorldPhysics:
                 dir = pt_v - tank_v
                 shell_speed = Vector(shell.speedX, shell.speedY)
                 if dir.is_zero() or shell_speed.is_zero():
-                    return result
+                    return float(result)
                 if dir.angle(shell_speed) < PI/8 and shell.get_distance_to(x, y) > d:
-                    return False
+                    return 0.6
+
             return result
 
         else:
@@ -350,44 +348,3 @@ class WorldPhysics:
         p2 = tank_v + d/2 - d.normalize().rotate(PI/2) * SHIFT_DISTANCE
         return [(p1.x, p1.y, pos[2] + " $L"),
                 (p2.x, p2.y, pos[2] + " $R")]
-
-
-
-    def move_to_position_ht(self, x, y, tank, move):
-        if tank.get_distance_to(x, y) < TARGET_REACHED_DISTANCE:
-            return 0, 0
-
-        angle = tank.get_angle_to(x, y)
-        dist = tank.get_distance_to(x, y)
-
-        def get_values(angle, multiplier=1):
-            #if fabs(angle) < PI/6 and fabs(tank.angular_speed) < 0.02:
-            #    left, right = 1, 1
-            #else:
-            #    left, right = 1, -1
-            if dist < 300:
-                left, right = 1, 1 - 8 * angle / PI
-            elif dist < 700:
-                # Dirty fix for now (long distance)
-                left, right = 1, 1 - 7 * angle / PI
-                if fabs(tank.angular_speed) > 0.025:
-                    left, right = 1, 1 - 2 * angle / PI
-            else:
-                # Dirty fix for now (long distance)
-                left, right = 1, 1 - 4 * angle / PI
-                if fabs(tank.angular_speed) > 0.02:
-                    left, right = 1, 1 - 2 * angle / PI
-
-            return left * multiplier, right * multiplier
-
-        #print('angle=%s, dist=%s' % (angle, dist))
-        if (fabs(angle) > 5*PI/6 and dist < 800) or (fabs(angle) > BACKWARDS_THRESHOLD and dist < 200) or (fabs(angle) > PI/2 and dist < 200):
-            if angle > 0:
-                move.left_track_power, move.right_track_power = get_values(PI - fabs(angle), -1)
-            else:
-                move.right_track_power, move.left_track_power = get_values(PI - fabs(angle), -1)
-        else:
-            if angle > 0:
-                move.left_track_power, move.right_track_power = get_values(fabs(angle))
-            else:
-                move.right_track_power, move.left_track_power = get_values(fabs(angle))

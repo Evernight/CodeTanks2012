@@ -80,8 +80,8 @@ def get_target_data(context):
     physics = context.physics
 
     b = tank.angle + tank.turret_relative_angle
-    e = Vector(1, 0)
-    q = e.rotate(b)
+    #e = Vector(1, 0)
+    #q = e.rotate(b)
     tank_v = Vector(tank.x, tank.y)
 
     target_v = Vector(target.x, target.y)
@@ -112,7 +112,7 @@ def get_target_data(context):
             return a*t1**2/2 + v0 * t1 - max_v * t2
 
     t = get_hit_time()
-    center = Vector(target.x - tank.x, target.y - tank.y)
+    #center = Vector(target.x - tank.x, target.y - tank.y)
 
     v0 = target_speed.projection(target_direction)
     target_health_fraction = target.crew_health/target.crew_max_health
@@ -175,7 +175,7 @@ def get_target_data(context):
         segment = (target_avoid_distance_forward - target_avoid_distance_backward)/(cnt + 1)
 
         shift = segment * (ind + 1) + target_avoid_distance_backward
-        shift *= 0.5
+        #shift *
 
         estimate_pos = target_v + target_direction * shift
         shift_fu = fictive_unit(target, estimate_pos.x, estimate_pos.y)
