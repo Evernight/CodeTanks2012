@@ -89,3 +89,7 @@ def index_in_sorted(l, x):
     for item in enumerate(sorted(l)):
         if item[1] == x:
             return item[0]
+
+def tank_power(tank):
+    # 0.3 : premium shells
+    pass

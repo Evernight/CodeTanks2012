@@ -154,7 +154,7 @@ class WorldPhysics:
             return True
         return False
 
-    def will_hit_precise(self, tank, target, ricochet_angle=PI/6):
+    def will_hit_precise(self, tank, target, ricochet_angle=PI/5):
         """
         Returns True if tank will hit rectangular object
         """
@@ -164,7 +164,8 @@ class WorldPhysics:
 
         tank_v = Vector(tank.x, tank.y)
 
-        c1, c2, c3, c4 = get_unit_corners(target)
+        c = get_unit_corners(target)
+
 
         hit_v = tank_v + MAX_DISTANCE * q
 
@@ -174,7 +175,13 @@ class WorldPhysics:
             safe = ricochet_angle < angle < PI - ricochet_angle
             return intersecting and safe
 
-        result = will_hit_side(c1, c2) or will_hit_side(c2, c3) or will_hit_side(c3, c4) or will_hit_side(c4, c1)
+        sides = [(c[0], c[1]), (c[1], c[2]), (c[2], c[3]), (c[3], c[0])]
+        closest_corner = min(c, key=lambda x: x.distance(tank_v))
+        closer_sides = list(filter(lambda s: s[0] == closest_corner or s[1] == closest_corner, sides))
+
+
+        #result = will_hit_side(c1, c2) or will_hit_side(c2, c3) or will_hit_side(c3, c4) or will_hit_side(c4, c1)
+        result = will_hit_side(closer_sides[0][0], closer_sides[0][1]) or will_hit_side(closer_sides[1][0], closer_sides[1][1])
         return result
 
     def estimate_target_position(self, target, tank):

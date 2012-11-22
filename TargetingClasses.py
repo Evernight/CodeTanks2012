@@ -72,7 +72,7 @@ class OldShootDecisionMaker(ShootDecisionMaker):
             move.turret_turn = sign(cur_angle)
 
 FICTIVE_TARGET_ACCELERATION = 0.1
-MAX_TARGET_SPEED = 3.2
+MAX_TARGET_SPEED = 4.0
 def get_target_data(context):
     # New Decision Maker
     tank = context.tank
@@ -137,7 +137,7 @@ def get_target_data(context):
         min_pos_fu = fictive_unit(target, min_pos.x, min_pos.y)
         #shoot = physics.will_hit(tank, max_pos_fu, 0.9) and physics.will_hit(tank, min_pos_fu, 0.9)
 
-        shoot_precise = physics.will_hit_precise(tank, max_pos_fu) and physics.will_hit_precise(tank, min_pos_fu)
+        shoot_precise = physics.will_hit_precise(tank, max_pos_fu) and physics.will_hit_precise(tank, min_pos_fu) and physics.will_hit_precise(tank, target)
         shoot = shoot_precise
 #        if 0.5 < fabs(target_turret_n_cos) < 0.9659258262890683:
 #            shoot = False
@@ -148,13 +148,10 @@ def get_target_data(context):
 
         middle_position = (max_pos + min_pos)/2
 
-        w = fabs(target_turret_n_cos)
+        w = fabs(target_turret_n_cos)**2
         estimate_pos = w*middle_position + (1 - w) * closest_corner
 
-        if w > 0.5:
-            comment = 'SINGLE, middle pos'
-        else:
-            comment = 'SINGLE, closest corner'
+        comment = 'SINGLE, %s' % w
 
         return ((estimate_pos.x, estimate_pos.y), shoot, target_avoid_distance_forward, target_avoid_distance_backward, comment)
 
@@ -238,7 +235,7 @@ class ThirdRoundShootDecisionMaker(ShootDecisionMaker):
             move.fire_type = FireType.NONE
 
         if bonus_is_attacked() or obstacle_is_attacked():
-            self.context.debug('!!! Obstacle is attacked, don\'t shoot')
+            self.context.debug('{Shooting} Obstacle is attacked, don\'t shoot')
             move.fire_type = FireType.NONE
 
         # Shoot bullets
@@ -249,7 +246,7 @@ class ThirdRoundShootDecisionMaker(ShootDecisionMaker):
                 if can_counter:
                     can_counter = can_counter and physics.shell_will_hit(shell, tank) and shell.get_distance_to_unit(tank) < 100
                 if can_counter:
-                    self.context.debug('!!! Possible to counter flying bullet')
+                    self.context.debug('{Shooting} Possible to counter flying bullet')
                     move.fire_type = FireType.REGULAR
 
         #process_bullets()
