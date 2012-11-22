@@ -1,7 +1,7 @@
 from itertools import chain
 from math import fabs, cos
 from GamePhysics import INITIAL_SHELL_VELOCITY, SHELL_ACCELERATION
-from Geometry import sign, Vector
+from Geometry import sign, Vector, get_unit_corners
 from MyUtils import DEAD_TANK, ALLY_TANK, fictive_unit, solve_quadratic, inverse_dict, index_in_sorted
 from model.FireType import FireType
 from math import pi as PI
@@ -82,6 +82,7 @@ def get_target_data(context):
     b = tank.angle + tank.turret_relative_angle
     e = Vector(1, 0)
     q = e.rotate(b)
+    tank_v = Vector(tank.x, tank.y)
 
     target_v = Vector(target.x, target.y)
     target_direction = Vector(1, 0).rotate(target.angle)
@@ -129,14 +130,22 @@ def get_target_data(context):
     allies_targeting = inverse_dict(context.memory.target_id, target.id)
 
     def single_attacker():
-        estimate_pos = target_v + target_direction * ((target_avoid_distance_forward + target_avoid_distance_backward) / 2)
+        #estimate_pos = target_v + target_direction * ((target_avoid_distance_forward + target_avoid_distance_backward) / 2)
         vulnerable_width = max(90 * target_turret_n_cos, 60 * (1 - target_turret_n_cos))
 
-        shoot = physics.will_hit(tank, fictive_unit(target, max_pos.x, max_pos.y), 0.9) and physics.will_hit(tank, fictive_unit(target, min_pos.x, min_pos.y), 0.9)
-        if 0.5 < fabs(target_turret_n_cos) < 0.9659258262890683:
-            shoot = False
+        max_pos_fu = fictive_unit(target, max_pos.x, max_pos.y)
+        min_pos_fu = fictive_unit(target, min_pos.x, min_pos.y)
+        shoot = physics.will_hit(tank, max_pos_fu, 0.9) and physics.will_hit(tank, min_pos_fu, 0.9)
+#        if 0.5 < fabs(target_turret_n_cos) < 0.9659258262890683:
+#            shoot = False
 
-        return ((estimate_pos.x, estimate_pos.y), shoot, target_avoid_distance_forward, target_avoid_distance_backward, 'SINGLE')
+        all_corners = get_unit_corners(max_pos_fu) + get_unit_corners(min_pos_fu)
+        closest_corner = min(all_corners, key=lambda c: c.distance(tank_v))
+        estimate_pos = closest_corner
+
+        comment = 'SINGLE, closest corner'
+
+        return ((estimate_pos.x, estimate_pos.y), shoot, target_avoid_distance_forward, target_avoid_distance_backward, comment)
 
     def multiple_attackers():
         if context.memory.target_id.get(tank.id) != target.id:
@@ -155,10 +164,11 @@ def get_target_data(context):
             shoot = False
         return ((estimate_pos.x, estimate_pos.y), shoot, target_avoid_distance_forward, target_avoid_distance_backward, 'SEVERAL %d, shift=%8.2f' % (ind, shift))
 
-    if len(allies_targeting) <= 1 or var < 30:
-        return single_attacker()
-    else:
-        return multiple_attackers()
+    return single_attacker()
+#    if len(allies_targeting) <= 1 or var < 30:
+#        return single_attacker()
+#    else:
+#        return multiple_attackers()
 
 
 class ThirdRoundShootDecisionMaker(ShootDecisionMaker):

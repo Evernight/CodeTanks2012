@@ -66,9 +66,24 @@ class Vector:
     def is_zero(self):
         return numerically_zero(self.x) and numerically_zero(self.y)
 
-    def distance(self, x, d):
+    def distance_to_line(self, x, d):
         a = (self - x).scalar_product(d)/d.scalar_product(d)
         return ((x - self) + a * d).length()
+
+    def distance(self, v):
+        return (self - v).length()
+
+def get_unit_corners(unit):
+    a = unit.angle
+    center = Vector(unit.x, unit.y)
+
+    c1 = center + Vector(unit.width/2, unit.height/2).rotate(a)
+    c2 = center + Vector(unit.width/2, -unit.height/2).rotate(a)
+    c3 = center + Vector(-unit.width/2, -unit.height/2).rotate(a)
+    c4 = center + Vector(-unit.width/2, unit.height/2).rotate(a)
+
+    return [c1, c2, c3, c4]
+
 
 if __name__ == "__main__":
     print('Test')

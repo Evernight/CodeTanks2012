@@ -236,7 +236,7 @@ class WorldPhysics:
             pt_v = Vector(x, y)
             if (pt_v - self.enemy_v).scalar_product(self.turret_v) <= 0:
                 return 0
-            dist = pt_v.distance(self.enemy_v, self.turret_v)
+            dist = pt_v.distance_to_line(self.enemy_v, self.turret_v)
             return max(0, (self.width - dist)/self.width)
 
     def attacked_area(self, x, y, enemy, cache=None):
