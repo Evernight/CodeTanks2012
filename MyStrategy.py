@@ -43,6 +43,7 @@ class Memory:
         self.last_turret_target_id = None
         self.last_shot_tick = None
         self.target_id = {}
+        self.good_to_shoot = {}
 global_memory = Memory()
 
 # Utils
@@ -63,10 +64,10 @@ class MyStrategy:
         self.debug('')
         self.debug('#' * 64)
         self.debug('======================== (Tick) T%s#%-4s ========================' % (tank.teammate_index, world.tick))
-        self.debug('Tank %s (id=%s, x=%s, y=%s, health=%4s/%4s, hull=%4s/%4s, super_shells=%2s, reload=%3s/%3s)' %
+        self.debug('Tank %s (id=%s, x=%s, y=%s, health=%4s/%4s, hull=%4s/%4s, super_shells=%2s, reload=%3s/%3s, gts=%s)' %
                    (tank.teammate_index, tank.id, tank.x, tank.y, tank.crew_health, tank.crew_max_health,
                     tank.hull_durability, tank.hull_max_durability, tank.premium_shell_count,
-                    tank.remaining_reloading_time, tank.reloading_time))
+                    tank.remaining_reloading_time, tank.reloading_time, self.memory.good_to_shoot.get(tank.id)))
         self.debug('#' * 64)
 
         if DEAD_TANK(tank):

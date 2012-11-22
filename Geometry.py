@@ -15,9 +15,10 @@ class Vector:
         self.y = y
 
     def rotate(self, angle):
+        s, c = sin(angle), cos(angle)
         return Vector(
-            -self.y * sin(angle) + self.x * cos(angle),
-            self.y * cos(angle) + self.x * sin(angle)
+            -self.y * s + self.x * c,
+            self.y * c + self.x * s
         )
 
     def __add__(self, other):

@@ -159,6 +159,8 @@ def get_target_data(context):
 
         comment = 'SINGLE, %s' % w
 
+        shoot = shoot and not obstacle_is_attacked(context, estimate_pos)
+
         return ((estimate_pos.x, estimate_pos.y), shoot, target_avoid_distance_forward, target_avoid_distance_backward, comment)
 
     def multiple_attackers(attackers):
@@ -172,9 +174,13 @@ def get_target_data(context):
         estimate_pos = target_v + target_direction * shift
 
         shoot = (fabs(tank.get_turret_angle_to(estimate_pos.x, estimate_pos.y)) < PI/180 * 1 and
-                 all([lambda a: a.remaining_reloading_time < 5 or a.reloading_time - a.remaining_reloading_time < 10, attackers]))
+                 all([lambda a: a.remaining_reloading_time < 5 or a.reloading_time - a.remaining_reloading_time < 5, attackers]))
+
+        shoot = shoot and not obstacle_is_attacked(context, estimate_pos)
 
         return ((estimate_pos.x, estimate_pos.y), shoot, target_avoid_distance_forward, target_avoid_distance_backward, 'MULTIPLE(%d), shift=%8.2f' % (ind, shift))
+
+    context.memory.good_to_shoot[tank.id] = False
 
     try_single = single_attacker()
     if len(allies_targeting) > 1 and try_single[1] == False:
@@ -184,11 +190,47 @@ def get_target_data(context):
             for t in context.world.tanks:
                 if t.id in allies_targeting:
                     attackers.append(t)
-            if all([lambda a: a.remaining_reloading_time < 70, attackers]):
+            if all([lambda a: a.remaining_reloading_time < 70 or a.reloading_time - a.remaining_reloading_time < 5, attackers]):
                 try_multiple = multiple_attackers(attackers)
+                if try_multiple[1]:
+                    context.memory.good_to_shoot[tank.id] = True
+                    ok = all([context.memory.good_to_shoot.get(t.id) for t in attackers])
+                    if not ok:
+                        try_multiple = (try_multiple[0], False)
+
                 return try_multiple
     return try_single
 
+
+def obstacle_is_attacked(context, est_pos):
+    world = context.world
+    tank = context.tank
+    physics = context.physics
+
+    obstacles = chain(
+        filter(DEAD_TANK, world.tanks),
+        filter(ALLY_TANK(tank.id), world.tanks)
+    )
+    for obstacle in obstacles:
+        next_position = physics.estimate_target_position(obstacle, tank)
+        next_unit = fictive_unit(obstacle, next_position[0], next_position[1])
+
+        blocked = ((physics.will_hit(tank, next_unit, DEAD_TANK_OBSTACLE_FACTOR)
+                    or physics.will_hit(tank, obstacle, DEAD_TANK_OBSTACLE_FACTOR))
+                   and tank.get_distance_to_unit(obstacle) < tank.get_distance_to(est_pos.x, est_pos.y))
+        if blocked:
+            return obstacle
+
+    for bonus in world.bonuses:
+        if (physics.will_hit(tank, bonus, BONUS_FACTOR) and
+            tank.get_distance_to_unit(bonus) < tank.get_distance_to(est_pos.x, est_pos.y)):
+            return bonus
+
+    bunker_obstacle = world.obstacles[0]
+    if (physics.will_hit(tank, bunker_obstacle, 1.02) and
+        tank.get_distance_to_unit(bunker_obstacle) < tank.get_distance_to(est_pos.x, est_pos.y)):
+        return bunker_obstacle
+    return False
 
 class ThirdRoundShootDecisionMaker(ShootDecisionMaker):
     def process(self, cur_target, move):
@@ -206,47 +248,14 @@ class ThirdRoundShootDecisionMaker(ShootDecisionMaker):
         self.memory.target_id[tank.id] = cur_target.id
         est_pos, good_to_shoot = get_target_data(self)[:2]
 
-        def bonus_is_attacked():
-            for bonus in world.bonuses:
-                if (self.physics.will_hit(tank, bonus, BONUS_FACTOR) and
-                    tank.get_distance_to_unit(bonus) < tank.get_distance_to(*est_pos)):
-                    return bonus
-            return False
-
-        def obstacle_is_attacked():
-            obstacles = chain(
-                filter(DEAD_TANK, world.tanks),
-                filter(ALLY_TANK(tank.id), world.tanks),
-                world.obstacles
-            )
-            for obstacle in obstacles:
-                next_position = self.physics.estimate_target_position(obstacle, tank)
-                next_unit = fictive_unit(obstacle, next_position[0], next_position[1])
-
-                blocked = ((self.physics.will_hit(tank, next_unit, DEAD_TANK_OBSTACLE_FACTOR)
-                            or self.physics.will_hit(tank, obstacle, DEAD_TANK_OBSTACLE_FACTOR))
-                           and tank.get_distance_to_unit(obstacle) < tank.get_distance_to(*est_pos))
-                if blocked:
-                    return obstacle
-            return False
-
         cur_angle = tank.get_turret_angle_to(*est_pos)
 
-#        good_to_shoot = self.physics.will_hit(
-#            tank,
-#            fictive_unit(cur_target, est_pos[0], est_pos[1]),
-#            0.5
-#        )
         if good_to_shoot:
             if self.context.health_fraction > 0.8 and self.context.hull_fraction > 0.5 and tank.get_distance_to_unit(cur_target) > 400 and tank.premium_shell_count <= 3:
                 move.fire_type = FireType.REGULAR
             else:
                 move.fire_type = FireType.PREMIUM_PREFERRED
         else:
-            move.fire_type = FireType.NONE
-
-        if bonus_is_attacked() or obstacle_is_attacked():
-            self.context.debug('{Shooting} Obstacle is attacked, don\'t shoot')
             move.fire_type = FireType.NONE
 
         # Shoot bullets
