@@ -198,7 +198,7 @@ class EstimatorsTargetingStrategy:
 
         if self.debug_mode:
             targets = sorted(targets, key=lambda t : t.player_name)
-            self.debug(' ' * 60, end='')
+            self.debug(' ' * 70, end='')
             for e in self.target_estimators:
                 self.debug('%14s' % e.NAME, end='')
             self.debug('%14s' % 'RESULT', end='')
@@ -206,8 +206,8 @@ class EstimatorsTargetingStrategy:
 
             def out_tgt(tgt):
                 def tgt_to_str(tgt):
-                    return "TARGET [%12s] (x=%8.2f, y=%8.2f, |v|=%8.2f))" % (tgt.player_name, tgt.x, tgt.y, hypot(tgt.speedX, tgt.speedY))
-                self.debug('%-60s' % (tgt_to_str(tgt) + ' : '), end='')
+                    return "TARGET [%12s] (id=%2s, x=%8.2f, y=%8.2f, |v|=%8.2f))" % (tgt.player_name, tgt.id, tgt.x, tgt.y, hypot(tgt.speedX, tgt.speedY))
+                self.debug('%-70s' % (tgt_to_str(tgt) + ' : '), end='')
                 res = 0
                 for e in self.target_estimators:
                     if e.debugging:

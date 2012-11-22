@@ -2,7 +2,7 @@ from itertools import chain
 from math import fabs, cos
 from GamePhysics import INITIAL_SHELL_VELOCITY, SHELL_ACCELERATION
 from Geometry import sign, Vector, get_unit_corners
-from MyUtils import DEAD_TANK, ALLY_TANK, fictive_unit, solve_quadratic, inverse_dict, index_in_sorted
+from MyUtils import DEAD_TANK, ALLY_TANK, fictive_unit, solve_quadratic, inverse_dict, index_in_sorted, debug_dump, TANK
 from model.FireType import FireType
 from math import pi as PI
 
@@ -71,7 +71,7 @@ class OldShootDecisionMaker(ShootDecisionMaker):
         if fabs(cur_angle) > PI/180 * 0.5:
             move.turret_turn = sign(cur_angle)
 
-FICTIVE_TARGET_ACCELERATION = 0.1
+FICTIVE_TARGET_ACCELERATION = 0.12
 MAX_TARGET_SPEED = 4.0
 def get_target_data(context):
     # New Decision Maker
@@ -135,12 +135,18 @@ def get_target_data(context):
 
         max_pos_fu = fictive_unit(target, max_pos.x, max_pos.y)
         min_pos_fu = fictive_unit(target, min_pos.x, min_pos.y)
+
+#        debug_data = {
+#            "units": [min_pos_fu, max_pos_fu, target],
+#            "tanks": [tank]
+#        }
+#        if context.world.tick == 390 and context.tank.id == 11 and target.id == 6:
+#            debug_dump(debug_data, "3")
+#            raise("Done.")
         #shoot = physics.will_hit(tank, max_pos_fu, 0.9) and physics.will_hit(tank, min_pos_fu, 0.9)
 
         shoot_precise = physics.will_hit_precise(tank, max_pos_fu) and physics.will_hit_precise(tank, min_pos_fu) and physics.will_hit_precise(tank, target)
         shoot = shoot_precise
-#        if 0.5 < fabs(target_turret_n_cos) < 0.9659258262890683:
-#            shoot = False
         fabs(target_turret_n_cos)
 
         all_corners = get_unit_corners(max_pos_fu) + get_unit_corners(min_pos_fu)
@@ -155,9 +161,7 @@ def get_target_data(context):
 
         return ((estimate_pos.x, estimate_pos.y), shoot, target_avoid_distance_forward, target_avoid_distance_backward, comment)
 
-    def multiple_attackers():
-        if context.memory.target_id.get(tank.id) != target.id:
-            return None
+    def multiple_attackers(attackers):
         cnt = len(allies_targeting)
         ind = index_in_sorted(allies_targeting, tank.id)
 
@@ -167,16 +171,23 @@ def get_target_data(context):
 
         estimate_pos = target_v + target_direction * shift
 
-        shoot = fabs(tank.get_turret_angle_to(estimate_pos.x, estimate_pos.y)) < PI/180 * 1
-        if 0.5 < fabs(target_turret_n_cos) < 0.9659258262890683:
-            shoot = False
-        return ((estimate_pos.x, estimate_pos.y), shoot, target_avoid_distance_forward, target_avoid_distance_backward, 'SEVERAL %d, shift=%8.2f' % (ind, shift))
+        shoot = (fabs(tank.get_turret_angle_to(estimate_pos.x, estimate_pos.y)) < PI/180 * 1 and
+                 all([lambda a: a.remaining_reloading_time < 5 or a.reloading_time - a.remaining_reloading_time < 10, attackers]))
 
-    return single_attacker()
-#    if len(allies_targeting) <= 1 or var < 30:
-#        return single_attacker()
-#    else:
-#        return multiple_attackers()
+        return ((estimate_pos.x, estimate_pos.y), shoot, target_avoid_distance_forward, target_avoid_distance_backward, 'MULTIPLE(%d), shift=%8.2f' % (ind, shift))
+
+    try_single = single_attacker()
+    if len(allies_targeting) > 1 and try_single[1] == False:
+
+        if tank.id in allies_targeting:
+            attackers = []
+            for t in context.world.tanks:
+                if t.id in allies_targeting:
+                    attackers.append(t)
+            if all([lambda a: a.remaining_reloading_time < 70, attackers]):
+                try_multiple = multiple_attackers(attackers)
+                return try_multiple
+    return try_single
 
 
 class ThirdRoundShootDecisionMaker(ShootDecisionMaker):

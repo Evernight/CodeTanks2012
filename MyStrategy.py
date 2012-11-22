@@ -63,8 +63,8 @@ class MyStrategy:
         self.debug('')
         self.debug('#' * 64)
         self.debug('======================== (Tick) T%s#%-4s ========================' % (tank.teammate_index, world.tick))
-        self.debug('Tank %s (x=%s, y=%s, health=%4s/%4s, hull=%4s/%4s, super_shells=%2s, reload=%3s/%3s)' %
-                   (tank.teammate_index, tank.x, tank.y, tank.crew_health, tank.crew_max_health,
+        self.debug('Tank %s (id=%s, x=%s, y=%s, health=%4s/%4s, hull=%4s/%4s, super_shells=%2s, reload=%3s/%3s)' %
+                   (tank.teammate_index, tank.id, tank.x, tank.y, tank.crew_health, tank.crew_max_health,
                     tank.hull_durability, tank.hull_max_durability, tank.premium_shell_count,
                     tank.remaining_reloading_time, tank.reloading_time))
         self.debug('#' * 64)

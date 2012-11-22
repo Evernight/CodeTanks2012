@@ -1,8 +1,10 @@
 from math import hypot, sqrt
 import operator
+from json import dump, load, JSONEncoder
 from Geometry import numerically_zero
-from model import Tank
+from model.Tank import Tank
 from model.BonusType import BonusType
+from model.TankType import TankType
 from model.Unit import Unit
 
 ALIVE_ENEMY_TANK = lambda t: not t.teammate and t.crew_health > 0 and t.hull_durability > 0
@@ -17,14 +19,19 @@ def NOT_TANK(id):
     return lambda t: t.id != id
 UNIT_TO_POINT = lambda unit: (unit.x, unit.y)
 
+def TANK(id):
+    return lambda t: t.id == id
+
 def filter_or(*filter_functions):
     return lambda t: any([f(t) for f in filter_functions])
 
 def filter_and(*filter_functions):
     return lambda t: all([f(t) for f in filter_functions])
 
-def fictive_unit(prototype, x, y):
-    return Unit(0, prototype.width, prototype.height, x, y, 0, 0, prototype.angle, 0)
+def fictive_unit(prototype, x, y, angle=None):
+    if angle is None:
+        angle = prototype.angle
+    return Unit(0, prototype.width, prototype.height, x, y, 0, 0, angle, 0)
 
 def distance(c1, c2):
     return hypot(c1[0] - c2[0], c1[1] - c2[1])
@@ -113,3 +120,39 @@ def estimate_target_dangerousness(target):
 
 def target_dangerousness_for_tank(target, tank):
     return estimate_target_dangerousness(target) - estimate_target_dangerousness(tank)
+
+
+def debug_dump(obj, fname):
+    with open("../debug_dumps/" + fname, 'w') as f:
+        class MyJSONEncoder(JSONEncoder):
+            def default(self, obj):
+                if isinstance(obj, Tank):
+                    return {
+                        "__type__" : "Tank",
+                        "x" : obj.x,
+                        "y" : obj.y,
+                        "angle" : obj.angle,
+                        "turret_relative_angle" : obj.turret_relative_angle
+                    }
+                if isinstance(obj, Unit):
+                    return {
+                        "__type__" : "Unit",
+                        "x" : obj.x,
+                        "y" : obj.y,
+                        "width" : obj.width,
+                        "height" : obj.height,
+                        "angle" : obj.angle
+                    }
+                return JSONEncoder.default(self, obj)
+        dump(obj, f, cls=MyJSONEncoder)
+
+def debug_dump_load(fname):
+    with open("../../debug_dumps/" + fname, 'r') as f:
+        def decode_objects(d):
+            if d.get("__type__") == "Tank":
+                return Tank(0, "", 0, d["x"], d["y"], 0, 0, d["angle"], 0, d["turret_relative_angle"], 0, 0, 0, 0, 0, 0, TankType.MEDIUM)
+            elif d.get("__type__") == "Unit":
+                return Unit(0, d["width"], d["height"], d["x"], d["y"], 0, 0, d["angle"], 0)
+            return d
+
+        return load(f, object_hook=decode_objects)
