@@ -159,7 +159,9 @@ def get_target_data(context):
 
         comment = 'SINGLE, %s' % w
 
-        shoot = shoot and not obstacle_is_attacked(context, estimate_pos)
+        if obstacle_is_attacked(context, estimate_pos):
+            shoot = False
+            comment += ' blocked'
 
         return ((estimate_pos.x, estimate_pos.y), shoot, target_avoid_distance_forward, target_avoid_distance_backward, comment)
 
@@ -172,13 +174,17 @@ def get_target_data(context):
         shift = segment * (ind + 1) + target_avoid_distance_backward
 
         estimate_pos = target_v + target_direction * shift
+        shift_fu = fictive_unit(target, estimate_pos.x, estimate_pos.y)
 
-        shoot = (fabs(tank.get_turret_angle_to(estimate_pos.x, estimate_pos.y)) < PI/180 * 1 and
+        shoot = (physics.will_hit_precise(tank, shift_fu) and
                  all([lambda a: a.remaining_reloading_time < 5 or a.reloading_time - a.remaining_reloading_time < 5, attackers]))
 
-        shoot = shoot and not obstacle_is_attacked(context, estimate_pos)
+        comment = 'MULTIPLE(%d), shift=%8.2f' % (ind, shift)
+        if obstacle_is_attacked(context, estimate_pos):
+            shoot = False
+            comment += ' blocked'
 
-        return ((estimate_pos.x, estimate_pos.y), shoot, target_avoid_distance_forward, target_avoid_distance_backward, 'MULTIPLE(%d), shift=%8.2f' % (ind, shift))
+        return ((estimate_pos.x, estimate_pos.y), shoot, target_avoid_distance_forward, target_avoid_distance_backward, comment)
 
     context.memory.good_to_shoot[tank.id] = False
 

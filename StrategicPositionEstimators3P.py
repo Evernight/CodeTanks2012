@@ -22,6 +22,27 @@ class CloseDistancePenalty3P(PositionEstimator):
 
         return result
 
+class AlliesDistance3P(PositionEstimator):
+    NAME = 'Too close'
+
+    def __init__(self, close_distance, close_distance_penalty, far_distance, far_distance_penalty):
+        self.close_distance = close_distance
+        self.close_distance_penalty = close_distance_penalty
+        self.far_distance = far_distance
+        self.far_distance_penalty = far_distance_penalty
+
+    def value(self, pos):
+        allies = self.context.allies
+
+        result = 0
+        for ally in allies:
+            dist = ally.get_distance_to(pos.x, pos.y)
+            if dist < self.close_distance:
+                result += -self.close_distance_penalty * (1 - dist/self.close_distance)
+            result -= max(0, dist - self.far_distance)/(1500 - self.far_distance) * self.far_distance_penalty
+
+        return result
+
 
 class RunForEnemy(PositionEstimator):
     NAME = 'Go to enemy'

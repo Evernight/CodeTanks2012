@@ -1,6 +1,6 @@
 from CompositeStrategy import make_composite_strategy
 from StrategicPositionEstimators2P import Distance2PEstimator, FarDistancePenalty2P
-from StrategicPositionEstimators3P import CloseDistancePenalty3P, BeAroundWeakestEnemy, HideBehindObstacle, BeAroundWeakestEnemyV2
+from StrategicPositionEstimators3P import CloseDistancePenalty3P, BeAroundWeakestEnemy, HideBehindObstacle, BeAroundWeakestEnemyV2, AlliesDistance3P
 from SimplePositionEstimators import *
 from PostitionGetters import BasicPositionGetter, GridPositionGetter
 from StrategicPositionEstimators import *
@@ -45,12 +45,12 @@ strategy_third_round = make_composite_strategy(
             BonusPositionEstimator(factor=1.5, medikit_min=100, medikit_max=1500, repair_min=100, repair_max=900, ammo_crate=700),
             LastTargetEstimator(400),
             TimeToPositionEstimator(2),
-            BeAroundWeakestEnemyV2(4000, 900, 600, 500),
+            BeAroundWeakestEnemyV2(2000, 900, 600, 500),
             HideBehindObstacle(250),
             SmartTurretsDangerEstimator(100, 400),
             FlyingShellEstimator(2000),
             default_edge_penalty_estimator,
-            CloseDistancePenalty3P(200, 1000)
+            AlliesDistance3P(250, 1100, 600, 1500)
         ]
     ),
     third_round_targeting_strategy,
@@ -64,13 +64,12 @@ strategy_third_round_prevail = make_composite_strategy(
             BonusPositionEstimator(factor=1.4, medikit_min=100, medikit_max=1500, repair_min=100, repair_max=900, ammo_crate=700),
             LastTargetEstimator(400),
             TimeToPositionEstimator(2),
-            BeAroundWeakestEnemyV2(4000, 800, 600, 500),
+            BeAroundWeakestEnemyV2(2000, 800, 600, 500),
             HideBehindObstacle(250),
             SmartTurretsDangerEstimator(100, 400),
             FlyingShellEstimator(2000),
             default_edge_penalty_estimator,
-            CloseDistancePenalty3P(200, 1000),
-            AddConstantEstimator(3000)
+            AlliesDistance3P(250, 1100, 600, 1500)
         ]
     ),
     third_round_targeting_strategy,
@@ -84,12 +83,12 @@ strategy_third_round_total_prevail = make_composite_strategy(
             BonusPositionEstimator(factor=1.3, medikit_min=100, medikit_max=1500, repair_min=100, repair_max=900, ammo_crate=700),
             LastTargetEstimator(400),
             TimeToPositionEstimator(2),
-            BeAroundWeakestEnemyV2(4000, 300, 600, 500),
+            BeAroundWeakestEnemyV2(2000, 300, 600, 500),
             HideBehindObstacle(250),
             SmartTurretsDangerEstimator(100, 400),
             FlyingShellEstimator(2000),
             default_edge_penalty_estimator,
-            CloseDistancePenalty3P(200, 1000)
+            AlliesDistance3P(250, 1100, 600, 1500)
         ]
     ),
     third_round_targeting_strategy,
@@ -103,7 +102,7 @@ strategy_third_round_two_left = make_composite_strategy(
             BonusPositionEstimator(factor=1.5, medikit_min=100, medikit_max=1500, repair_min=100, repair_max=900, ammo_crate=700),
             LastTargetEstimator(400),
             TimeToPositionEstimator(2),
-            BeAroundWeakestEnemyV2(4000, 900, 600, 500),
+            BeAroundWeakestEnemyV2(2000, 900, 600, 500),
             HideBehindObstacle(250),
             SmartTurretsDangerEstimator(100, 400),
             FlyingShellEstimator(2000),
@@ -123,7 +122,7 @@ strategy_third_round_two_left_prevail = make_composite_strategy(
             BonusPositionEstimator(factor=1.2, medikit_min=100, medikit_max=1500, repair_min=100, repair_max=900, ammo_crate=700),
             LastTargetEstimator(400),
             TimeToPositionEstimator(2),
-            BeAroundWeakestEnemyV2(4000, 700, 600, 500),
+            BeAroundWeakestEnemyV2(2000, 700, 600, 500),
             HideBehindObstacle(250),
             SmartTurretsDangerEstimator(100, 400),
             FlyingShellEstimator(2000),
