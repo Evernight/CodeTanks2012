@@ -135,16 +135,26 @@ def get_target_data(context):
 
         max_pos_fu = fictive_unit(target, max_pos.x, max_pos.y)
         min_pos_fu = fictive_unit(target, min_pos.x, min_pos.y)
-        shoot = physics.will_hit(tank, max_pos_fu, 0.9) and physics.will_hit(tank, min_pos_fu, 0.9)
+        #shoot = physics.will_hit(tank, max_pos_fu, 0.9) and physics.will_hit(tank, min_pos_fu, 0.9)
+
         shoot_precise = physics.will_hit_precise(tank, max_pos_fu) and physics.will_hit_precise(tank, min_pos_fu)
+        shoot = shoot_precise
 #        if 0.5 < fabs(target_turret_n_cos) < 0.9659258262890683:
 #            shoot = False
+        fabs(target_turret_n_cos)
 
         all_corners = get_unit_corners(max_pos_fu) + get_unit_corners(min_pos_fu)
         closest_corner = min(all_corners, key=lambda c: c.distance(tank_v))
-        estimate_pos = closest_corner
 
-        comment = 'SINGLE, closest corner; %s' % shoot_precise
+        middle_position = (max_pos + min_pos)/2
+
+        w = fabs(target_turret_n_cos)
+        estimate_pos = w*middle_position + (1 - w) * closest_corner
+
+        if w > 0.5:
+            comment = 'SINGLE, middle pos'
+        else:
+            comment = 'SINGLE, closest corner'
 
         return ((estimate_pos.x, estimate_pos.y), shoot, target_avoid_distance_forward, target_avoid_distance_backward, comment)
 

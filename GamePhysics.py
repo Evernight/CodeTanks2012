@@ -166,10 +166,10 @@ class WorldPhysics:
 
         c1, c2, c3, c4 = get_unit_corners(target)
 
-        hit_v = tank_v + q * MAX_DISTANCE
+        hit_v = tank_v + MAX_DISTANCE * q
 
         def will_hit_side(p1, p2):
-            intersecting = segments_are_intersecting(tank_v, hit_v, p1, p2),
+            intersecting = segments_are_intersecting(tank_v, hit_v, p1, p2)
             angle = q.angle(p2 - p1)
             safe = ricochet_angle < angle < PI - ricochet_angle
             return intersecting and safe
