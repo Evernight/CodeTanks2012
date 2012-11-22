@@ -90,6 +90,26 @@ def index_in_sorted(l, x):
         if item[1] == x:
             return item[0]
 
-def tank_power(tank):
-    # 0.3 : premium shells
-    pass
+def estimate_target_dangerousness(target):
+    """
+    target:
+    0.4 : premium shells
+    0.6 : health
+    - low hull durability
+    """
+    target_danger = 0
+    target_danger += 0.4 * min(1, target.premium_shell_count/3)
+    target_danger += 0.6 * (target.crew_health/target.crew_max_health)**1.2
+    if target.hull_durability > 60:
+        hull_factor = 1
+    elif target.hull_durability > 35:
+        hull_factor = 0.7
+    elif target.hull_durability > 20:
+        hull_factor = 0.4
+    else:
+        hull_factor = 0.1
+    target_danger *= hull_factor
+    return target_danger
+
+def target_dangerousness_for_tank(target, tank):
+    return estimate_target_dangerousness(target) - estimate_target_dangerousness(tank)

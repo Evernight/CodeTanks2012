@@ -13,6 +13,7 @@ from collections import deque, defaultdict
 # * fix "stuck" positions
 # * more precise estimation of tank dangerousness
 # * separate for premium shells
+# * angular speed est in targeting
 
 #  * realistic moving and time estimation (mechanics)
 #  * take target orientation into account when shooting / orientation of the tank

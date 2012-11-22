@@ -1,7 +1,7 @@
 from math import fabs
 from GamePhysics import MAX_DISTANCE
 from Geometry import Vector
-from MyUtils import ALLY_TANK
+from MyUtils import ALLY_TANK, target_dangerousness_for_tank
 from PositionEstimators import PositionEstimator, ring_linear_bonus
 
 class CloseDistancePenalty3P(PositionEstimator):
@@ -65,6 +65,32 @@ class BeAroundWeakestEnemy(PositionEstimator):
 
         return result
 
+class BeAroundWeakestEnemyV2(PositionEstimator):
+    NAME = 'Around enemy'
+
+    def __init__(self, max_value, max_distance, radius, tank_dependent_distance):
+        self.max_value = max_value
+        self.max_distance = max_distance
+        self.radius = radius
+        self.tank_dependent_distance = tank_dependent_distance
+
+    def value(self, pos):
+        enemies = self.context.enemies
+
+        result = 0
+        for enemy in enemies:
+            dist = enemy.get_distance_to(pos.x, pos.y)
+            optimal_distance = max(0, min(1000, self.max_distance + self.tank_dependent_distance * target_dangerousness_for_tank(enemy, self.context.tank)))
+
+            result += ring_linear_bonus(optimal_distance,
+                self.radius, self.max_value, dist) / len(enemies) * 0.5
+
+            # Spread it onto all field
+            result += ring_linear_bonus(optimal_distance,
+                MAX_DISTANCE/2, self.max_value, dist) / len(enemies) * 0.5
+            #result = max(result, (1 - dist / MAX_DISTANCE) * self.max_value / len(enemies))
+
+        return result
 
 class HideBehindObstacle(PositionEstimator):
     NAME = 'Hide'

@@ -1,7 +1,7 @@
 from math import fabs, pi as PI, sqrt, cos
 from GamePhysics import SHELL_ACCELERATION, INITIAL_SHELL_VELOCITY, LOW_ANGLE, FICTIVE_ACCELERATION
 from Geometry import Vector
-from MyUtils import solve_quadratic, fictive_unit
+from MyUtils import solve_quadratic, fictive_unit, estimate_target_dangerousness
 from TargetingClasses import get_target_data
 
 class TargetEstimator:
@@ -180,3 +180,16 @@ class DebugSmartShootingTEstimator(TargetEstimator):
         self.memory = self.context.memory
 
         return str(get_target_data(self))
+
+class DebugDangerousnessTEstimator(TargetEstimator):
+    NAME = "Dangerous"
+    debugging = True
+
+    def debug_value(self, target):
+        self.physics = self.context.physics
+        self.cur_target = target
+        self.world = self.context.world
+        self.tank = self.context.tank
+        self.memory = self.context.memory
+
+        return "%8.2f" % estimate_target_dangerousness(target, self.tank)
