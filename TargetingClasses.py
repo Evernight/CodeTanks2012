@@ -150,7 +150,10 @@ def get_target_data(context):
         fabs(target_turret_n_cos)
 
         all_corners = get_unit_corners(max_pos_fu) + get_unit_corners(min_pos_fu)
-        closest_corner = min(all_corners, key=lambda c: c.distance(tank_v))
+        #closest_corner = min(all_corners, key=lambda c: c.distance(tank_v))
+        # Instead of closest corner try to target middle of colsest side
+        sc1, sc2 = sorted(all_corners, key=lambda c: c.distance(tank_v))[:2]
+        closest_corner = 0.75 * sc1 + 0.25 * sc2
 
         middle_position = (max_pos + min_pos)/2
 
@@ -172,6 +175,7 @@ def get_target_data(context):
         segment = (target_avoid_distance_forward - target_avoid_distance_backward)/(cnt + 1)
 
         shift = segment * (ind + 1) + target_avoid_distance_backward
+        shift *= 0.5
 
         estimate_pos = target_v + target_direction * shift
         shift_fu = fictive_unit(target, estimate_pos.x, estimate_pos.y)
@@ -233,7 +237,7 @@ def obstacle_is_attacked(context, est_pos):
             return bonus
 
     bunker_obstacle = world.obstacles[0]
-    if (physics.will_hit(tank, bunker_obstacle, 1.02) and
+    if (physics.will_hit(tank, bunker_obstacle, 1.04) and
         tank.get_distance_to_unit(bunker_obstacle) < tank.get_distance_to(est_pos.x, est_pos.y)):
         return bunker_obstacle
     return False
