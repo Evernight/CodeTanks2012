@@ -216,10 +216,11 @@ class WorldPhysics:
 
         a = target.angle
 
-        c1 = center + Vector(target.width/2 * factor, target.height/2 * factor).rotate(a)
-        c2 = center + Vector(- target.width/2 * factor, target.height/2 * factor).rotate(a)
-        c3 = center + Vector(- target.width/2 * factor, - target.height/2 * factor).rotate(a)
-        c4 = center + Vector(target.width/2 * factor, - target.height/2 * factor).rotate(a)
+        w, h = target.width/2 * factor, target.height/2 * factor
+        c1 = center + Vector(w ,h).rotate(a)
+        c2 = center + Vector(- w, h).rotate(a)
+        c3 = center + Vector(- w, - h).rotate(a)
+        c4 = center + Vector(w, - h).rotate(a)
         if sign(c1.cross_product(d)) == sign(d.cross_product(c3)):
             return True
         if sign(c2.cross_product(d)) == sign(d.cross_product(c4)):
