@@ -10,16 +10,14 @@ from collections import deque, defaultdict
 # TODO:
 # * shoot shells
 # * fix "stuck" positions
-# * more precise estimation of tank dangerousness
 # * separate for premium shells
 # * angular speed est in targeting
+
 
 #  * realistic moving and time estimation (mechanics)
 #  * take target orientation into account when shooting / orientation of the tank
 #  * when targeting take current moving destination into account (or the opposite)
-#  * remove bonuses I'll fail to get because of their time of exist
 #  * even more precise short distance estimation?
-#  * profiling
 #  * synchronize moving and shooting
 
 if __debug__:

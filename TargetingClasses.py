@@ -71,8 +71,8 @@ class OldShootDecisionMaker(ShootDecisionMaker):
         if fabs(cur_angle) > PI/180 * 0.5:
             move.turret_turn = sign(cur_angle)
 
-FICTIVE_TARGET_ACCELERATION = 0.08
-MAX_TARGET_SPEED = 3.3
+FICTIVE_TARGET_ACCELERATION = 0.1
+MAX_TARGET_SPEED = 2.5
 BACKWARDS_FICTIVE_MULTIPLIER = 0.9
 def get_target_data(context):
     # New Decision Maker
