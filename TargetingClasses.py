@@ -74,6 +74,8 @@ class OldShootDecisionMaker(ShootDecisionMaker):
 FICTIVE_TARGET_ACCELERATION = 0.1
 MAX_TARGET_SPEED = 2.5
 BACKWARDS_FICTIVE_MULTIPLIER = 0.9
+
+MULTIPLE_MAX_TIME_DIFFERENCE = 10
 def get_target_data(context):
     # New Decision Maker
     tank = context.tank
@@ -179,7 +181,9 @@ def get_target_data(context):
         shift_fu = fictive_unit(target, estimate_pos.x, estimate_pos.y)
 
         shoot = (physics.will_hit_precise(tank, shift_fu, factor=0.8) and
-                 all([lambda a: a.remaining_reloading_time < 5 or a.reloading_time - a.remaining_reloading_time < 5, attackers]))
+                 all([lambda a: a.remaining_reloading_time < MULTIPLE_MAX_TIME_DIFFERENCE or a.reloading_time - a.remaining_reloading_time < MULTIPLE_MAX_TIME_DIFFERENCE, attackers])
+                 and target_avoid_distance_forward - target_avoid_distance_backward < 160
+            )
 
         comment = 'MULTIPLE(%d), shift=%8.2f' % (ind, shift)
         if obstacle_is_attacked(context, estimate_pos):
@@ -203,14 +207,15 @@ def get_target_data(context):
     context.memory.good_to_shoot[tank.id] = False
 
     try_single = single_attacker()
-    if len(allies_targeting) > 1 and try_single[1] == False:
+    # TODO: and try_single[1] == False
+    if len(allies_targeting) > 1 :
 
         if tank.id in allies_targeting:
             attackers = []
             for t in context.world.tanks:
                 if t.id in allies_targeting:
                     attackers.append(t)
-            if all([lambda a: a.remaining_reloading_time < 70 or a.reloading_time - a.remaining_reloading_time < 5, attackers]):
+            if all([lambda a: a.remaining_reloading_time < 70 or a.reloading_time - a.remaining_reloading_time < MULTIPLE_MAX_TIME_DIFFERENCE, attackers]):
                 try_multiple = multiple_attackers(attackers)
                 if try_multiple[1]:
                     if tank.remaining_reloading_time < 3:
