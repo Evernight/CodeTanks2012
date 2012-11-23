@@ -74,6 +74,9 @@ class Vector:
     def distance(self, v):
         return (self - v).length()
 
+    def collinear(self, v):
+        return numerically_zero(self.cross_product(v))
+
 def get_unit_corners(unit):
     a = unit.angle
     center = Vector(unit.x, unit.y)
@@ -98,6 +101,10 @@ def segments_are_intersecting(p1, p2, q1, q2):
         ordered_points(q1, p1, q2, p2) and
         ordered_points(q2, p1, q1, p2))
 
+def intersect_lines(p, a, q, b):
+    z = q - p
+    ab = a.cross_product(b)
+    return (z.cross_product(b)/ab, z.cross_product(a)/ab)
 
 if __name__ == "__main__":
     print('Test')
@@ -109,4 +116,11 @@ if __name__ == "__main__":
         Vector(5, 5),
         Vector(0, 1),
         Vector(-6, -2),
+    ))
+
+    print(intersect_lines(
+        Vector(0, 0),
+        Vector(-0.5, 0),
+        Vector(5, 5),
+        Vector(0, -1)
     ))

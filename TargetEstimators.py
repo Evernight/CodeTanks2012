@@ -20,11 +20,28 @@ class AnglePenaltyTEstimator(TargetEstimator):
         angle_penalty = angle_penalty_factor * (angle_degrees**1.2)/2
         return -angle_penalty
 
+class AnglePenaltyTEstimatorV2(TargetEstimator):
+    NAME = "Angle"
+
+    def __init__(self, max_value=180):
+        self.max_value = max_value
+
+    def value(self, target):
+        efficiency = (1 + self.context.health_fraction) / 2
+        angle_penalty_factor = (1 + efficiency -
+                                (1 - max(0, 150 - self.context.tank.remaining_reloading_time)/150) )
+        angle_degrees = fabs(self.context.tank.get_turret_angle_to_unit(target)) / PI * 180
+        angle_penalty = (angle_penalty_factor * angle_degrees) * self.max_value/180
+        return -angle_penalty
+
 class DistancePenaltyTEstimator(TargetEstimator):
     NAME = "Distance"
 
+    def __init__(self, factor=0.1):
+        self.factor = factor
+
     def value(self, target):
-        distance_penalty = self.context.tank.get_distance_to_unit(target) / 10
+        distance_penalty = self.context.tank.get_distance_to_unit(target) * self.factor
         return -distance_penalty
 
 class FinishTEstimator(TargetEstimator):

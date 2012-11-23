@@ -1,7 +1,7 @@
 from itertools import chain
 from math import fabs, cos
 from GamePhysics import INITIAL_SHELL_VELOCITY, SHELL_ACCELERATION
-from Geometry import sign, Vector, get_unit_corners
+from Geometry import sign, Vector, get_unit_corners, intersect_lines
 from MyUtils import DEAD_TANK, ALLY_TANK, fictive_unit, solve_quadratic, inverse_dict, index_in_sorted, debug_dump, TANK
 from model.FireType import FireType
 from math import pi as PI
@@ -106,18 +106,24 @@ def get_target_data(context):
 
     target_avoid_distance_forward = physics.max_move_distance(v0, FICTIVE_TARGET_ACCELERATION * efficency, MAX_TARGET_SPEED * efficency, t)
     target_avoid_distance_backward = physics.max_move_distance(v0, -FICTIVE_TARGET_ACCELERATION * BACKWARDS_FICTIVE_MULTIPLIER * efficency, MAX_TARGET_SPEED * efficency, t)
-    max_pos = target_v + target_avoid_distance_forward * target_direction
-    min_pos = target_v + target_avoid_distance_backward * target_direction
+
+    #max_pos = target_v + target_avoid_distance_forward * target_direction
+    #min_pos = target_v + target_avoid_distance_backward * target_direction
 
     target_turret_n_cos = fabs(cos(fabs(b - target.angle) + PI/2))
 
-    var = fabs((target_avoid_distance_forward - target_avoid_distance_backward) * target_turret_n_cos)
+    #var = fabs((target_avoid_distance_forward - target_avoid_distance_backward) * target_turret_n_cos)
 
     allies_targeting = inverse_dict(context.memory.target_id, target.id)
 
     def single_attacker():
         #estimate_pos = target_v + target_direction * ((target_avoid_distance_forward + target_avoid_distance_backward) / 2)
-        vulnerable_width = max(90 * target_turret_n_cos, 60 * (1 - target_turret_n_cos))
+        #vulnerable_width = max(90 * target_turret_n_cos, 60 * (1 - target_turret_n_cos))
+
+        target_avoid_distance_forward_new = target_avoid_distance_forward * context.memory.tank_precision[tank.id]
+        target_avoid_distance_backward_new = target_avoid_distance_backward * context.memory.tank_precision[tank.id]
+        max_pos = target_v + target_avoid_distance_forward_new * target_direction
+        min_pos = target_v + target_avoid_distance_backward_new * target_direction
 
         max_pos_fu = fictive_unit(target, max_pos.x, max_pos.y)
         min_pos_fu = fictive_unit(target, min_pos.x, min_pos.y)
@@ -274,15 +280,39 @@ class ThirdRoundShootDecisionMaker(ShootDecisionMaker):
         # Shoot bullets
         def process_bullets():
             b = tank.angle + tank.turret_relative_angle
+            q = Vector(1, 0).rotate(b)
+            tank_v = Vector(tank.x, tank.y)
             for shell in world.shells:
-                can_counter = fabs(PI - (shell.angle - b)) < PI/180 * 4
-                if can_counter:
-                    can_counter = can_counter and physics.shell_will_hit(shell, tank) and shell.get_distance_to_unit(tank) < 100
-                if can_counter:
-                    self.context.debug('{Shooting} Possible to counter flying bullet')
-                    move.fire_type = FireType.REGULAR
+                shell_v = Vector(shell.x, shell.y)
+                shell_speed = Vector(shell.speedX, shell.speedY)
 
-        #process_bullets()
+                def will_meet():
+                    if q.collinear(shell_speed):
+                        return sign(shell_speed.x) != sign(q.x) and sign(shell_speed.y) != sign(q.y)
+                    else:
+                        d_tank, d_shell = intersect_lines(tank_v, q, shell_v, shell_speed.normalize())
+                        if d_tank < 0 or d_shell < 0:
+                            return False
 
-        if fabs(cur_angle) > PI/180 * 0.5:
-            move.turret_turn = cur_angle / PI * 180
+                        t_tank = solve_quadratic(SHELL_ACCELERATION/2, INITIAL_SHELL_VELOCITY, -d_tank)
+                        t_shell = solve_quadratic(SHELL_ACCELERATION/2, shell_speed.length(), -d_shell)
+                        if fabs(t_tank - t_shell) < 1:
+                            return True
+
+                if will_meet():
+                    if shell.player_name == "evernight":
+                        self.context.debug('{Shooting} Hitting bullet of ally, postpone')
+                        move.fire_type = FireType.NONE
+                    else:
+                        self.context.debug('{Shooting} Possible to counter flying bullet')
+                        move.fire_type = FireType.REGULAR
+
+        process_bullets()
+
+        if tank.remaining_reloading_time > 0:
+            memory.tank_precision[tank.id] = 1
+        else:
+            memory.tank_precision[tank.id] *= 0.98
+
+        #if fabs(cur_angle) > PI/180 * 0.5:
+        move.turret_turn = cur_angle / PI * 180

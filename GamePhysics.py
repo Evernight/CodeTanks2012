@@ -303,9 +303,10 @@ class WorldPhysics:
         #d = shell.get_distance_to(x, y)
         t = solve_quadratic(a/2, v0, -d)
 
-        if self.shell_will_hit(shell, tank, factor=1.05) and (
-            et > t or self.max_move_distance(fabs(v0), FICTIVE_ACCELERATION, 3, t) < dist):
+        if self.shell_will_hit(shell, tank, factor=1.05) and (et > t):
             return 1
+
+        #self.max_move_distance(fabs(v0), FICTIVE_ACCELERATION, 3, t) < dist):
 
         if dist < 150:
             # short distance
