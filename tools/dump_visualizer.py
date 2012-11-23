@@ -1,3 +1,9 @@
+#!/usr/bin/python
+
+import os
+import sys
+sys.path.append('/home/whatever/work/tanks_ai/src')
+
 import sys
 import pygame
 from GamePhysics import MAX_DISTANCE
@@ -29,7 +35,7 @@ def draw_tank(tank):
 
     pygame.draw.line(window, (255, 0, 0), (tank.x, tank.y), (hit_v.x, hit_v.y))
 
-data = debug_dump_load("3")
+data = debug_dump_load(sys.argv[1])
 
 for unit in data["units"]:
     draw_unit(unit)

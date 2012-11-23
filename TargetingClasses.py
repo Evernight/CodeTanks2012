@@ -9,6 +9,11 @@ from math import pi as PI
 class ShootDecisionMaker:
     context = None
 
+if __debug__:
+    DEBUG_VIS = True
+else:
+    DEBUG_VIS = False
+
 # ================ CONSTANTS
 # Targeting
 TARGETING_FACTOR = 0.3
@@ -137,13 +142,6 @@ def get_target_data(context):
         max_pos_fu = fictive_unit(target, max_pos.x, max_pos.y)
         min_pos_fu = fictive_unit(target, min_pos.x, min_pos.y)
 
-#        debug_data = {
-#            "units": [min_pos_fu, max_pos_fu, target],
-#            "tanks": [tank]
-#        }
-#        if context.world.tick == 390 and context.tank.id == 11 and target.id == 6:
-#            debug_dump(debug_data, "3")
-#            raise("Done.")
         #shoot = physics.will_hit(tank, max_pos_fu, 0.9) and physics.will_hit(tank, min_pos_fu, 0.9)
 
         shoot_precise = physics.will_hit_precise(tank, max_pos_fu) and physics.will_hit_precise(tank, min_pos_fu) and physics.will_hit_precise(tank, target)
@@ -167,6 +165,14 @@ def get_target_data(context):
             shoot = False
             comment += ' blocked'
 
+        if DEBUG_VIS:
+            if shoot and tank.remaining_reloading_time == 0:
+                debug_data = {
+                    "units": [min_pos_fu, max_pos_fu, target],
+                    "tanks": [tank]
+                }
+                debug_dump(debug_data, "/".join([str(context.memory.battle_id), str(context.world.tick) + "_" + str(tank.id) + "_single"]))
+
         return ((estimate_pos.x, estimate_pos.y), shoot, target_avoid_distance_forward, target_avoid_distance_backward, comment)
 
     def multiple_attackers(attackers):
@@ -177,6 +183,11 @@ def get_target_data(context):
 
         shift = segment * (ind + 1) + target_avoid_distance_backward
         #shift *
+        if cnt == 2:
+            if ind == 0:
+                shift = target_avoid_distance_backward + 80
+            else:
+                shift = target_avoid_distance_forward - 80
 
         estimate_pos = target_v + target_direction * shift
         shift_fu = fictive_unit(target, estimate_pos.x, estimate_pos.y)
@@ -188,6 +199,16 @@ def get_target_data(context):
         if obstacle_is_attacked(context, estimate_pos):
             shoot = False
             comment += ' blocked'
+
+        if DEBUG_VIS:
+            if shoot and tank.remaining_reloading_time == 0 and all([context.memory.good_to_shoot.get(t.id) or t.id == tank.id for t in attackers]):
+                max_pos_fu = fictive_unit(target, max_pos.x, max_pos.y)
+                min_pos_fu = fictive_unit(target, min_pos.x, min_pos.y)
+                debug_data = {
+                    "units": [min_pos_fu, max_pos_fu, target],
+                    "tanks": attackers
+                }
+                debug_dump(debug_data, "/".join([str(context.memory.battle_id), str(context.world.tick) + "_" + str(tank.id) + "_multiple"]))
 
         return ((estimate_pos.x, estimate_pos.y), shoot, target_avoid_distance_forward, target_avoid_distance_backward, comment)
 

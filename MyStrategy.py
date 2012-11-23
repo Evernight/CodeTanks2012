@@ -1,3 +1,4 @@
+import random
 from Geometry import Vector
 from MyUtils import ALLY_TANK, DEAD_TANK, ALIVE_ENEMY_TANK, ALIVE_ALLY_TANK
 from StrategyFirstRound import StrategyOnePlayer5Enemies, StrategyOnePlayer2Enemies, StrategyOnePlayerDuel
@@ -12,7 +13,11 @@ from collections import deque, defaultdict
 # * fix "stuck" positions
 # * separate for premium shells
 # * angular speed est in targeting
-
+# * visualize targeting
+# * precise avoiding
+# * short fistnce shooting
+# * check bullets collision
+# * strategy based not on #players but on dangerousness
 
 #  * realistic moving and time estimation (mechanics)
 #  * take target orientation into account when shooting / orientation of the tank
@@ -57,6 +62,15 @@ class MyStrategy:
 
     def move(self, tank, world, move):
         self.world = world
+
+        if DEBUG_MODE:
+            try:
+                self.memory.battle_id
+            except:
+                self.memory.battle_id = random.randint(1, 10**6)
+                self.debug('#' * 64)
+                self.debug("BATTLE ID : " + str(self.memory.battle_id))
+                self.debug('#' * 64)
 
         self.debug('')
         self.debug('#' * 64)
@@ -126,6 +140,7 @@ class MyStrategy:
         self.debug('Output: left: %5.2f, right: %5.2f, fire type: %d' % (move.left_track_power, move.right_track_power, move.fire_type))
 
         #self.analysis.store_shell_velocity(world)
+
         if PHYSICS_RESEARCH_MODE:
             for tank in world.tanks:
                 if tank.player_name == "EmptyPlayer":

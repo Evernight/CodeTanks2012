@@ -1,6 +1,7 @@
 from math import hypot, sqrt
 import operator
 from json import dump, load, JSONEncoder
+import os
 from Geometry import numerically_zero
 from model.Tank import Tank
 from model.BonusType import BonusType
@@ -123,7 +124,14 @@ def target_dangerousness_for_tank(target, tank):
 
 
 def debug_dump(obj, fname):
-    with open("../debug_dumps/" + fname, 'w') as f:
+    fullname= "../debug_dumps/"  + fname
+    dir, file = os.path.split(fullname)
+
+    try:
+        os.makedirs(dir)
+    except:
+        pass
+    with open(fullname, 'w') as f:
         class MyJSONEncoder(JSONEncoder):
             def default(self, obj):
                 if isinstance(obj, Tank):
@@ -146,8 +154,12 @@ def debug_dump(obj, fname):
                 return JSONEncoder.default(self, obj)
         dump(obj, f, cls=MyJSONEncoder)
 
-def debug_dump_load(fname):
-    with open("../../debug_dumps/" + fname, 'r') as f:
+def debug_dump_load(fname, relative=False):
+    if relative:
+        fullname = "../../debug_dumps/" + fname
+    else:
+        fullname = fname
+    with open(fullname, 'r') as f:
         def decode_objects(d):
             if d.get("__type__") == "Tank":
                 return Tank(0, "", 0, d["x"], d["y"], 0, 0, d["angle"], 0, d["turret_relative_angle"], 0, 0, 0, 0, 0, 0, TankType.MEDIUM)
