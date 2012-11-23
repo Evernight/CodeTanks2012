@@ -102,9 +102,9 @@ class MyStrategy:
                     strategy = strategy_third_round
                 elif len(enemies) == 2:
                     res = 0
-                    for tank in allies:
+                    for t in allies:
                         for enemy in enemies:
-                            res += target_dangerousness_for_tank(enemy, tank)
+                            res += target_dangerousness_for_tank(enemy, t)
                     if res < -0.3:
                         strategy = strategy_third_round_prevail
                     else:
