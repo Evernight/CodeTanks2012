@@ -29,7 +29,7 @@ third_round_targeting_strategy = EstimatorsTargetingStrategy(
         DistancePenaltyTEstimator(),
         BehindObstacleTEstimator(40),
         AttackWeakestTEstimator(40),
-        #DebugSmartShootingTEstimator(),
+        DebugSmartShootingTEstimator(),
         DebugDangerousnessTEstimator(),
         TargetConvenienceEstimator(30),
         AddConstantTEstimator(180)

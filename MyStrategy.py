@@ -9,13 +9,11 @@ from model.TankType import TankType
 from collections import deque, defaultdict
 
 # TODO:
-# * shoot shells
-
 # * separate for premium shells
 # * precise avoiding, realistic
 # * short distance shooting
-# * check bullets collision
-# * strategy based not on #players but on dangerousness
+# * cut possible moves
+# * not just hit check, be more precise
 
 # * angular speed est in targeting
 #  * realistic moving and time estimation (mechanics)

@@ -9,7 +9,7 @@ from math import pi as PI
 class ShootDecisionMaker:
     context = None
 
-DEBUG_VIS = False
+DEBUG_VIS = True
 
 # ================ CONSTANTS
 # Targeting
@@ -130,7 +130,7 @@ def get_target_data(context):
 
         #shoot = physics.will_hit(tank, max_pos_fu, 0.9) and physics.will_hit(tank, min_pos_fu, 0.9)
 
-        shoot_precise = physics.will_hit_precise(tank, max_pos_fu) and physics.will_hit_precise(tank, min_pos_fu) and physics.will_hit_precise(tank, target)
+        shoot_precise = physics.will_hit_precise(tank, max_pos_fu, factor=0.8) and physics.will_hit_precise(tank, min_pos_fu, factor=0.8) and physics.will_hit_precise(tank, target, factor=0.8)
         shoot = shoot_precise
         fabs(target_turret_n_cos)
 
@@ -178,7 +178,7 @@ def get_target_data(context):
         estimate_pos = target_v + target_direction * shift
         shift_fu = fictive_unit(target, estimate_pos.x, estimate_pos.y)
 
-        shoot = (physics.will_hit_precise(tank, shift_fu) and
+        shoot = (physics.will_hit_precise(tank, shift_fu, factor=0.8) and
                  all([lambda a: a.remaining_reloading_time < 5 or a.reloading_time - a.remaining_reloading_time < 5, attackers]))
 
         comment = 'MULTIPLE(%d), shift=%8.2f' % (ind, shift)
@@ -243,12 +243,17 @@ def obstacle_is_attacked(context, est_pos):
             return obstacle
 
     for bonus in world.bonuses:
-        if (physics.will_hit(tank, bonus, BONUS_FACTOR) and
-            tank.get_distance_to_unit(bonus) < tank.get_distance_to(est_pos.x, est_pos.y)):
-            return bonus
+        if (physics.will_hit(tank, bonus, BONUS_FACTOR)):
+            dist_tank_to_bonus = tank.get_distance_to_unit(bonus)
+            dist_tank_to_pos = tank.get_distance_to(est_pos.x, est_pos.y)
+            if dist_tank_to_bonus < dist_tank_to_pos:
+                dist_bonus_to_pos = bonus.get_distance_to(est_pos.x, est_pos.y)
+                free_to_hit = dist_tank_to_bonus > 300 and dist_tank_to_bonus > 2 * dist_bonus_to_pos
+                if not free_to_hit:
+                    return bonus
 
     bunker_obstacle = world.obstacles[0]
-    if (physics.will_hit(tank, bunker_obstacle, 1.04) and
+    if (physics.will_hit(tank, bunker_obstacle, 1.06) and
         tank.get_distance_to_unit(bunker_obstacle) < tank.get_distance_to(est_pos.x, est_pos.y)):
         return bunker_obstacle
     return False
@@ -314,7 +319,7 @@ class ThirdRoundShootDecisionMaker(ShootDecisionMaker):
                         self.context.debug('{Shooting} Hitting bullet of ally, postpone')
                         move.fire_type = FireType.NONE
                     else:
-                        if physics.shell_will_hit(shell, tank) and meet_time < 20:
+                        if physics.shell_will_hit(shell, tank, factor=0.9) and meet_time < 20:
                             self.context.debug('{Shooting} Possible to counter flying bullet')
                             move.fire_type = FireType.REGULAR
 
@@ -323,7 +328,7 @@ class ThirdRoundShootDecisionMaker(ShootDecisionMaker):
         if tank.remaining_reloading_time > 0:
             memory.tank_precision[tank.id] = 1
         else:
-            memory.tank_precision[tank.id] *= 0.98
+            memory.tank_precision[tank.id] *= 0.99
 
         #if fabs(cur_angle) > PI/180 * 0.5:
         #move.turret_turn = max(-1, min(1, cur_angle / PI * 180))

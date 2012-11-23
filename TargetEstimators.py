@@ -196,7 +196,7 @@ class DebugSmartShootingTEstimator(TargetEstimator):
         self.tank = self.context.tank
         self.memory = self.context.memory
 
-        return str(get_target_data(self))
+        return "\n%100s" % str(get_target_data(self))
 
 class DebugDangerousnessTEstimator(TargetEstimator):
     NAME = "Dangerous"

@@ -170,7 +170,7 @@ class WorldPhysics:
             return True
         return False
 
-    def will_hit_precise(self, tank, target, ricochet_angle=PI/5):
+    def will_hit_precise(self, tank, target, ricochet_angle=PI/5, factor=1):
         """
         Returns True if tank will hit rectangular object
         """
@@ -180,8 +180,7 @@ class WorldPhysics:
 
         tank_v = Vector(tank.x, tank.y)
 
-        c = get_unit_corners(target)
-
+        c = get_unit_corners(target, factor)
 
         hit_v = tank_v + MAX_DISTANCE * q
 

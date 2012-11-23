@@ -77,14 +77,15 @@ class Vector:
     def collinear(self, v):
         return numerically_zero(self.cross_product(v))
 
-def get_unit_corners(unit):
+def get_unit_corners(unit, factor=1):
     a = unit.angle
     center = Vector(unit.x, unit.y)
 
-    c1 = center + Vector(unit.width/2, unit.height/2).rotate(a)
-    c2 = center + Vector(unit.width/2, -unit.height/2).rotate(a)
-    c3 = center + Vector(-unit.width/2, -unit.height/2).rotate(a)
-    c4 = center + Vector(-unit.width/2, unit.height/2).rotate(a)
+    w, h = unit.width/2 * factor, unit.height/2 * factor
+    c1 = center + Vector(w, h).rotate(a)
+    c2 = center + Vector(w, -h).rotate(a)
+    c3 = center + Vector(-w, -h).rotate(a)
+    c4 = center + Vector(-w, h).rotate(a)
 
     return [c1, c2, c3, c4]
 
