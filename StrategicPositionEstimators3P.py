@@ -149,6 +149,6 @@ class CenterObstaclePenalty(PositionEstimator):
 
         vd = fabs(obstacle.y - pos.y)
         hd = fabs(obstacle.x - pos.x)
-        if vd < obstacle.height + self.radius or hd < obstacle.width + self.radius:
+        if vd < obstacle.height + self.radius and hd < obstacle.width + self.radius:
             return -self.max_value
         return 0

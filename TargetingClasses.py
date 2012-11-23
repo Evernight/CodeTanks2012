@@ -97,23 +97,6 @@ def get_target_data(context):
         d = max(0, tank.get_distance_to_unit(target) - 60)
         return solve_quadratic(a/2, v0, -d)
 
-    def max_move_distance(v0, a, max_v, t):
-        #TODO: this estimation is rough
-        v0 = max(-max_v, min(v0, max_v))
-        if fabs(v0 + a * t) > max_v:
-            if a > 0:
-                t1 = fabs((max_v - v0) / a)
-            else:
-                t1 = fabs((-max_v - v0) / a)
-            t2 = t - t1
-        else:
-            t1 = t
-            t2 = 0
-        if a > 0:
-            return a*t1**2/2 + v0 * t1 + max_v * t2
-        else:
-            return a*t1**2/2 + v0 * t1 - max_v * t2
-
     t = get_hit_time()
     #center = Vector(target.x - tank.x, target.y - tank.y)
 
@@ -121,8 +104,8 @@ def get_target_data(context):
     target_health_fraction = target.crew_health/target.crew_max_health
     efficency = (1 + target_health_fraction)/2
 
-    target_avoid_distance_forward = max_move_distance(v0, FICTIVE_TARGET_ACCELERATION * efficency, MAX_TARGET_SPEED * efficency, t)
-    target_avoid_distance_backward = max_move_distance(v0, -FICTIVE_TARGET_ACCELERATION * BACKWARDS_FICTIVE_MULTIPLIER * efficency, MAX_TARGET_SPEED * efficency, t)
+    target_avoid_distance_forward = physics.max_move_distance(v0, FICTIVE_TARGET_ACCELERATION * efficency, MAX_TARGET_SPEED * efficency, t)
+    target_avoid_distance_backward = physics.max_move_distance(v0, -FICTIVE_TARGET_ACCELERATION * BACKWARDS_FICTIVE_MULTIPLIER * efficency, MAX_TARGET_SPEED * efficency, t)
     max_pos = target_v + target_avoid_distance_forward * target_direction
     min_pos = target_v + target_avoid_distance_backward * target_direction
 
@@ -182,9 +165,9 @@ def get_target_data(context):
         #shift *
         if cnt == 2:
             if ind == 0:
-                shift = target_avoid_distance_backward + 80
+                shift = target_avoid_distance_backward + 40
             else:
-                shift = target_avoid_distance_forward - 80
+                shift = target_avoid_distance_forward - 40
 
         estimate_pos = target_v + target_direction * shift
         shift_fu = fictive_unit(target, estimate_pos.x, estimate_pos.y)
@@ -222,7 +205,8 @@ def get_target_data(context):
             if all([lambda a: a.remaining_reloading_time < 70 or a.reloading_time - a.remaining_reloading_time < 5, attackers]):
                 try_multiple = multiple_attackers(attackers)
                 if try_multiple[1]:
-                    context.memory.good_to_shoot[tank.id] = True
+                    if tank.remaining_reloading_time < 3:
+                        context.memory.good_to_shoot[tank.id] = True
                     ok = all([context.memory.good_to_shoot.get(t.id) for t in attackers])
                     if not ok:
                         try_multiple = (try_multiple[0], False)

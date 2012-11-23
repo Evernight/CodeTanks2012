@@ -74,6 +74,23 @@ class WorldPhysics:
             else:
                 move.right_track_power, move.left_track_power = get_values(fabs(angle))
 
+    def max_move_distance(self, v0, a, max_v, t):
+        #TODO: this estimation is rough
+        v0 = max(-max_v, min(v0, max_v))
+        if fabs(v0 + a * t) > max_v:
+            if a > 0:
+                t1 = fabs((max_v - v0) / a)
+            else:
+                t1 = fabs((-max_v - v0) / a)
+            t2 = t - t1
+        else:
+            t1 = t
+            t2 = 0
+        if a > 0:
+            return a*t1**2/2 + v0 * t1 + max_v * t2
+        else:
+            return a*t1**2/2 + v0 * t1 - max_v * t2
+
     def estimate_time_to_position(self, x, y, tank):
         dist = tank.get_distance_to(x, y)
         vt = Vector(tank.speedX, tank.speedY)
@@ -286,8 +303,10 @@ class WorldPhysics:
         #d = shell.get_distance_to(x, y)
         t = solve_quadratic(a/2, v0, -d)
 
-        if self.shell_will_hit(shell, tank, factor=1.05) and et > t:
+        if self.shell_will_hit(shell, tank, factor=1.05) and (
+            et > t or self.max_move_distance(fabs(v0), FICTIVE_ACCELERATION, 3, t) < dist):
             return 1
+
         if dist < 150:
             # short distance
             result = self.shell_will_hit(shell, fictive_unit(tank, x, y), factor=1.05)
