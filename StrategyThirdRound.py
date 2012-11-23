@@ -52,7 +52,7 @@ strategy_third_round = make_composite_strategy(
             BonusPositionEstimator(factor=1.5, medikit_min=100, medikit_max=1500, repair_min=100, repair_max=900, ammo_crate=700),
             LastTargetEstimator(400),
             TimeToPositionEstimator(2),
-            BeAroundWeakestEnemyV2(2000, 900, 600, 500),
+            BeAroundWeakestEnemyV2(2000, 800, 600, 500),
             HideBehindObstacle(250),
             #SmartTurretsDangerEstimator(100, 400),
             SimpleTurretsDangerEstimator(400),
