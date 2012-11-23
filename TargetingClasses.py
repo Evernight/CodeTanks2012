@@ -130,7 +130,9 @@ def get_target_data(context):
 
         #shoot = physics.will_hit(tank, max_pos_fu, 0.9) and physics.will_hit(tank, min_pos_fu, 0.9)
 
-        shoot_precise = physics.will_hit_precise(tank, max_pos_fu, factor=0.8) and physics.will_hit_precise(tank, min_pos_fu, factor=0.8) and physics.will_hit_precise(tank, target, factor=0.8)
+        shoot_precise = physics.will_hit_precise(tank, max_pos_fu, factor=0.8, side_part=0.8) and \
+                        physics.will_hit_precise(tank, min_pos_fu, factor=0.8, side_part=0.8) and \
+                        physics.will_hit_precise(tank, target, factor=0.8, side_part=0.8)
         shoot = shoot_precise
         fabs(target_turret_n_cos)
 

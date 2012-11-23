@@ -170,7 +170,7 @@ class WorldPhysics:
             return True
         return False
 
-    def will_hit_precise(self, tank, target, ricochet_angle=PI/5, factor=1):
+    def will_hit_precise(self, tank, target, ricochet_angle=PI/5, factor=1, side_part=1):
         """
         Returns True if tank will hit rectangular object
         """
@@ -185,7 +185,10 @@ class WorldPhysics:
         hit_v = tank_v + MAX_DISTANCE * q
 
         def will_hit_side(p1, p2):
-            intersecting = segments_are_intersecting(tank_v, hit_v, p1, p2)
+            p_mid = (p1 + p2)/2
+            p1_new = p_mid + (p1 - p_mid) * side_part
+            p2_new = p_mid + (p2 - p_mid) * side_part
+            intersecting = segments_are_intersecting(tank_v, hit_v, p1_new, p2_new)
             angle = q.angle(p2 - p1)
             safe = ricochet_angle < angle < PI - ricochet_angle
             return intersecting and safe

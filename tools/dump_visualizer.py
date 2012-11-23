@@ -17,7 +17,7 @@ window = pygame.display.set_mode((1280, 800))
 
 #draw a line - see http://www.pygame.org/docs/ref/draw.html for more
 def draw_unit(unit):
-    c1, c2, c3, c4 = get_unit_corners(unit)
+    c1, c2, c3, c4 = get_unit_corners(unit, factor=1)
     pygame.draw.line(window, (255, 255, 255), (c1.x, c1.y), (c2.x, c2.y))
     pygame.draw.line(window, (255, 255, 255), (c2.x, c2.y), (c3.x, c3.y))
     pygame.draw.line(window, (255, 255, 255), (c3.x, c3.y), (c4.x, c4.y))
