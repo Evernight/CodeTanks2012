@@ -170,7 +170,7 @@ class WorldPhysics:
             return True
         return False
 
-    def will_hit_precise(self, tank, target, ricochet_angle=PI/5, factor=1, side_part=1):
+    def will_hit_precise(self, tank, target, ricochet_angle=PI/4, factor=1, side_part=1):
         """
         Returns True if tank will hit rectangular object
         """

@@ -195,6 +195,7 @@ class DebugSmartShootingTEstimator(TargetEstimator):
         self.world = self.context.world
         self.tank = self.context.tank
         self.memory = self.context.memory
+        self.debug_mode = self.context.debug_mode
 
         return "\n%100s" % str(get_target_data(self))
 

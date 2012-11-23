@@ -1,5 +1,5 @@
 from math import fabs
-from MyUtils import ALLY_TANK
+from MyUtils import ALLY_TANK, filter_and, ALIVE_ALLY_TANK, NOT_TANK
 from PositionEstimators import PositionEstimator
 
 class Distance2PEstimator(PositionEstimator):
@@ -19,7 +19,7 @@ class Distance2PEstimator(PositionEstimator):
         tanks = self.context.world.tanks
         cur_tank = self.context.tank
 
-        allies = list(filter(ALLY_TANK(cur_tank.id), tanks))
+        allies = list(filter(filter_and(ALIVE_ALLY_TANK, NOT_TANK(cur_tank.id)), tanks))
         if len(allies) != 1:
             return 0
         ally = allies[0]
@@ -42,7 +42,7 @@ class FarDistancePenalty2P(PositionEstimator):
         tanks = self.context.world.tanks
         cur_tank = self.context.tank
 
-        allies = list(filter(ALLY_TANK(cur_tank.id), tanks))
+        allies = list(filter(filter_and(ALIVE_ALLY_TANK, NOT_TANK(cur_tank.id)), tanks))
         if len(allies) != 1:
             return 0
         ally = allies[0]

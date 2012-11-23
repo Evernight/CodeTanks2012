@@ -9,8 +9,6 @@ from math import pi as PI
 class ShootDecisionMaker:
     context = None
 
-DEBUG_VIS = True
-
 # ================ CONSTANTS
 # Targeting
 TARGETING_FACTOR = 0.3
@@ -153,7 +151,7 @@ def get_target_data(context):
             shoot = False
             comment += ' blocked'
 
-        if DEBUG_VIS:
+        if context.debug_mode:
             if shoot and tank.remaining_reloading_time == 0:
                 debug_data = {
                     "units": [min_pos_fu, max_pos_fu, target],
@@ -188,7 +186,7 @@ def get_target_data(context):
             shoot = False
             comment += ' blocked'
 
-        if DEBUG_VIS:
+        if context.debug_mode:
             if shoot and tank.remaining_reloading_time == 0 and all([context.memory.good_to_shoot.get(t.id) or t.id == tank.id for t in attackers]):
                 max_pos = target_v + target_avoid_distance_forward * target_direction
                 min_pos = target_v + target_avoid_distance_backward * target_direction
@@ -272,6 +270,7 @@ class ThirdRoundShootDecisionMaker(ShootDecisionMaker):
         self.world = self.context.world
         self.tank = self.context.tank
         self.memory = self.context.memory
+        self.debug_mode = self.context.debug_mode
 
         self.memory.target_id[tank.id] = cur_target.id
         est_pos, good_to_shoot = get_target_data(self)[:2]

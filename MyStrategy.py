@@ -12,8 +12,7 @@ from collections import deque, defaultdict
 # * separate for premium shells
 # * precise avoiding, realistic
 # * short distance shooting
-# * cut possible moves
-# * not just hit check, be more precise
+# * cut target possible moves
 
 # * angular speed est in targeting
 #  * realistic moving and time estimation (mechanics)
