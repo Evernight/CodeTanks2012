@@ -38,6 +38,7 @@ third_round_targeting_strategy = EstimatorsTargetingStrategy(
 )
 
 standard_position_estimators = [
+    #HideBehindObstacle(250),
     EdgePenaltyEstimator(1000, 100),
     CenterObstaclePenalty(),
     FlyingShellEstimator(2000)
@@ -71,7 +72,6 @@ strategy_third_round_prevail = make_composite_strategy(
             LastTargetEstimator(400),
             TimeToPositionEstimator(2),
             BeAroundWeakestEnemyV2(2000, 800, 600, 500),
-            HideBehindObstacle(250),
             #SmartTurretsDangerEstimator(100, 400),
             SimpleTurretsDangerEstimator(400),
             AlliesDistance3P(250, 1100, 600, 1500)
@@ -90,7 +90,6 @@ strategy_third_round_total_prevail = make_composite_strategy(
             LastTargetEstimator(400),
             TimeToPositionEstimator(2),
             BeAroundWeakestEnemyV2(2000, 300, 600, 500),
-            HideBehindObstacle(250),
             #SmartTurretsDangerEstimator(100, 400),
             SimpleTurretsDangerEstimator(400),
             AlliesDistance3P(250, 1100, 600, 1500)
@@ -109,7 +108,6 @@ strategy_third_round_two_left = make_composite_strategy(
             LastTargetEstimator(400),
             TimeToPositionEstimator(2),
             BeAroundWeakestEnemyV2(2000, 900, 600, 500),
-            HideBehindObstacle(250),
             #SmartTurretsDangerEstimator(100, 400),
             SimpleTurretsDangerEstimator(400),
             Distance2PEstimator(300, 120, 400, 200, 1000),
@@ -129,7 +127,6 @@ strategy_third_round_two_left_prevail = make_composite_strategy(
             LastTargetEstimator(400),
             TimeToPositionEstimator(2),
             BeAroundWeakestEnemyV2(2000, 700, 600, 500),
-            HideBehindObstacle(250),
             #SmartTurretsDangerEstimator(100, 400),
             SimpleTurretsDangerEstimator(400),
             Distance2PEstimator(300, 120, 400, 200, 1000),
@@ -149,7 +146,6 @@ strategy_third_round_last_man_standing = make_composite_strategy(
             LastTargetEstimator(400),
             TimeToPositionEstimator(2),
             BeAroundWeakestEnemyV2(4000, 700, 600, 800),
-            HideBehindObstacle(250),
             #SmartTurretsDangerEstimator(100, 400),
             SimpleTurretsDangerEstimator(400),
         ]

@@ -73,6 +73,8 @@ class WorldPhysics:
                 move.left_track_power, move.right_track_power = get_values(fabs(angle))
             else:
                 move.right_track_power, move.left_track_power = get_values(fabs(angle))
+        move.left_track_power = max(-1, move.left_track_power)
+        move.right_track_power = max(-1, move.right_track_power)
 
     def max_move_distance(self, v0, a, max_v, t):
         #TODO: this estimation is rough

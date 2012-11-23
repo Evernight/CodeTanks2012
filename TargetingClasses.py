@@ -9,7 +9,7 @@ from math import pi as PI
 class ShootDecisionMaker:
     context = None
 
-DEBUG_VIS = False
+DEBUG_VIS = True
 
 # ================ CONSTANTS
 # Targeting
@@ -188,6 +188,8 @@ def get_target_data(context):
 
         if DEBUG_VIS:
             if shoot and tank.remaining_reloading_time == 0 and all([context.memory.good_to_shoot.get(t.id) or t.id == tank.id for t in attackers]):
+                max_pos = target_v + target_avoid_distance_forward * target_direction
+                min_pos = target_v + target_avoid_distance_backward * target_direction
                 max_pos_fu = fictive_unit(target, max_pos.x, max_pos.y)
                 min_pos_fu = fictive_unit(target, min_pos.x, min_pos.y)
                 debug_data = {
@@ -288,24 +290,33 @@ class ThirdRoundShootDecisionMaker(ShootDecisionMaker):
 
                 def will_meet():
                     if q.collinear(shell_speed):
-                        return sign(shell_speed.x) != sign(q.x) and sign(shell_speed.y) != sign(q.y)
+                        good_direction = sign(shell_speed.x) != sign(q.x) and sign(shell_speed.y) != sign(q.y)
+                        if good_direction:
+                            return (True, (shell_v - tank_v).length()/(shell_speed.length() + INITIAL_SHELL_VELOCITY))
+                        else:
+                            return (False, -1)
                     else:
                         d_tank, d_shell = intersect_lines(tank_v, q, shell_v, shell_speed.normalize())
+                        d_tank = max(0, d_tank - 40)
                         if d_tank < 0 or d_shell < 0:
-                            return False
+                            return (False, -1)
 
                         t_tank = solve_quadratic(SHELL_ACCELERATION/2, INITIAL_SHELL_VELOCITY, -d_tank)
                         t_shell = solve_quadratic(SHELL_ACCELERATION/2, shell_speed.length(), -d_shell)
                         if fabs(t_tank - t_shell) < 1:
-                            return True
+                            return (True, t_tank)
+                        else:
+                            return (False, -1)
 
-                if will_meet():
+                wm, meet_time = will_meet()
+                if wm:
                     if shell.player_name == "evernight":
                         self.context.debug('{Shooting} Hitting bullet of ally, postpone')
                         move.fire_type = FireType.NONE
                     else:
-                        self.context.debug('{Shooting} Possible to counter flying bullet')
-                        move.fire_type = FireType.REGULAR
+                        if physics.shell_will_hit(shell, tank) and meet_time < 20:
+                            self.context.debug('{Shooting} Possible to counter flying bullet')
+                            move.fire_type = FireType.REGULAR
 
         process_bullets()
 
@@ -315,4 +326,4 @@ class ThirdRoundShootDecisionMaker(ShootDecisionMaker):
             memory.tank_precision[tank.id] *= 0.98
 
         #if fabs(cur_angle) > PI/180 * 0.5:
-        move.turret_turn = cur_angle / PI * 180
+        move.turret_turn = max(-1, min(1, cur_angle / PI * 180))
