@@ -75,7 +75,7 @@ FICTIVE_TARGET_ACCELERATION = 0.06
 MAX_TARGET_SPEED = 2.5
 BACKWARDS_FICTIVE_MULTIPLIER = 0.8
 
-MULTIPLE_MAX_TIME_DIFFERENCE = 10
+MULTIPLE_MAX_TIME_DIFFERENCE = 5
 def get_target_data(context):
     # New Decision Maker
     tank = context.tank
@@ -207,8 +207,7 @@ def get_target_data(context):
     context.memory.good_to_shoot[tank.id] = False
 
     try_single = single_attacker()
-    # TODO: and try_single[1] == False
-    if len(allies_targeting) == 2:
+    if len(allies_targeting) == 2 and try_single[1] == False:
 
         if tank.id in allies_targeting:
             attackers = []

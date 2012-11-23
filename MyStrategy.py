@@ -14,8 +14,6 @@ from collections import deque, defaultdict
 # * short distance shooting
 # * cut target possible moves
 
-# * NOW TESTING MULTIPLE
-
 # * angular speed est in targeting
 #  * realistic moving and time estimation (mechanics)
 #  * take target orientation into account when shooting / orientation of the tank
