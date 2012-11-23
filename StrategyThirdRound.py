@@ -23,21 +23,6 @@ default_3R_position_getters = [BasicPositionGetter(35, 90), GridPositionGetter(7
 #    OldShootDecisionMaker()
 #)
 
-#third_round_targeting_strategy = EstimatorsTargetingStrategy(
-#    [
-#        AnglePenaltyTEstimatorV2(180),
-#        DistancePenaltyTEstimator(),
-#        BehindObstacleTEstimator(40),
-#        AttackWeakestTEstimator(40),
-#        DebugSmartShootingTEstimator(),
-#        DebugDangerousnessTEstimator(),
-#        #TargetConvenienceEstimator(30),
-#        AddConstantTEstimator(180)
-#    ],
-#    ThirdRoundShootDecisionMaker()
-#)
-
-# TODO: this is for test
 third_round_targeting_strategy = EstimatorsTargetingStrategy(
     [
         AnglePenaltyTEstimatorV2(180),
@@ -49,7 +34,7 @@ third_round_targeting_strategy = EstimatorsTargetingStrategy(
         #TargetConvenienceEstimator(30),
         AddConstantTEstimator(180)
     ],
-    OldShootDecisionMaker()
+    ThirdRoundShootDecisionMaker()
 )
 
 standard_position_estimators = [

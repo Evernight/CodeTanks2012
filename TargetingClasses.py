@@ -173,16 +173,16 @@ def get_target_data(context):
         #shift *
         if cnt == 2:
             if ind == 0:
-                shift = target_avoid_distance_backward + 40
+                shift = target_avoid_distance_backward + 45
             else:
-                shift = target_avoid_distance_forward - 40
+                shift = target_avoid_distance_forward - 45
 
         estimate_pos = target_v + target_direction * shift
         shift_fu = fictive_unit(target, estimate_pos.x, estimate_pos.y)
 
         shoot = (physics.will_hit_precise(tank, shift_fu, factor=0.8) and
                  all([lambda a: a.remaining_reloading_time < MULTIPLE_MAX_TIME_DIFFERENCE or a.reloading_time - a.remaining_reloading_time < MULTIPLE_MAX_TIME_DIFFERENCE, attackers])
-                 and target_avoid_distance_forward - target_avoid_distance_backward < 200
+                 #and target_avoid_distance_forward - target_avoid_distance_backward < 200
             )
 
         comment = 'MULTIPLE(%d), shift=%8.2f' % (ind, shift)
