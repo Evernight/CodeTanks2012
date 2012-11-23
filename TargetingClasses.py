@@ -9,10 +9,7 @@ from math import pi as PI
 class ShootDecisionMaker:
     context = None
 
-if __debug__:
-    DEBUG_VIS = True
-else:
-    DEBUG_VIS = False
+DEBUG_VIS = False
 
 # ================ CONSTANTS
 # Targeting

@@ -136,3 +136,19 @@ class HideBehindObstacle(PositionEstimator):
                     result -= self.max_value
 
         return result
+
+class CenterObstaclePenalty(PositionEstimator):
+    NAME = 'Obstacle'
+
+    def __init__(self, max_value=5000, radius=20):
+        self.max_value = max_value
+        self.radius = radius
+
+    def value(self, pos):
+        obstacle = self.context.world.obstacles[0]
+
+        vd = fabs(obstacle.y - pos.y)
+        hd = fabs(obstacle.x - pos.x)
+        if vd < obstacle.height + self.radius or hd < obstacle.width + self.radius:
+            return self.max_value
+        return 0

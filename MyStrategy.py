@@ -1,6 +1,6 @@
 import random
 from Geometry import Vector
-from MyUtils import ALLY_TANK, DEAD_TANK, ALIVE_ENEMY_TANK, ALIVE_ALLY_TANK
+from MyUtils import ALLY_TANK, DEAD_TANK, ALIVE_ENEMY_TANK, ALIVE_ALLY_TANK, target_dangerousness_for_tank
 from StrategyFirstRound import StrategyOnePlayer5Enemies, StrategyOnePlayer2Enemies, StrategyOnePlayerDuel
 from StrategySecondRound import StrategySecondRound4Enemies, StrategySecondRound2Enemies
 from StrategyThirdRound import strategy_third_round, strategy_third_round_prevail, strategy_third_round_total_prevail, strategy_third_round_two_left, strategy_third_round_two_left_prevail, strategy_third_round_last_man_standing
@@ -10,15 +10,14 @@ from collections import deque, defaultdict
 
 # TODO:
 # * shoot shells
-# * fix "stuck" positions
+
 # * separate for premium shells
-# * angular speed est in targeting
-# * visualize targeting
 # * precise avoiding
-# * short fistnce shooting
+# * short distance shooting
 # * check bullets collision
 # * strategy based not on #players but on dangerousness
 
+# * angular speed est in targeting
 #  * realistic moving and time estimation (mechanics)
 #  * take target orientation into account when shooting / orientation of the tank
 #  * when targeting take current moving destination into account (or the opposite)
@@ -98,7 +97,14 @@ class MyStrategy:
                 if len(enemies) == 3:
                     strategy = strategy_third_round
                 elif len(enemies) == 2:
-                    strategy = strategy_third_round_prevail
+                    res = 0
+                    for tank in allies:
+                        for enemy in enemies:
+                            res += target_dangerousness_for_tank(enemy, tank)
+                    if res < -0.3:
+                        strategy = strategy_third_round_prevail
+                    else:
+                        strategy = strategy_third_round
                 else:
                     strategy = strategy_third_round_total_prevail
 
