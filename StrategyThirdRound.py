@@ -9,7 +9,7 @@ from StrategyTargeting import EstimatorsTargetingStrategy
 from TargetEstimators import DistancePenaltyTEstimator, FinishTEstimator, ResponseTEstimator, LastTargetTEstimator, AddConstantTEstimator, AnglePenaltyTEstimator, AttackWeakestTEstimator, BehindObstacleTEstimator, DebugSmartShootingTEstimator, DebugDangerousnessTEstimator, TargetConvenienceEstimator, AnglePenaltyTEstimatorV2
 from TargetingClasses import OldShootDecisionMaker, ThirdRoundShootDecisionMaker
 
-default_3R_position_getters = [BasicPositionGetter(35, 90), GridPositionGetter(7, 5, excluded=[(3, 3), (4, 3), (5, 3)])]
+default_3R_position_getters = [BasicPositionGetter(35, 90), GridPositionGetter(7, 5, excluded=[(3, 3), (4, 3), (5, 3), (4, 4), (4, 2)])]
 
 #old_targeting_strategy = EstimatorsTargetingStrategy(
 #    [
