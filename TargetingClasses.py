@@ -325,7 +325,7 @@ class ThirdRoundShootDecisionMaker(ShootDecisionMaker):
                         self.context.debug('{Shooting} Hitting bullet of ally, postpone')
                         move.fire_type = FireType.NONE
                     else:
-                        if physics.shell_will_hit(shell, tank, factor=0.9) and meet_time < 20:
+                        if physics.shell_will_hit(shell, tank, factor=0.9) and meet_time < 20 and meet_time > 5:
                             self.context.debug('{Shooting} Possible to counter flying bullet')
                             move.fire_type = FireType.REGULAR
 
