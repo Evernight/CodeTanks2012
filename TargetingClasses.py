@@ -71,9 +71,9 @@ class OldShootDecisionMaker(ShootDecisionMaker):
         if fabs(cur_angle) > PI/180 * 0.5:
             move.turret_turn = sign(cur_angle)
 
-FICTIVE_TARGET_ACCELERATION = 0.1
+FICTIVE_TARGET_ACCELERATION = 0.06
 MAX_TARGET_SPEED = 2.5
-BACKWARDS_FICTIVE_MULTIPLIER = 0.9
+BACKWARDS_FICTIVE_MULTIPLIER = 0.8
 
 MULTIPLE_MAX_TIME_DIFFERENCE = 10
 def get_target_data(context):
@@ -182,7 +182,7 @@ def get_target_data(context):
 
         shoot = (physics.will_hit_precise(tank, shift_fu, factor=0.8) and
                  all([lambda a: a.remaining_reloading_time < MULTIPLE_MAX_TIME_DIFFERENCE or a.reloading_time - a.remaining_reloading_time < MULTIPLE_MAX_TIME_DIFFERENCE, attackers])
-                 and target_avoid_distance_forward - target_avoid_distance_backward < 160
+                 and target_avoid_distance_forward - target_avoid_distance_backward < 200
             )
 
         comment = 'MULTIPLE(%d), shift=%8.2f' % (ind, shift)
@@ -208,7 +208,7 @@ def get_target_data(context):
 
     try_single = single_attacker()
     # TODO: and try_single[1] == False
-    if len(allies_targeting) > 1 :
+    if len(allies_targeting) == 2:
 
         if tank.id in allies_targeting:
             attackers = []
@@ -301,6 +301,7 @@ class ThirdRoundShootDecisionMaker(ShootDecisionMaker):
 
                 def will_meet():
                     if q.collinear(shell_speed):
+                        #TODO: may be bug
                         good_direction = sign(shell_speed.x) != sign(q.x) and sign(shell_speed.y) != sign(q.y)
                         if good_direction:
                             return (True, (shell_v - tank_v).length()/(shell_speed.length() + INITIAL_SHELL_VELOCITY))
@@ -308,13 +309,13 @@ class ThirdRoundShootDecisionMaker(ShootDecisionMaker):
                             return (False, -1)
                     else:
                         d_tank, d_shell = intersect_lines(tank_v, q, shell_v, shell_speed.normalize())
-                        d_tank = max(0, d_tank - 40)
+                        d_tank = d_tank - 40
                         if d_tank < 0 or d_shell < 0:
                             return (False, -1)
 
                         t_tank = solve_quadratic(SHELL_ACCELERATION/2, INITIAL_SHELL_VELOCITY, -d_tank)
                         t_shell = solve_quadratic(SHELL_ACCELERATION/2, shell_speed.length(), -d_shell)
-                        if fabs(t_tank - t_shell) < 1:
+                        if fabs(t_tank - t_shell) < 1.5:
                             return (True, t_tank)
                         else:
                             return (False, -1)
