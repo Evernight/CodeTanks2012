@@ -63,8 +63,9 @@ class MyStrategy:
     def move(self, tank, world, move):
         self.world = world
 
-        if world.tick % 500 == 0:
-            print('tick %d' % world.tick)
+        #if world.tick % 500 == 0:
+        #    print('tick %d' % world.tick)
+
         if DEBUG_MODE:
             try:
                 self.memory.battle_id

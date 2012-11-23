@@ -9,7 +9,7 @@ from math import pi as PI
 class ShootDecisionMaker:
     context = None
 
-DEBUG_VIS = True
+DEBUG_VIS = False
 
 # ================ CONSTANTS
 # Targeting
@@ -326,4 +326,5 @@ class ThirdRoundShootDecisionMaker(ShootDecisionMaker):
             memory.tank_precision[tank.id] *= 0.98
 
         #if fabs(cur_angle) > PI/180 * 0.5:
-        move.turret_turn = max(-1, min(1, cur_angle / PI * 180))
+        #move.turret_turn = max(-1, min(1, cur_angle / PI * 180))
+        move.turret_turn = cur_angle / PI * 180
