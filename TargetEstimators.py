@@ -28,7 +28,7 @@ class AnglePenaltyTEstimatorV2(TargetEstimator):
 
     def value(self, target):
         efficiency = (1 + self.context.health_fraction) / 2
-        angle_penalty_factor = (1 + efficiency -
+        angle_penalty_factor = (0.5 + efficiency -
                                 (1 - max(0, 150 - self.context.tank.remaining_reloading_time)/150) )
         angle_degrees = fabs(self.context.tank.get_turret_angle_to_unit(target)) / PI * 180
         angle_penalty = (angle_penalty_factor * angle_degrees) * self.max_value/180
