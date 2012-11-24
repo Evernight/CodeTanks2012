@@ -108,18 +108,19 @@ class BehindObstacleTEstimator(TargetEstimator):
         self.max_value = max_value
 
     def value(self, target):
-#        tank = self.context.tank
-#
-#        target_v = Vector(target.x, target.y)
-#        tank_v = Vector(tank.x, tank.y)
-#        penalty = 0
-#        obstacle = self.context.world.obstacles[0]
-#        if self.context.physics.vector_is_intersecting_object(tank_v , target_v - tank_v, obstacle, 1.05):
-#            penalty = self.max_value
-        if obstacle_is_attacked(self.context, target):
+        tank = self.context.tank
+
+        target_v = Vector(target.x, target.y)
+        tank_v = Vector(tank.x, tank.y)
+        penalty = 0
+        obstacle = self.context.world.obstacles[0]
+        if self.context.physics.vector_is_intersecting_object(tank_v , target_v - tank_v, obstacle, 1.05):
             penalty = self.max_value
-        else:
-            penalty = 0
+        #TODO: fix this
+#        if obstacle_is_attacked(self.context, target):
+#            penalty = self.max_value
+#        else:
+#            penalty = 0
         return -penalty
 
 class DebugTargetSpeedTEstimator(TargetEstimator):
