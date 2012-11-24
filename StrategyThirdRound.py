@@ -57,7 +57,7 @@ strategy_third_round = make_composite_strategy(
             HideBehindObstacle(250),
             #SmartTurretsDangerEstimator(100, 400),
             SimpleTurretsDangerEstimator(400),
-            AlliesDistance3P(200, 1000, 400, 1500)
+            AlliesDistance3P(200, 1000, 500, 1700)
         ]
     ),
     third_round_targeting_strategy,
@@ -75,7 +75,7 @@ strategy_third_round_prevail = make_composite_strategy(
             BeAroundWeakestEnemyV2(2000, 400, 500, 800),
             #SmartTurretsDangerEstimator(100, 400),
             SimpleTurretsDangerEstimator(400),
-            AlliesDistance3P(200, 1000, 400, 1500)
+            AlliesDistance3P(200, 1000, 500, 1700)
         ]
     ),
     third_round_targeting_strategy,
@@ -93,7 +93,7 @@ strategy_third_round_total_prevail = make_composite_strategy(
             BeAroundWeakestEnemyV2(2000, 200, 500, 400),
             #SmartTurretsDangerEstimator(100, 400),
             SimpleTurretsDangerEstimator(400),
-            AlliesDistance3P(200, 1000, 400, 1500)
+            AlliesDistance3P(200, 1000, 500, 1700)
         ]
     ),
     third_round_targeting_strategy,

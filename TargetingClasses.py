@@ -71,9 +71,9 @@ class OldShootDecisionMaker(ShootDecisionMaker):
         if fabs(cur_angle) > PI/180 * 0.5:
             move.turret_turn = sign(cur_angle)
 
-FICTIVE_TARGET_ACCELERATION = 0.06
-MAX_TARGET_SPEED = 2.5
-BACKWARDS_FICTIVE_MULTIPLIER = 0.8
+FICTIVE_TARGET_ACCELERATION = 0.04
+MAX_TARGET_SPEED = 2.4
+BACKWARDS_FICTIVE_MULTIPLIER = 0.75
 
 MULTIPLE_MAX_TIME_DIFFERENCE = 5
 def get_target_data(context):
@@ -334,7 +334,7 @@ class ThirdRoundShootDecisionMaker(ShootDecisionMaker):
         if tank.remaining_reloading_time > 0:
             memory.tank_precision[tank.id] = 1
         else:
-            memory.tank_precision[tank.id] *= 0.99
+            memory.tank_precision[tank.id] *= 0.985
 
         #if fabs(cur_angle) > PI/180 * 0.5:
         #move.turret_turn = max(-1, min(1, cur_angle / PI * 180))
