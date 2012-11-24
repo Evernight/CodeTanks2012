@@ -40,7 +40,7 @@ third_round_targeting_strategy = EstimatorsTargetingStrategy(
 
 standard_position_estimators = [
     #HideBehindObstacle(250),
-    EdgePenaltyEstimator(1000, 100),
+    LinearEdgePenaltyEstimator(500, 200),
     CenterObstacleExtendedPenalty(600),
     FlyingShellEstimator(2000)
 ]
@@ -152,5 +152,5 @@ strategy_third_round_last_man_standing = make_composite_strategy(
         ]
     ),
     third_round_targeting_strategy,
-    "Strategy R3 2P Prevail"
+    "Strategy R3 Last Man Standing"
 )
