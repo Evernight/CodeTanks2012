@@ -156,9 +156,10 @@ class CenterObstaclePenalty(PositionEstimator):
 class CenterObstacleExtendedPenalty(PositionEstimator):
     NAME = 'Obstacle'
 
-    def __init__(self, max_value, radius=10):
+    def __init__(self, max_value, radius=10, ext_radius=300):
         self.max_value = max_value
         self.radius = radius
+        self.ext_radius = ext_radius
 
     def value(self, pos):
         obstacle = self.context.world.obstacles[0]
@@ -168,4 +169,4 @@ class CenterObstacleExtendedPenalty(PositionEstimator):
         if vd < obstacle.height + self.radius and hd < obstacle.width + self.radius:
             return -5000
 
-        return max(0, 1 - min(vd, hd)/300) * self.max_value
+        return max(0, 1 - min(vd, hd)/self.ext_radius) * self.max_value

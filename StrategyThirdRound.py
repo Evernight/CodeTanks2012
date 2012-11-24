@@ -41,7 +41,7 @@ third_round_targeting_strategy = EstimatorsTargetingStrategy(
 standard_position_estimators = [
     #HideBehindObstacle(250),
     LinearEdgePenaltyEstimator(500, 200),
-    CenterObstacleExtendedPenalty(600),
+    CenterObstacleExtendedPenalty(900, 20),
     FlyingShellEstimator(2000)
 ]
 
@@ -72,7 +72,7 @@ strategy_third_round_prevail = make_composite_strategy(
             BonusPositionEstimator(factor=1.4, medikit_min=100, medikit_max=1500, repair_min=100, repair_max=900, ammo_crate=700),
             LastTargetEstimator(400),
             TimeToPositionEstimator(2),
-            BeAroundWeakestEnemyV2(2000, 500, 500, 1000),
+            BeAroundWeakestEnemyV2(2000, 400, 500, 800),
             #SmartTurretsDangerEstimator(100, 400),
             SimpleTurretsDangerEstimator(400),
             AlliesDistance3P(200, 1000, 400, 1500)
@@ -90,7 +90,7 @@ strategy_third_round_total_prevail = make_composite_strategy(
             BonusPositionEstimator(factor=1.3, medikit_min=100, medikit_max=1500, repair_min=100, repair_max=900, ammo_crate=700),
             LastTargetEstimator(400),
             TimeToPositionEstimator(2),
-            BeAroundWeakestEnemyV2(2000, 300, 500, 1000),
+            BeAroundWeakestEnemyV2(2000, 200, 500, 400),
             #SmartTurretsDangerEstimator(100, 400),
             SimpleTurretsDangerEstimator(400),
             AlliesDistance3P(200, 1000, 400, 1500)
@@ -108,7 +108,7 @@ strategy_third_round_two_left = make_composite_strategy(
             BonusPositionEstimator(factor=1.5, medikit_min=100, medikit_max=1500, repair_min=100, repair_max=900, ammo_crate=700),
             LastTargetEstimator(400),
             TimeToPositionEstimator(2),
-            BeAroundWeakestEnemyV2(2000, 500, 500, 1000),
+            BeAroundWeakestEnemyV2(2000, 400, 500, 900),
             #SmartTurretsDangerEstimator(100, 400),
             SimpleTurretsDangerEstimator(400),
             Distance2PEstimator(300, 120, 400, 200, 1000),
@@ -127,7 +127,7 @@ strategy_third_round_two_left_prevail = make_composite_strategy(
             BonusPositionEstimator(factor=1.2, medikit_min=100, medikit_max=1500, repair_min=100, repair_max=900, ammo_crate=700),
             LastTargetEstimator(400),
             TimeToPositionEstimator(2),
-            BeAroundWeakestEnemyV2(2000, 400, 500, 1000),
+            BeAroundWeakestEnemyV2(2000, 300, 500, 800),
             #SmartTurretsDangerEstimator(100, 400),
             SimpleTurretsDangerEstimator(400),
             Distance2PEstimator(300, 120, 400, 200, 1000),
@@ -146,7 +146,7 @@ strategy_third_round_last_man_standing = make_composite_strategy(
             BonusPositionEstimator(factor=1.7, medikit_min=100, medikit_max=1500, repair_min=100, repair_max=900, ammo_crate=700),
             LastTargetEstimator(400),
             TimeToPositionEstimator(2),
-            BeAroundWeakestEnemyV2(2000, 500, 500, 1000),
+            BeAroundWeakestEnemyV2(2000, 400, 500, 1000),
             #SmartTurretsDangerEstimator(100, 400),
             SimpleTurretsDangerEstimator(400),
         ]
