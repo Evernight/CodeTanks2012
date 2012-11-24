@@ -50,7 +50,7 @@ strategy_third_round = make_composite_strategy(
         default_3R_position_getters,
         standard_position_estimators +
         [
-            BonusPositionEstimator(factor=1.5, medikit_min=100, medikit_max=1500, repair_min=100, repair_max=900, ammo_crate=700),
+            BonusPositionEstimator(factor=2.3, medikit_min=100, medikit_max=1500, repair_min=100, repair_max=900, ammo_crate=700),
             LastTargetEstimator(400),
             TimeToPositionEstimator(2),
             BeAroundWeakestEnemyV2(2000, 500, 500, 1000),
@@ -69,7 +69,7 @@ strategy_third_round_prevail = make_composite_strategy(
         default_3R_position_getters,
         standard_position_estimators +
         [
-            BonusPositionEstimator(factor=1.4, medikit_min=100, medikit_max=1500, repair_min=100, repair_max=900, ammo_crate=700),
+            BonusPositionEstimator(factor=2, medikit_min=100, medikit_max=1500, repair_min=100, repair_max=900, ammo_crate=700),
             LastTargetEstimator(400),
             TimeToPositionEstimator(2),
             BeAroundWeakestEnemyV2(2000, 400, 500, 800),
@@ -105,7 +105,7 @@ strategy_third_round_two_left = make_composite_strategy(
         default_3R_position_getters,
         standard_position_estimators +
         [
-            BonusPositionEstimator(factor=1.5, medikit_min=100, medikit_max=1500, repair_min=100, repair_max=900, ammo_crate=700),
+            BonusPositionEstimator(factor=2.5, medikit_min=100, medikit_max=1500, repair_min=100, repair_max=900, ammo_crate=700),
             LastTargetEstimator(400),
             TimeToPositionEstimator(2),
             BeAroundWeakestEnemyV2(2000, 400, 500, 900),
@@ -124,7 +124,7 @@ strategy_third_round_two_left_prevail = make_composite_strategy(
         default_3R_position_getters,
         standard_position_estimators +
         [
-            BonusPositionEstimator(factor=1.2, medikit_min=100, medikit_max=1500, repair_min=100, repair_max=900, ammo_crate=700),
+            BonusPositionEstimator(factor=1.6, medikit_min=100, medikit_max=1500, repair_min=100, repair_max=900, ammo_crate=700),
             LastTargetEstimator(400),
             TimeToPositionEstimator(2),
             BeAroundWeakestEnemyV2(2000, 300, 500, 800),
@@ -143,7 +143,7 @@ strategy_third_round_last_man_standing = make_composite_strategy(
         default_3R_position_getters,
         standard_position_estimators +
         [
-            BonusPositionEstimator(factor=1.7, medikit_min=100, medikit_max=1500, repair_min=100, repair_max=900, ammo_crate=700),
+            BonusPositionEstimator(factor=2.5, medikit_min=100, medikit_max=1500, repair_min=100, repair_max=900, ammo_crate=700),
             LastTargetEstimator(400),
             TimeToPositionEstimator(2),
             BeAroundWeakestEnemyV2(2000, 400, 500, 1000),

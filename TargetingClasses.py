@@ -136,7 +136,8 @@ def get_target_data(context):
         shoot = shoot_precise
         fabs(target_turret_n_cos)
 
-        all_corners = get_unit_corners(max_pos_fu) + get_unit_corners(min_pos_fu)
+        #all_corners = get_unit_corners(max_pos_fu) + get_unit_corners(min_pos_fu)
+        all_corners = get_unit_corners(target)
         #closest_corner = min(all_corners, key=lambda c: c.distance(tank_v))
         # Instead of closest corner try to target middle of colsest side
         sc1, sc2 = sorted(all_corners, key=lambda c: c.distance(tank_v))[:2]
