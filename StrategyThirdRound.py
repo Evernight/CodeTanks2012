@@ -127,7 +127,7 @@ strategy_third_round_two_left_prevail = make_composite_strategy(
             BonusPositionEstimator(factor=1.2, medikit_min=100, medikit_max=1500, repair_min=100, repair_max=900, ammo_crate=700),
             LastTargetEstimator(400),
             TimeToPositionEstimator(2),
-            BeAroundWeakestEnemyV2(2000, 700, 600, 500),
+            BeAroundWeakestEnemyV2(2000, 400, 500, 1000),
             #SmartTurretsDangerEstimator(100, 400),
             SimpleTurretsDangerEstimator(400),
             Distance2PEstimator(300, 120, 400, 200, 1000),
