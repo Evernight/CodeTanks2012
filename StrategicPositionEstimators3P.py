@@ -152,3 +152,20 @@ class CenterObstaclePenalty(PositionEstimator):
         if vd < obstacle.height + self.radius and hd < obstacle.width + self.radius:
             return -self.max_value
         return 0
+
+class CenterObstacleExtendedPenalty(PositionEstimator):
+    NAME = 'Obstacle'
+
+    def __init__(self, max_value, radius=10):
+        self.max_value = max_value
+        self.radius = radius
+
+    def value(self, pos):
+        obstacle = self.context.world.obstacles[0]
+
+        vd = fabs(obstacle.y - pos.y)
+        hd = fabs(obstacle.x - pos.x)
+        if vd < obstacle.height + self.radius and hd < obstacle.width + self.radius:
+            return -5000
+
+        return max(0, 1 - min(vd, hd)/300) * self.max_value

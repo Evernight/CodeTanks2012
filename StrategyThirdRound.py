@@ -1,6 +1,6 @@
 from CompositeStrategy import make_composite_strategy
 from StrategicPositionEstimators2P import Distance2PEstimator, FarDistancePenalty2P
-from StrategicPositionEstimators3P import CloseDistancePenalty3P, BeAroundWeakestEnemy, HideBehindObstacle, BeAroundWeakestEnemyV2, AlliesDistance3P, CenterObstaclePenalty
+from StrategicPositionEstimators3P import CloseDistancePenalty3P, BeAroundWeakestEnemy, HideBehindObstacle, BeAroundWeakestEnemyV2, AlliesDistance3P, CenterObstaclePenalty, CenterObstacleExtendedPenalty
 from SimplePositionEstimators import *
 from PostitionGetters import BasicPositionGetter, GridPositionGetter
 from StrategicPositionEstimators import *
@@ -31,6 +31,7 @@ third_round_targeting_strategy = EstimatorsTargetingStrategy(
         AttackWeakestTEstimator(40),
         DebugSmartShootingTEstimator(),
         DebugDangerousnessTEstimator(),
+        LastTargetTEstimator(10),
         #TargetConvenienceEstimator(30),
         AddConstantTEstimator(180)
     ],
@@ -40,7 +41,7 @@ third_round_targeting_strategy = EstimatorsTargetingStrategy(
 standard_position_estimators = [
     #HideBehindObstacle(250),
     EdgePenaltyEstimator(1000, 100),
-    CenterObstaclePenalty(),
+    CenterObstacleExtendedPenalty(600),
     FlyingShellEstimator(2000)
 ]
 

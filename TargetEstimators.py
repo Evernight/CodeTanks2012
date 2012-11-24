@@ -72,11 +72,14 @@ class ResponseTEstimator(TargetEstimator):
 class LastTargetTEstimator(TargetEstimator):
     NAME = "Last Target"
 
+    def __init__(self, max_value):
+        self.max_value = max_value
+
     def value(self, target):
         last_target_bonus = 0
         if self.context.memory.last_turret_target_id:
             if self.context.memory.last_turret_target_id == target.id:
-                last_target_bonus = 5
+                last_target_bonus = self.max_value
         return last_target_bonus
 
 class AddConstantTEstimator(TargetEstimator):

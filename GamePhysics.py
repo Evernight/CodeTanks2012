@@ -358,7 +358,7 @@ class WorldPhysics:
             if self.vector_is_intersecting_object(tank_v, p - tank_v, obj, factor=1.2) and obj_dist < dist:
                 if not is_going_to_move(obj):
                     return obj
-                if obj_dist < 100:
+                if obj_dist < max(obj.width, obj.height) + 50:
                     return obj
         return False
 
