@@ -1,8 +1,23 @@
 from StrategyScalarField import StrategyScalarField
 from SimplePositionEstimators import *
-from PostitionGetters import TrivialPositionGetter, BasicPositionGetter, LightBasicPositionGetter, GridPositionGetter
+from PostitionGetters import *
 from StrategicPositionEstimators import *
 from StrategicPositionEstimators2P import Distance2PEstimator, FarDistancePenalty2P
+from StrategyTargeting import EstimatorsTargetingStrategy
+from TargetEstimators import *
+from TargetingClasses import OldShootDecisionMaker
+
+old_targeting_strategy = EstimatorsTargetingStrategy(
+    [
+        AnglePenaltyTEstimator(),
+        DistancePenaltyTEstimator(),
+        FinishTEstimator(30),
+        ResponseTEstimator(),
+        LastTargetTEstimator(),
+        AddConstantTEstimator(180)
+    ],
+    OldShootDecisionMaker()
+)
 
 class StrategySecondRound4Enemies:
 

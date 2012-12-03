@@ -1,27 +1,15 @@
 from CompositeStrategy import make_composite_strategy
 from StrategicPositionEstimators2P import Distance2PEstimator, FarDistancePenalty2P
-from StrategicPositionEstimators3P import CloseDistancePenalty3P, BeAroundWeakestEnemy, HideBehindObstacle, BeAroundWeakestEnemyV2, AlliesDistance3P, CenterObstaclePenalty, CenterObstacleExtendedPenalty
+from StrategicPositionEstimators3P import *
 from SimplePositionEstimators import *
 from PostitionGetters import BasicPositionGetter, GridPositionGetter
 from StrategicPositionEstimators import *
 from StrategyScalarFieldMO import ScalarFieldMovingStrategy
 from StrategyTargeting import EstimatorsTargetingStrategy
-from TargetEstimators import DistancePenaltyTEstimator, FinishTEstimator, ResponseTEstimator, LastTargetTEstimator, AddConstantTEstimator, AnglePenaltyTEstimator, AttackWeakestTEstimator, BehindObstacleTEstimator, DebugSmartShootingTEstimator, DebugDangerousnessTEstimator, TargetConvenienceEstimator, AnglePenaltyTEstimatorV2
-from TargetingClasses import OldShootDecisionMaker, ThirdRoundShootDecisionMaker
+from TargetEstimators import *
+from TargetingClasses import ThirdRoundShootDecisionMaker
 
 default_3R_position_getters = [BasicPositionGetter(35, 90), GridPositionGetter(7, 5, excluded=[(3, 3), (4, 3), (5, 3), (4, 4), (4, 2)])]
-
-#old_targeting_strategy = EstimatorsTargetingStrategy(
-#    [
-#        AnglePenaltyTEstimator(),
-#        DistancePenaltyTEstimator(),
-#        FinishTEstimator(30),
-#        ResponseTEstimator(),
-#        LastTargetTEstimator(),
-#        AddConstantTEstimator(180)
-#    ],
-#    OldShootDecisionMaker()
-#)
 
 third_round_targeting_strategy = EstimatorsTargetingStrategy(
     [
