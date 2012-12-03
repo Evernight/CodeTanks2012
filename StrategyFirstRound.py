@@ -1,6 +1,6 @@
 from StrategyScalarField import StrategyScalarField
 from SimplePositionEstimators import *
-from PostitionGetters import BasicPositionGetter, GridPositionGetter, BorderPositionGetter
+from PostitionGetters import *
 from StrategicPositionEstimators import *
 
 class StrategyOnePlayer5Enemies:
