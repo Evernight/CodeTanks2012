@@ -10,16 +10,17 @@ from collections import deque, defaultdict
 
 # TODO:
 # * separate for premium shells
-# * precise avoiding, realistic
+# * precise avoiding
 # * short distance shooting
 # * cut target possible moves
 
-# * angular speed est in targeting
+#  * angular speed est in targeting
 #  * realistic moving and time estimation (mechanics)
 #  * take target orientation into account when shooting / orientation of the tank
 #  * when targeting take current moving destination into account (or the opposite)
 #  * even more precise short distance estimation?
 #  * synchronize moving and shooting
+
 
 if __debug__:
     DEBUG_MODE = True
