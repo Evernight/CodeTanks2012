@@ -1,4 +1,4 @@
-[Russian AI Cup](http://russianaicup.ru/): [CodeTanks 2012](http://2012.russianaicup.ru/)
+[Russian AI Cup 2012](http://russianaicup.ru/): [CodeTanks](http://2012.russianaicup.ru/)
 
 My strategy (http://2012.russianaicup.ru/profile/evernight)
 
