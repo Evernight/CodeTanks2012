@@ -1,10 +1,9 @@
-[CodeTanks 2012](http://russianaicup.ru/)
+[Russian AI Cup](http://russianaicup.ru/): [CodeTanks 2012](http://2012.russianaicup.ru/)
 
-My strategy (http://russianaicup.ru/profile/evernight)
+My strategy (http://2012.russianaicup.ru/profile/evernight)
 
-Since site is unavailable anymore:
-* Round 1: ~14th place
-* Round 2: ~8th place
-* Finals: 26th place
+* Round 1: 10th place
+* Round 2: 6th place
+* Finals: 28th place
 
 The code needs tons of refactoring. The best part is declarative strategy definition in StrategyThirdRound.py
